@@ -33,3 +33,4 @@ build/
 .vscode/
 
 # Ignore application.yml file
+src/main/resources/application.yml
