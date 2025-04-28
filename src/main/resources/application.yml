@@ -1,0 +1,140 @@
+server:
+  port: 9095
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: api-scheduler-pollux
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+      enabled: true
+
+eureka:
+  instance:
+    preferIpAddress: true
+    hostname: api-scheduler-pollux
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://eureka-0.eureka.cosmos.svc.cluster.local:8080/eureka,http://eureka-1.eureka.cosmos.svc.cluster.local:8080/eureka,http://eureka-2.eureka.cosmos.svc.cluster.local:8080/eureka,http://eureka-3.eureka.cosmos.svc.cluster.local:8080/eureka
+      #defaultZone: http://localhost:8080/eureka
+
+logging:
+  level:
+    org.springframework: ERROR
+#    org.springframework.security: DEBUG
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 160000000
+        readTimeout: 160000000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      atlas:
+        enabled: false
+  endpoint:
+    restart:
+      enabled: true
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+    ping:
+      enabled: true
+
+# Konfigurasi untuk profil dev
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:oracle:thin:@128.21.23.31:1521:AJSDB?oracle.jdbc.timezoneAsRegion=false
+    username: POLLUXDEV
+    password: ACfOqi1x
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    hikari:
+      auto-commit: true
+      idle-timeout: 10000
+      maximum-pool-size: 5
+      max-lifetime: 30000
+      minimum-idle: 1
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        #implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    database-platform: org.hibernate.dialect.Oracle12cDialect
+    database: oracle
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  batch:
+    job:
+      enabled: false
+  custom:
+    storage:
+       path: "/mnt/storage/pollux/dev/"
+#      path: "//storage-uat.sinarmasmsiglife.co.id/pdfmri/"
+#      path: "//PENTAHO/Dev/00.IT_USE/UAT_MRI/"
+#      path: "C:/Works/Pollux/Source/api-pollux-productsetup/storage/"
+    spica:
+      lspc-form-id: 323
+      auth-key: ENGINE_SPICA
+
+# Konfigurasi untuk profil prod
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:oracle:thin:@128.21.22.31:1530:ajsdb
+    username: dev
+    password: linkdev
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    hikari:
+      auto-commit: true
+      idle-timeout: 10000
+      maximum-pool-size: 5
+      max-lifetime: 30000
+      minimum-idle: 1
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        #implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+    database-platform: org.hibernate.dialect.Oracle12cDialect
+    database: oracle
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  batch:
+    job:
+      enabled: false
+  custom:
+    spica:
+      lspc-form-id: 8
+      auth-key: ENGINE_SPICA
+    storage:
+      path: "/mnt/storage/pollux/prod/"
