@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${PIPELINE_BUILD_IMAGE}
+  namespace: ${PIPELINE_NAME_SPACE}
+  labels:
+    app: ${PIPELINE_BUILD_IMAGE}
+spec:
+  replicas: ${PIPELINE_REPLICA}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: ${PIPELINE_BUILD_IMAGE}
+  template:
+    metadata:
+      labels:
+        app: ${PIPELINE_BUILD_IMAGE}
+    spec:
+      containers:
+        - name: ${PIPELINE_BUILD_IMAGE}
+          image: ${PIPELINE_IMAGE}
+          volumeMounts:
+            - name: flexvol-mount
+              mountPath: /mnt/storage
+            - name: flexvol-mount-eb
+              mountPath: /mnt/ebserver
+          ports:
+            - containerPort: 9095
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "200m"
+            limits:
+              memory: "2000Mi"
+              cpu: "2000m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9095
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9095
+            failureThreshold: 10
+            periodSeconds: 30
+          startupProbe:
+            tcpSocket:
+              port: 9095
+            failureThreshold: 30
+            periodSeconds: 10
+      volumes:
+        - name: flexvol-mount
+          hostPath:
+            path: /mnt/storage
+        - name: flexvol-mount-eb
+          hostPath:
+            path: /mnt/ebserver
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${PIPELINE_BUILD_IMAGE}
+  namespace: ${PIPELINE_NAME_SPACE}
+spec:
+  loadBalancerIP: ${PIPELINE_LOAD_BALANCER_IP}
+  selector:
+    app: ${PIPELINE_BUILD_IMAGE}
+  type: NodePort
+  ports:
+    - port: ${PIPELINE_LOAD_BALANCER_PORT}
+      protocol: TCP
+      targetPort: 9095
+---
