@@ -18,7 +18,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                 git branch:'development', credentialsId: 'gitcredentialursa', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux'
+                 git branch:'development', credentialsId: 'gitcredentialadmin', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux'
                
             }
         }
