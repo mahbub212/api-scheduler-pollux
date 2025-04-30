@@ -29,7 +29,7 @@ spec:
             - name: flexvol-mount-eb
               mountPath: /mnt/ebserver
           ports:
-            - containerPort: 9095
+            - containerPort: ${APP_PORT}
           resources:
             requests:
               memory: "200Mi"
@@ -38,20 +38,18 @@ spec:
               memory: "2000Mi"
               cpu: "2000m"
           readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 9095
+            tcpSocket:
+              port: ${APP_PORT}
             initialDelaySeconds: 10
             periodSeconds: 30
           livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 9095
+            tcpSocket:
+              port: ${APP_PORT}
             failureThreshold: 10
             periodSeconds: 30
           startupProbe:
             tcpSocket:
-              port: 9095
+              port: ${APP_PORT}
             failureThreshold: 30
             periodSeconds: 10
       volumes:
@@ -75,5 +73,4 @@ spec:
   ports:
     - port: ${PIPELINE_LOAD_BALANCER_PORT}
       protocol: TCP
-      targetPort: 9095
----
+      targetPort: ${APP_PORT}

@@ -1,23 +1,12 @@
-def getHost(){
-    def remote = [:]
-    remote.name = 'jenkins-prod'
-    remote.host = 'jenkins-prd.msiglife.co.id'
-    remote.user = 'administrator'
-    remote.port = 22
-    remote.password = 'Msig123456'
-    remote.allowAnyHosts = true
-    return remote
-}
-
 pipeline {
     agent any
       environment {
         PIPELINE_BUILD_IMAGE = "api-scheduler-pollux"
         PIPELINE_NAME_SPACE = "pollux"
-        PIPELINE_REPLICA = 2
+        PIPELINE_REPLICA = 1
         PIPELINE_LOAD_BALANCER_PORT=9095
         PIPELINE_EUREKA_SERVICE_ADDRESS = "http://eureka.cosmos.svc.cluster.local:8080/eureka"
-        PIPELINE_IMAGE = "172.16.0.72:8443/${env.PIPELINE_NAME_SPACE}/${env.PIPELINE_BUILD_IMAGE}:${env.BUILD_NUMBER}"
+        PIPELINE_IMAGE = "128.21.35.10:5000/${env.PIPELINE_NAME_SPACE}/${env.PIPELINE_BUILD_IMAGE}${env.BUILD_NUMBER}:${env.BUILD_NUMBER}"
         APP_PORT = "9095"
         COMMIT_MESSAGE = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
 
@@ -29,10 +18,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                script {                 
-                   server = getHost()                                   
-                }
-                 git branch:'biznetgio1', credentialsId: 'biznetgio1', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux'
+                 git branch:'development', credentialsId: 'biznetgio1', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux'
                
             }
         }
@@ -76,20 +62,14 @@ pipeline {
     stage('deploy to kubernetes') {
             steps {
                 sh "ls"
-                 script {
-                   sshPut remote: server, from: "k8s/deployment${name_space}${build_image}.yaml", into: '.'
-                   sshCommand remote: server, command: "kubectl apply -f deployment${name_space}${build_image}.yaml;kubectl -n ${name_space} rollout status deployment.app/${build_image}"
-                }
-                 sh "docker rmi -f ${env.PIPELINE_IMAGE}"
+                sh '''
+                ssh administrator@master-dev whoami
+                scp k8s/deployment${name_space}${build_image}.yaml administrator@master-dev:~/.
+                ssh administrator@master-dev kubectl apply -f deployment${name_space}${build_image}.yaml
+                ssh administrator@master-dev kubectl -n ${name_space} rollout status deployment.app/${build_image}
+                '''
            }
            
 
     }
-    
-}
-    post {
-      always {
-        discordSend description: 'Jenkins Pipeline Build', enableArtifactsList: true, footer: "Build ${JOB_NAME} #${BUILD_NUMBER}", image: '', link: env.BUILD_URL, result: currentBuild.currentResult, scmWebUrl: '', showChangeset: true, thumbnail: '', title: "${JOB_NAME} #${BUILD_NUMBER}", webhookURL: 'https://discord.com/api/webhooks/1167421282934079548/d2VMeAsU9Z1Qfm3aXvAKhOtisUh7_n3GRwB0hzXu33eUCFAsDobAaEQxMRgnXsbMREqT'
-      }
-    }
-}
+  }
