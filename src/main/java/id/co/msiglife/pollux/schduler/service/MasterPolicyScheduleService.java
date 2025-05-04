@@ -26,7 +26,7 @@ public class MasterPolicyScheduleService {
     @Autowired
     MasterWfLogActivityPolluxRepository masterWfLogActivityPolluxRepository;
 
-    @Scheduled(cron = "0 0 17 * * ?")
+    @Scheduled(cron = "0 0 22 * * ?")
     public void testingCronWfLogActivity() {
         // I want to add current time + 30 days, generate the code please
         LocalDateTime now = LocalDateTime.now().minusDays(30);
@@ -38,16 +38,17 @@ public class MasterPolicyScheduleService {
         body.put("statusIds",statusIds);
 
         MasterWfLogActivityPollux testScheduleLogger = new MasterWfLogActivityPollux();
-        testScheduleLogger.setIpAddress("127.255.255.254");
+        testScheduleLogger.setIpAddress("128.21.37.62:8687");
         testScheduleLogger.setEndpointUrl("/scheduler-engine");
         testScheduleLogger.setMethod("GET");
 
-        System.out.println("check scheduler: " + now.format(dateFormat));
+        System.out.println("check scheduler from dev: " + now.format(dateFormat));
         try {
             System.out.println("where clause: " + "{ statusIds: "+ statusIds + ", lastUpdatedAt: " + isoString + "}");
             testScheduleLogger.setRequestBody(new ObjectMapper().writeValueAsString(body));
             testScheduleLogger.setResponse("Success running scheduler");
             testScheduleLogger.setSuccess(true);
+            testScheduleLogger.setDocNumber("0925XXXXXXX");
         } catch (Exception e) {
             testScheduleLogger.setResponse("Failed to running scheduler");
             testScheduleLogger.setSuccess(false);
