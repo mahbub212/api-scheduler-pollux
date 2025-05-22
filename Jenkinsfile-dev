@@ -1,14 +1,3 @@
-def getHost(){
-    def remote = [:]
-    remote.name = 'master'
-    remote.host = '128.21.35.19'
-    remote.user = 'administrator'
-    remote.port = 22
-    remote.password = 'Ajs123456'
-    remote.allowAnyHosts = true
-    return remote
-}
-
 pipeline {
     agent any
       environment {
@@ -27,9 +16,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                script {
-                   server = getHost()
-                }
                  git branch:'master', credentialsId: 'gitcredentialursa', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux/'
 
             }
@@ -75,15 +61,13 @@ pipeline {
     stage('deploy to kubernetes') {
             steps {
                 sh "ls"
-                 script {
-                   sshPut remote: server, from: "k8s/deployment${name_space}${build_image}.yaml", into: '.'
-                   sshCommand remote: server, command: "kubectl apply -f deployment${name_space}${build_image}.yaml;kubectl -n ${name_space} rollout status deployment.app/${build_image}"
-                }
-                 sh "docker rmi -f ${env.PIPELINE_IMAGE}"
+                sh '''
+                ssh administrator@master-dev whoami
+                scp k8s/deployment${name_space}${build_image}.yaml administrator@master-dev:~/.
+                ssh administrator@master-dev kubectl apply -f deployment${name_space}${build_image}.yaml
+                ssh administrator@master-dev kubectl -n ${name_space} rollout status deployment.app/${build_image}
+                '''
            }
-
-
     }
-
 }
 }
