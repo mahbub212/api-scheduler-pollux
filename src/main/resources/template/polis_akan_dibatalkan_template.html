@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+    <title>KPS Standard Direct to Bank</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @font-face {
+            font-family: 'ubuntu';
+            src: url('[[MY_FONT_PATH]]') format('truetype');
+        }
+
+        .container {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .container-body {
+            padding-left: 30px;
+            padding-right: 30px;
+            padding-top: 15px;
+            padding-bottom: 10px;
+        }
+
+        .left {
+            float: left;
+            width: 50%;
+            text-align: left; /* Align text to the left */
+        }
+
+        .right {
+            float: right;
+            width: 50%;
+            text-align: right; /* Align text to the right */
+        }
+
+        .img-head {
+            padding: 0;
+            width: 17%; /* Lebar penuh */
+            height: 47%; /* Sekitar 12% dari tinggi dokumen */
+            object-fit: cover; /* Menyesuaikan gambar tanpa distorsi */
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background-image: url('../../images/watermark.png');
+            background-size: contain;
+            background-repeat: repeat-y;
+            background-position: top;
+            font-family: 'ubuntu', sans-serif;
+            font-size: 9pt;
+            display: flex;
+        }
+
+        .fade-text {
+            color: gray;
+            opacity: 0.8; /* 60% transparan */
+            font-style: italic; /* Opsional, agar terlihat lebih soft */
+        }
+
+        footer {
+            width: 100%;
+            overflow: hidden;
+            position: fixed;
+            bottom: 0; /* Position it at the bottom */
+        }
+
+        .image-container {
+            float: left;
+            width: 67%; /* Ensure the image scales properly */
+            height: 30%; /* Maintain the aspect ratio */
+            padding-left: 30px;
+        }
+
+        .image-container-small {
+            float: right;
+            width: 17%; /* Lebar penuh */
+            height: 47%;
+            padding-right: 20px;
+        }
+
+        .horizontal-line {
+            /*border-top: 1px solid black; !* Border on top *!*/
+            /*width: 10px; !* Set the width of the border *!*/
+            /*margin: 20px auto; !* Center the line *!*/
+            /*width: 50%; !* Set the width of the line *!*/
+            /*height: 2px;*/
+            /*background-color: red; !* Set the color of the line *!*/
+            /*margin: 0 auto; !* Center the line *!*/
+            display: block;
+            margin: 0 auto; /* Center the line */
+        }
+
+        .transparent-msig-spc {color: black;}
+        .transparent-bank-spc {color: black;}
+        .transparent-bank {color: black;}
+        .transparent-msig {color: black;}
+    </style>
+</head>
+<body>
+<header>
+    <img class="img-head" src="../../images/watermark_header.png" alt="Header Image"></img>
+</header>
+<div style="page-break-after: always">
+    <div class="container-body">
+        <div class="container">
+            <div class="left">No. {nomor_spaj}</div>
+            <div class="right">Jakarta, {tanggal_terbit_kps}</div>
+        </div>
+        <span style="display: block; height: 10px"></span>
+        <div>Kepada Yth,</div>
+        <div>{nama_cabang_bank}</div>
+        <div>Up. Admin Kredit</div>
+        <h4 style="text-align: center">Perihal : SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN</h4>
+        <div>Dengan Hormat,</div>
+        <span style="display: block; height: 10px"></span>
+        <div style="text-align: justify">Sehubungan dengan adanya Surat Permohonan Asuransi Jiwa Kredit &amp; data-data SPAJK atas nama {nama_tertanggung} yang
+            telah kami terima dan pelajari, maka berdasarkan data-data SPAJK tersebut kami beritahukan bahwa calon peserta dapat
+            kami terima dengan keputusan standard.
+        </div>
+        <span style="display: block; height: 10px"></span>
+        <div>Adapun perhitungan premi sementaranya adalah sbb:</div>
+        <span style="display: block; height: 10px"></span>
+        <table style="width: 95%; border-collapse: collapse;">
+            <tr>
+                <td style="width: 45%;">Nama Produk</td>
+                <td>:</td>
+                <td style="width: 55%;">{nama_produk}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Nama</td>
+                <td>:</td>
+                <td style="width: 55%;">{nama_tertanggung}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Tanggal Lahir</td>
+                <td>:</td>
+                <td style="width: 55%;">{dob}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Usia</td>
+                <td>:</td>
+                <td style="width: 55%;">{age}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Masa Asuransi</td>
+                <td>:</td>
+                <td style="width: 55%;">{tenor}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Mulai Asuransi (Asumsi)</td>
+                <td>:</td>
+                <td style="width: 55%;">{mulai_asuransi}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Akhir Asuransi (Asumsi)</td>
+                <td>:</td>
+                <td style="width: 55%;">{akhir_asuransi}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Uang Pertanggungan</td>
+                <td>:</td>
+                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{up}</div></td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Premi Pokok</td>
+                <td>:</td>
+                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{premi}</div></td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Biaya Administrasi</td>
+                <td>:</td>
+                <td style="width: 55%; text-align: right;">
+                    <div class="left" style="width: 15px">Rp</div>
+                    <div class="right" style="width: 5%; padding-right: 200px">{biaya_administrasi}</div>
+                    <hr style="position: relative; bottom: -10px; left: -100px; width: 50%; border: none; border-top: 1px solid black;">
+                </td>
+            </tr>
+            <tr>
+                <td><span style="display: block; height: 10px"></span></td>
+            </tr>
+            <tr>
+                <td class="transparent-msig-spc" style="width: 45%;">Disc Spesial MSIG Life</td>
+                <td class="transparent-msig-spc">:</td>
+                <td class="transparent-msig-spc" style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{disc_special_msig}</div></td>
+            </tr>
+            <tr>
+                <td class="transparent-bank-spc" style="width: 45%;">Disc Spesial Bank</td>
+                <td class="transparent-bank-spc">:</td>
+                <td class="transparent-bank-spc" style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{disc_special_bank}</div></td>
+            </tr>
+            <tr>
+                <td class="transparent-bank" style="width: 45%;">Disc Program Bank</td>
+                <td class="transparent-bank">:</td>
+                <td class="transparent-bank" style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px;">{disc_program_bank}</div></td>
+            </tr>
+            <tr>
+                <td class="transparent-msig" style="width: 45%;">Disc Program MSIG Life</td>
+                <td class="transparent-msig">:</td>
+                <td class="transparent-msig" style="width: 55%;">
+                    <div class="left" style="width: 15px">Rp</div>
+                    <div class="right" style="width: 5%; padding-right: 200px">{disc_program_msig}</div>
+                    <hr style="position: relative; bottom: -10px; left: -100px; width: 50%; border: none; border-top: 1px solid;">
+                </td>
+            </tr>
+            <tr>
+                <td><span style="display: block; height: 10px"></span></td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Premi yang dibayar Nasabah ke Bank</td>
+                <td>:</td>
+                <td style="width: 55%; text-align: right;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{premi_yang_dibayar_nasabah_ke_bank}</div></td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Feebased</td>
+                <td>:</td>
+                <td style="width: 55%; text-align: right;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{feebased}</div></td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Premi yang dibayar Bank ke MSIG Life</td>
+                <td>:</td>
+                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{premi_yang_dibayar_bank_ke_msig}</div></td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">PPN</td>
+                <td>:</td>
+                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{ppn}</div></td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">PPH 23</td>
+                <td>:</td>
+                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{pph_23}</div></td>
+            </tr>
+        </table>
+        <span style="display: block; height: 10px"></span>
+        <div>Demikian kami sampaikan. Atas kerjasamanya kami ucapkan terima kasih.</div>
+        <span style="display: block; height: 10px"></span>
+        <div>Hormat kami,</div>
+        <div>PT MSIG Life Insurance Indonesia Tbk.</div>
+        <span style="display: block; height: 10px"></span>
+        <table style="width: 30%; border-collapse: collapse; font-size: 8pt">
+            <tr>
+                <td class="fade-text" style="text-align: center;">(surat ini di cetak secara komputerisasi,</td>
+            </tr>
+            <tr>
+                <td class="fade-text" style="text-align: center;">tidak membutuhkan tanda tangan)</td>
+            </tr>
+        </table>
+        <span style="display: block; height: 10px"></span>
+        <table style="width: 30%; border-collapse: collapse;">
+            <tr>
+                <td style="border-bottom: 1px solid black; text-align: center"><b>Bianka Margareth Simatupang</b></td>
+            </tr>
+            <tr>
+                <td style="text-align: center">Division Head of Group Operations</td>
+            </tr>
+        </table>
+        <span style="display: block; height: 10px"></span>
+        <div><i>NB : Konfirmasi Premi Sementara ini Berlaku Sampai Dengan Tanggal : {tanggal_akhir_premi_sementara}</i>
+        </div>
+        <span style="display: block; height: 10px"></span>
+        <table style="width: 65%; border-collapse: collapse; border: 1px solid black; font-size: 8pt;">
+            <tr>
+                <td>
+                    <div><b>Konfirmasi Akad Kredit diisi oleh Petugas Bank:</b></div>
+                    <span style="display: block; height: 10px"></span>
+                    <table style="width: 80%; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 60%;">Tanggal Mulai Asuransi</td>
+                            <td>:</td>
+                            <td style="width: 40%; border-bottom: 1px solid black"></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 60%;">Tanggal Berakhir Asuransi</td>
+                            <td>:</td>
+                            <td style="width: 40%; border-bottom: 1px solid black"></td>
+                        </tr>
+                    </table>
+                    <span style="display: block; height: 10px"></span>
+                    <div><b>Tanda tangan dan stampel petugas Bank:</b></div>
+                </td>
+            </tr>
+        </table>
+        <span style="display: block; height: 10px"></span>
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 8pt">
+            <tr>
+                <td>
+                    <div><b>PERHATIAN</b></div>
+                    <div>Pembayaran dapat di transfer ke {rekening} a/n {atas_nama}</div>
+                    <span style="display: block; height: 10px"></span>
+                    <div>Semua pembayaran dengan warkat-warkat bank seperti: Cek, Bilyet Giro, dll dianggap sah setelah warkat
+                        yang bersangkutan dapat diuangkan.
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<!--Page 2-->
+<br>
+<header>
+    <img class="img-head" src="../../images/watermark_header.png" alt="Header Image"></img>
+</header>
+<div class="container-body">
+    <div class="container">
+        <div class="left"><b>Subject email:</b></div>
+        <span style="display: block; height: 10px"></span>
+        <div>Surat Konfirmasi Sertifikat Akan Dibatalkan a/n {insured_name} No Sertifikat {no_sertifikat}</div>
+        <span style="display: block; height: 20px"></span>
+        <div class="left"><b>Subject email:</b></div>
+    </div>
+</div>
+<footer>
+    <img class="image-container" src="../../images/watermark_footer1.png" alt="First Footer"></img>
+    <img class="image-container-small" src="../../images/watermark_footer2.png" alt="Second Footer"></img>
+</footer>
+</body>
+</html>
