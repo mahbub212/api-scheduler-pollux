@@ -1,36 +1,39 @@
 package id.co.msiglife.pollux.schduler.service;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
 import id.co.msiglife.pollux.schduler.dto.SuratAutoCancelDTO;
 import id.co.msiglife.pollux.schduler.entity.MasterEmail;
-import id.co.msiglife.pollux.schduler.entity.MasterPolicy;
 import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
+import id.co.msiglife.pollux.schduler.util.ConvertUtil;
+import id.co.msiglife.pollux.schduler.util.FileProcessUtil;
+import org.jsoup.Jsoup;
+import org.jsoup.helper.W3CDom;
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static id.co.msiglife.pollux.schduler.util.ConvertUtil.stringBlank;
+import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
 
 @Service
 public class AutoCancelSuratKonfirmasiAwalService {
+
+    @Value("${spring.custom.mailpool-attachment.path}")
+    private String ATTACHMENT_PATH;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -40,6 +43,12 @@ public class AutoCancelSuratKonfirmasiAwalService {
 
     @Autowired
     MasterPolicyRepository masterPolicyRepository;
+
+    @Autowired
+    private ConvertUtil convertUtil;
+
+    @Autowired
+    private FileProcessUtil fileProcessUtil;
 
 //    @Scheduled(cron = "0 0 22 * * ?")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiEmail() {
@@ -99,50 +108,92 @@ public class AutoCancelSuratKonfirmasiAwalService {
                     (String) row[14]
             )).collect(Collectors.toList());
 
-            for (SuratAutoCancelDTO dto : dtoList) {
+            // read template file
+            String today = convertDateToJakartaTime(LocalDate.now());
+            String filePath = "template/surat_konfirmasi_awal_template.html";
+            String content;
 
-//                Integer userId = jwtUtil.getUserIdFromJwtToken(token);
-//
-//                MasterPolicy masterPolicy = masterPolicyRepository.findByRegSpaj(regSpaj);
-//                MasterUnderwriting masterUnderwriting = masterUnderwritingRepository.findbyRegSpajk(regSpaj);
-//                MasterInsured masterInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(regSpaj, 1);
-//                if (masterPolicy == null) {
-//                    throw new RuntimeException("Policy not found");
-//                } else if (masterUnderwriting == null) {
-//                    throw new RuntimeException("Underwriting not found");
-//                } else if (masterInsured == null) {
-//                    throw new RuntimeException("Insured not found");
-//                }
-//
-//                MasterClient masterClientPemegangPolisCabang = masterClientRepository.findByMclId(masterPolicy.getCustomer());
-//                MasterClient masterClientTertanggung = masterClientRepository.findByMclId(masterInsured.getInsured());
-//                MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPolicy.getCustomer());
-//                if (masterClientPemegangPolisCabang == null) {
-//                    throw new RuntimeException("Client Pemegang Polis Cabang not found");
-//                } else if (masterClientTertanggung == null) {
-//                    throw new RuntimeException("Client Tertanggung not found");
-//                } else if (masterBranchPartner == null) {
-//                    throw new RuntimeException("Branch Partner not found");
-//                }
+            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+                assert inputStream != null;
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                    StringBuilder contentBuilder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        contentBuilder.append(line).append(System.lineSeparator());
+                    }
+                    content = contentBuilder.toString();
+                }
+            }
+
+            // replace content resources
+            String base64Font = this.fileProcessUtil.encodeFontToBase64("template/fonts/Ubuntu/Ubuntu-Regular.ttf");
+            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+
+            String imgPathWTHeader = this.fileProcessUtil.getBase64Image("template/images/watermark_header.png");
+            content = content.replace("../../images/watermark_header.png", imgPathWTHeader);
+
+            String imgPathWt = this.fileProcessUtil.getBase64Image("template/images/watermark.png");
+            content = content.replace("../../images/watermark.png", imgPathWt);
+
+            String imgPathFileFooter1 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer1.png");
+            content = content.replace("../../images/watermark_footer1.png", imgPathFileFooter1);
+
+            String imgPathFileFooter2 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
+            content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
+
+            for (SuratAutoCancelDTO dto : dtoList) {
 
                 // Fetch the email ID from the SQL function using a native SQL query
                 String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
                 System.out.println("Printed generated email ID: " + generatedId);
 
-//                // Define the folder path for attachments
-//                // (ex: //storage.sinarmasmsiglife.co.id/mailpools/attachments/2023/09/20230923661730)
-//                String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
-//                System.out.println("Printed attachment folder: " + attachmentFolderPath);
-//
-//                // Create the folder if it doesn't exist
-//                File folder = new File(attachmentFolderPath);
-//                if (!folder.exists()) {
-//                    if (!folder.mkdirs()) {
-//                        throw new IOException("Failed to create directory: " + attachmentFolderPath);
-//                    }
-//                }
-//
+                String editedContent = content; // reset content to template state
+
+                // edit dynamic contents
+                editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertfikat());
+                editedContent = editedContent.replace("{tanggal_hari_ini}", today);
+                editedContent = editedContent.replace("{nama_bank_cabang}", dto.getNamaBankCabang());
+                editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
+                editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
+                editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
+                editedContent = editedContent.replace("{tenor}", dto.getMasaAsuransiTahun() + " Tahun" + (dto.getMasaAsuransiBulan() != null && dto.getMasaAsuransiBulan() > 0 ? dto.getMasaAsuransiBulan() + " Bulan" : ""));
+                editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
+                editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
+                editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
+                editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+
+                // create string HTML to a JSoup Document to render XHTML
+                Document document = Jsoup.parse(content);
+                document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+
+                // check if the folder path for attachments hasn't existed
+                // (ex: //storage.sinarmasmsiglife.co.id/mailpools/attachments/2023/09/20230923661730)
+                String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
+
+                // create the folder if it doesn't exist
+                File folder = new File(attachmentFolderPath);
+                File parentDirectory = folder.getParentFile();
+                if (parentDirectory.canWrite()) {
+                    if (!folder.exists()) {
+                        folder.mkdirs();
+                    }
+                } else {
+                    throw new IOException("No write permissions in the parent directory: " + parentDirectory);
+                }
+
+                // PdfRendererBuilder will take this XHTML document and create a PDF as the output file
+                String outputPdf = attachmentFolderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_AWAL.pdf";
+
+                try (OutputStream os = Files.newOutputStream(Paths.get(outputPdf))) {
+                    PdfRendererBuilder builder = new PdfRendererBuilder();
+                    builder.withUri(outputPdf);
+                    builder.toStream(os);
+                    builder.withW3cDocument(new W3CDom().fromJsoup(document), attachmentFolderPath + "/");
+                    builder.run();
+                }
+
 //                // get list of kps and riplay, then sort by latest to oldest created date
 //                List<MasterUploadDokumen> uploadKPSDokumenList = masterUploadDokumenRepository.findByRegSpajAndJenisDokumenId(regSpaj, 14); // find kps docs
 //                List<MasterUploadDokumen> uploadRiplayDokumenList = masterUploadDokumenRepository.findByRegSpajAndJenisDokumenId(regSpaj, 13); // find riplay docs
@@ -201,18 +252,8 @@ public class AutoCancelSuratKonfirmasiAwalService {
                 // set emailTo, subject, message, etc.
                 String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
 
-                // Convert Date to Instant
-                Instant instant = dto.getTanggalCetakSertifikat().toInstant();
-
-                // Convert Instant to ZonedDateTime in Jakarta time
-                ZonedDateTime jakartaTime = instant.atZone(ZoneId.of("Asia/Jakarta"));
-
-                // Format as "6 June 2025"
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("id", "ID"));
-                String dobFormat = jakartaTime.format(formatter);
-
                 String subject = "Surat Konfirmasi Pembayaran Premi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertfikat();
-                String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertfikat(), dobFormat);
+                String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertfikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
 
                 MasterEmail emailEntity = new MasterEmail();
                 emailEntity.setId(generatedId);
@@ -239,7 +280,7 @@ public class AutoCancelSuratKonfirmasiAwalService {
                 emailEntity.setJenisId(50);
                 emailEntity.setFlagNew(0);
                 emailEntity.setRegSpaj(dto.getRegSpaj());
-//                emailEntity.setPathAttach(attachmentFolderPath);
+                emailEntity.setPathAttach(attachmentFolderPath);
 
                 masterEmailRepository.save(emailEntity);
                 System.out.println("KPS and Riplay Email Sent Successfully...");
@@ -300,4 +341,5 @@ public class AutoCancelSuratKonfirmasiAwalService {
                 + "</html>";
 
     }
+
 }

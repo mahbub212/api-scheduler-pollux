@@ -90,6 +90,8 @@ spring:
     job:
       enabled: false
   custom:
+    mailpool-attachment:
+      path: "/mnt/storage/mailpools/attachments/group/"
     storage:
        path: "/mnt/storage/pollux/dev/"
 #      path: "//storage-uat.sinarmasmsiglife.co.id/pdfmri/"
@@ -133,8 +135,10 @@ spring:
     job:
       enabled: false
   custom:
+    mailpool-attachment:
+      path: "/mnt/mailpoolattach/"
+    storage:
+      path: "/mnt/storage/pollux/prod/"
     spica:
       lspc-form-id: 8
       auth-key: ENGINE_SPICA
-    storage:
-      path: "/mnt/storage/pollux/prod/"

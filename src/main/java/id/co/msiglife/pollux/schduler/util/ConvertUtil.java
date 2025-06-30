@@ -1,7 +1,15 @@
 package id.co.msiglife.pollux.schduler.util;
 
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 
 public class ConvertUtil {
 
@@ -13,6 +21,25 @@ public class ConvertUtil {
 		} else {
 			return "-";
 		}
+	}
+
+	public static String convertDateToJakartaTime(Date date) {
+		Instant instant = date.toInstant();
+		ZonedDateTime jakartaTime = instant.atZone(ZoneId.of("Asia/Jakarta"));
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("id", "ID"));
+		return jakartaTime.format(formatter);
+	}
+
+	public static String convertDateToJakartaTime(LocalDate localDate) {
+		// Set time to 00:00 in Jakarta timezone
+		ZonedDateTime jakartaTime = localDate.atStartOfDay(ZoneId.of("Asia/Jakarta"));
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("id", "ID"));
+		return jakartaTime.format(formatter);
+	}
+
+	public static String currencyFormatID(BigDecimal n) {
+		Locale locale = new Locale("id", "ID");
+		return NumberFormat.getCurrencyInstance(locale).format(n);
 	}
 
 	public static boolean isDiscountProgramExpired(Date endDate) {
