@@ -110,58 +110,41 @@
 <div style="page-break-after: always">
     <div class="container-body">
         <div class="container">
-            <div class="left">No. {nomor_spaj}</div>
-            <div class="right">Jakarta, {tanggal_terbit_kps}</div>
+            <div class="left">No. {nomor_sertifikat}</div>
+            <div class="right">Jakarta, {tanggal_hari_ini}</div>
         </div>
         <span style="display: block; height: 10px"></span>
         <div>Kepada Yth,</div>
-        <div>{nama_cabang_bank}</div>
+        <div>{nama_bank_cabang}</div>
         <div>Up. Admin Kredit</div>
-        <h4 style="text-align: center">Perihal : SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN</h4>
+        <h4 style="text-align: center"><b>Perihal : <u>SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN</u></b></h4>
         <div>Dengan Hormat,</div>
         <span style="display: block; height: 10px"></span>
-        <div style="text-align: justify">Sehubungan dengan adanya Surat Permohonan Asuransi Jiwa Kredit &amp; data-data SPAJK atas nama {nama_tertanggung} yang
-            telah kami terima dan pelajari, maka berdasarkan data-data SPAJK tersebut kami beritahukan bahwa calon peserta dapat
-            kami terima dengan keputusan standard.
+        <div style="text-align: justify">Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.
         </div>
         <span style="display: block; height: 10px"></span>
-        <div>Adapun perhitungan premi sementaranya adalah sbb:</div>
+        <div>Bersama dengan surat ini kami sampaikan bahwa untuk Sertifikat Asuransi Jiwa Kredit dengan detail sebagai berikut:</div>
         <span style="display: block; height: 10px"></span>
         <table style="width: 95%; border-collapse: collapse;">
             <tr>
-                <td style="width: 45%;">Nama Produk</td>
+                <td style="width: 45%;">No e-Sertifikat</td>
                 <td>:</td>
-                <td style="width: 55%;">{nama_produk}</td>
+                <td style="width: 55%;">{nomor_sertifikat}</td>
             </tr>
             <tr>
-                <td style="width: 45%;">Nama</td>
+                <td style="width: 45%;">Nama Tertanggung</td>
                 <td>:</td>
                 <td style="width: 55%;">{nama_tertanggung}</td>
             </tr>
             <tr>
                 <td style="width: 45%;">Tanggal Lahir</td>
                 <td>:</td>
-                <td style="width: 55%;">{dob}</td>
+                <td style="width: 55%;">{tanggal_lahir_tertanggung}</td>
             </tr>
             <tr>
                 <td style="width: 45%;">Usia</td>
                 <td>:</td>
-                <td style="width: 55%;">{age}</td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">Masa Asuransi</td>
-                <td>:</td>
-                <td style="width: 55%;">{tenor}</td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">Mulai Asuransi (Asumsi)</td>
-                <td>:</td>
-                <td style="width: 55%;">{mulai_asuransi}</td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">Akhir Asuransi (Asumsi)</td>
-                <td>:</td>
-                <td style="width: 55%;">{akhir_asuransi}</td>
+                <td style="width: 55%;">{usia_tertanggung}</td>
             </tr>
             <tr>
                 <td style="width: 45%;">Uang Pertanggungan</td>
@@ -169,78 +152,58 @@
                 <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{up}</div></td>
             </tr>
             <tr>
-                <td style="width: 45%;">Premi Pokok</td>
+                <td style="width: 45%;">Masa Asuransi</td>
                 <td>:</td>
-                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{premi}</div></td>
+                <td style="width: 55%;">{tenor}</td>
             </tr>
             <tr>
-                <td style="width: 45%;">Biaya Administrasi</td>
+                <td style="width: 45%;">Premi Asuransi</td>
                 <td>:</td>
-                <td style="width: 55%; text-align: right;">
-                    <div class="left" style="width: 15px">Rp</div>
-                    <div class="right" style="width: 5%; padding-right: 200px">{biaya_administrasi}</div>
-                    <hr style="position: relative; bottom: -10px; left: -100px; width: 50%; border: none; border-top: 1px solid black;">
-                </td>
+                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{premi_asuransi}</div></td>
             </tr>
             <tr>
-                <td><span style="display: block; height: 10px"></span></td>
-            </tr>
-            <tr>
-                <td class="transparent-msig-spc" style="width: 45%;">Disc Spesial MSIG Life</td>
-                <td class="transparent-msig-spc">:</td>
-                <td class="transparent-msig-spc" style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{disc_special_msig}</div></td>
-            </tr>
-            <tr>
-                <td class="transparent-bank-spc" style="width: 45%;">Disc Spesial Bank</td>
-                <td class="transparent-bank-spc">:</td>
-                <td class="transparent-bank-spc" style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{disc_special_bank}</div></td>
-            </tr>
-            <tr>
-                <td class="transparent-bank" style="width: 45%;">Disc Program Bank</td>
-                <td class="transparent-bank">:</td>
-                <td class="transparent-bank" style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px;">{disc_program_bank}</div></td>
-            </tr>
-            <tr>
-                <td class="transparent-msig" style="width: 45%;">Disc Program MSIG Life</td>
-                <td class="transparent-msig">:</td>
-                <td class="transparent-msig" style="width: 55%;">
-                    <div class="left" style="width: 15px">Rp</div>
-                    <div class="right" style="width: 5%; padding-right: 200px">{disc_program_msig}</div>
-                    <hr style="position: relative; bottom: -10px; left: -100px; width: 50%; border: none; border-top: 1px solid;">
-                </td>
-            </tr>
-            <tr>
-                <td><span style="display: block; height: 10px"></span></td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">Premi yang dibayar Nasabah ke Bank</td>
+                <td style="width: 45%;">Tanggal penerbitan e-Sertifikat</td>
                 <td>:</td>
-                <td style="width: 55%; text-align: right;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{premi_yang_dibayar_nasabah_ke_bank}</div></td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">Feebased</td>
-                <td>:</td>
-                <td style="width: 55%; text-align: right;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{feebased}</div></td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">Premi yang dibayar Bank ke MSIG Life</td>
-                <td>:</td>
-                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{premi_yang_dibayar_bank_ke_msig}</div></td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">PPN</td>
-                <td>:</td>
-                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{ppn}</div></td>
-            </tr>
-            <tr>
-                <td style="width: 45%;">PPH 23</td>
-                <td>:</td>
-                <td style="width: 55%;"><div class="left" style="width: 15px">Rp</div><div class="right" style="width: 5%; padding-right: 200px">{pph_23}</div></td>
+                <td style="width: 55%;">{tanggal_cetak_sertifikat}</td>
             </tr>
         </table>
         <span style="display: block; height: 10px"></span>
-        <div>Demikian kami sampaikan. Atas kerjasamanya kami ucapkan terima kasih.</div>
+        <div>Kami informasikan bahwa untuk pembayaran premi atas Sertifikat tersebut belum kami terima hingga saat ini.
+            Apabila sudah melebihi dari 30 hari kalender sejak tanggal penerbitan sertifikat premi belum dibayarkan, maka
+            untuk sertifikat tersebut akan di lakukan pembatalan. Oleh karena itu untuk menghindari penolakan pembayaran
+            klaim atas peserta diatas dimohon agar pembayaran premi tersebut dapat kami terima selambatnya pada tanggal {tanggal_terakhir_pembayaran_premi}</div>
         <span style="display: block; height: 10px"></span>
+        </div>Adapun pembayaran premi dapat ditransfer ke nomor rekening berikut:
+        <table style="width: 95%; border-collapse: collapse;">
+            <tr>
+                <td style="width: 45%;">Nama Bank</td>
+                <td>:</td>
+                <td style="width: 55%;">{nama_bank_pks}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">Atas Nama</td>
+                <td>:</td>
+                <td style="width: 55%;">{atas_nama_pks}</td>
+            </tr>
+            <tr>
+                <td style="width: 45%;">No. Rekening</td>
+                <td>:</td>
+                <td style="width: 55%;">{rekening_pks}</td>
+            </tr>
+        </table>
+        </div>
+        <span style="display: block; height: 10px"></span>
+        <div>Apabila pada saat menerima surat ini Bapak/Ibu telah telah melakukan pembayaran premi, maka dimohon agar
+            menghubungi kami melalui alamat email: <a href="mailto:collectionmri@msiglife.co.id">collectionmri@msiglife.co.id</a>.</div>
+        <span style="display: block; height: 10px"></span>
+        <div><b>Sehubungan dengan tunggakan premi, perlu kami sampaikan apabila sampai dengan tanggal {tanggal_terakhir_pembayaran_premi}
+            premi belum dibayarkan maka sertifkat tersebut akan
+            dilakukan pembatalan dan jika terjadi klaim atas sertifikat tersebut, maka sesuai dengan ketentuan dalam
+            polis, PT MSIG Life Insurance Indonesia Tbk. tidak berkewajiban membayar klaim tersebut</b></div>
+        <span style="display: block; height: 10px"></span>
+        <div>Demikian kami sampaikan, atas perhatian dan kerjasamanya kami ucapkan terima kasih.</div>
+        <span style="display: block; height: 10px"></span>
+        <div>Jakarta, {tanggal_hari_ini}</div>
         <div>Hormat kami,</div>
         <div>PT MSIG Life Insurance Indonesia Tbk.</div>
         <span style="display: block; height: 10px"></span>
@@ -259,45 +222,6 @@
             </tr>
             <tr>
                 <td style="text-align: center">Division Head of Group Operations</td>
-            </tr>
-        </table>
-        <span style="display: block; height: 10px"></span>
-        <div><i>NB : Konfirmasi Premi Sementara ini Berlaku Sampai Dengan Tanggal : {tanggal_akhir_premi_sementara}</i>
-        </div>
-        <span style="display: block; height: 10px"></span>
-        <table style="width: 65%; border-collapse: collapse; border: 1px solid black; font-size: 8pt;">
-            <tr>
-                <td>
-                    <div><b>Konfirmasi Akad Kredit diisi oleh Petugas Bank:</b></div>
-                    <span style="display: block; height: 10px"></span>
-                    <table style="width: 80%; border-collapse: collapse;">
-                        <tr>
-                            <td style="width: 60%;">Tanggal Mulai Asuransi</td>
-                            <td>:</td>
-                            <td style="width: 40%; border-bottom: 1px solid black"></td>
-                        </tr>
-                        <tr>
-                            <td style="width: 60%;">Tanggal Berakhir Asuransi</td>
-                            <td>:</td>
-                            <td style="width: 40%; border-bottom: 1px solid black"></td>
-                        </tr>
-                    </table>
-                    <span style="display: block; height: 10px"></span>
-                    <div><b>Tanda tangan dan stampel petugas Bank:</b></div>
-                </td>
-            </tr>
-        </table>
-        <span style="display: block; height: 10px"></span>
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 8pt">
-            <tr>
-                <td>
-                    <div><b>PERHATIAN</b></div>
-                    <div>Pembayaran dapat di transfer ke {rekening} a/n {atas_nama}</div>
-                    <span style="display: block; height: 10px"></span>
-                    <div>Semua pembayaran dengan warkat-warkat bank seperti: Cek, Bilyet Giro, dll dianggap sah setelah warkat
-                        yang bersangkutan dapat diuangkan.
-                    </div>
-                </td>
             </tr>
         </table>
     </div>
