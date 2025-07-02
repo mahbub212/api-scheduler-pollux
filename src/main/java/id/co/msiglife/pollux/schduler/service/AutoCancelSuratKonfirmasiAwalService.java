@@ -51,7 +51,8 @@ public class AutoCancelSuratKonfirmasiAwalService {
     @Autowired
     private FileProcessUtil fileProcessUtil;
 
-    @Scheduled(cron = "0 30 14 * * ?")
+    // running every 01:00 AM, every day
+    @Scheduled(cron = "0 0 1 * * ?")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiEmail() {
         Map<String, Object> result = new HashMap<>();
 
