@@ -11,5 +11,5 @@ public class StaticValue {
 	public final static String BY_DEPTHEAD= "POLLUX Dept Head";
 	public final static Integer LEADER = 49;
 	public final static Integer DEPTHEAD= 50;
-
+	public final static Integer TUNGGAKAN_PREMI_REMINDER_DAYS = 14;
 }
