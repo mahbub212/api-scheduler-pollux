@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header & Footer</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @font-face {
+            font-family: 'ubuntu';
+            src: url('[[MY_FONT_PATH]]') format('truetype');
+        }
+
+        body {
+            font-family: 'ubuntu', sans-serif;
+            color: black;
+            font-size: 9pt;
+            margin: 0;
+            padding: 0;
+            background-image: url('../../images/watermark.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            /*border: 2px solid black;  Untuk melihat batas body */
+        }
+        .header-img {
+            margin-left: 10px;
+            width: 17%; /* Lebar penuh */
+            height: 47%; /* Sekitar 12% dari tinggi dokumen */
+            object-fit: cover; /* Menyesuaikan gambar tanpa distorsi */
+            /*border: 2px solid red; Untuk melihat batas body */
+        }
+        footer {
+            margin-left: 10px;
+            text-align: left;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            /*border: 2px solid yellow; Untuk melihat batas body */
+        }
+
+        footer img {
+            width: auto;
+            height: auto; /* Agar proporsi gambar tetap */
+            max-height: 58px;
+        }
+
+        main {
+            margin-top: 18px;
+            margin-left: 55px;
+            margin-right: 95px;
+            text-align: justify;
+            /*border: 2px solid blue; Untuk melihat batas body */
+        }
+
+        .left {
+            flex: 1;
+            float: left;
+        }
+
+        .right {
+            flex: 1;
+            float: right;
+            text-align: right;
+        }
+
+        .center {
+            flex: 1;
+            float: center;
+            text-align: center;
+        }
+
+        footer img:nth-child(2) {
+            margin-left: 150px;
+        }
+
+        .signature-container {
+            display: flex;
+            flex-direction: column; /* Agar teks tetap berurutan */
+            align-items: flex-start; /* Rata kiri mengikuti teks di atas */
+            text-align: left;
+            margin-left: 0; /* Pastikan tidak ada margin kiri */
+        }
+
+        .signature {
+            display: inline-block;
+            border-bottom: 1px solid black; /* Garis panjang */
+            padding-bottom: 5px; /* Jarak antara teks dan garis */
+            width: 280px; /* Bisa diatur sesuai kebutuhan */
+            text-align: center;
+        }
+
+        .signature-title {
+            display: inline-block;
+            padding-top: 5px; /* Jarak antara teks dan garis */
+            width: 280px; /* Bisa diatur sesuai kebutuhan */
+            text-align: center;
+        }
+
+        .fade-text {
+            color: gray;
+            opacity: 0.8; /* 60% transparan */
+            font-style: italic; /* Opsional, agar terlihat lebih soft */
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="../../images/watermark_header.png" class="header-img" alt="Header Image">
+</header>
+
+<main>
+    <div class="left">No. {nomor_sertifikat}</div>
+    <div class="right">Jakarta, {tanggal_terbit_tunggakan}</div>
+    <br>
+    <div>Kepada Yth,</div>
+    <div>{nama_cabang_bank}</div>
+    <div>Up. Admin Kredit</div>
+    <br>
+    <div class="center"><b>Perihal : <u>SURAT TUNGGAKAN PREMI ASURANSI JIWA KREDIT</u></b></div>
+    <br>
+    <div>Dengan Hormat,</div>
+    <div>Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.
+    </div>
+    <br>
+    <div>Bersama dengan surat ini kami sampaikan bahwa untuk Sertifikat Asuransi Jiwa Kredit dengan detail sebagai berikut telah diterbitkan:
+    </div>
+    <table style="width: 95%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 40%;">No e-Sertifikat</td>
+            <td>:</td>
+            <td style="width: 60%;">{nomor_sertifikat}</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Nama Tertanggung</td>
+            <td>:</td>
+            <td style="width: 60%;">{nama_tertanggung}</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Tanggal Lahir</td>
+            <td>:</td>
+            <td style="width: 60%;">{tanggal_lahir_tertanggung}</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Usia</td>
+            <td>:</td>
+            <td style="width: 60%;">{usia_tertanggung} Tahun</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Uang Pertanggungan</td>
+            <td>:</td>
+            <td style="width: 60%;">{uang_pertanggungan}</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Masa Asuransi</td>
+            <td>:</td>
+            <td style="width: 60%;">{tenor_tahun} Tahun {tenor_bulan} Bulan</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Premi Asuransi</td>
+            <td>:</td>
+            <td style="width: 60%;">{premi_asuransi}</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Tanggal penerbitan e-Sertifikat</td>
+            <td>:</td>
+            <td style="width: 60%;">{tanggal_cetak_sertifikat}</td>
+        </tr>
+    </table>
+    <br>
+    <div>Kami informasikan bahwa untuk pembayaran premi atas Sertifikat tersebut belum kami terima hingga saat ini. Sehubungan dengan hal tersebut, dan untuk menghindari penolakan pembayaran klaim atas peserta akibat premi yang belum dibayarkan, kami mohon agar pembayaran premi dimaksud dapat kami terima selambat-lambatnya 7 (tujuh) hari kalender setelah tanggal penerbitan surat ini.</div>
+    <br>
+    <div>Adapun pembayaran premi dapat ditransfer ke nomor rekening berikut:</div>
+    <table style="width: 95%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 40%;">Nama Bank</td>
+            <td>:</td>
+            <td style="width: 60%;">{nama_bank_pks}</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">Atas Nama</td>
+            <td>:</td>
+            <td style="width: 60%;">{atas_nama_pks}</td>
+        </tr>
+        <tr>
+            <td style="width: 40%;">No. Rekening</td>
+            <td>:</td>
+            <td style="width: 60%;">{rekening_pks}</td>
+        </tr>
+    </table>
+    <br>
+    <div>Apabila pada saat menerima surat ini Bapak/Ibu telah telah melakukan pembayaran premi, maka  dimohon agar menghubungi kami melalui alamat email: <a href="mailto:collectionmri@msiglife.co.id">collectionmri@msiglife.co.id</a>.</div>
+    <br>
+    <div><b>Sehubungan dengan tunggakan premi, perlu kami sampaikan apabila terjadi klaim atas sertifikat yang belum dibayarkan, maka sesuai dengan ketentuan dalam polis, PT MSIG Life Insurance Indonesia Tbk. tidak berkewajiban membayar klaim tersebut.</b></div>
+    <br>
+    <div>Demikian kami sampaikan, atas perhatian dan kerjasamanya kami ucapkan terima kasih.</div>
+    <br>
+    <div>Credit Life Billing and Collection</div>
+    <br>
+    <br>
+</main>
+
+<footer>
+    <img src="../../images/watermark_footer1.png" alt="First Footer">
+    <img src="../../images/watermark_footer2.png" alt="Second Footer">
+</footer>
+
+</body>
+</html>
