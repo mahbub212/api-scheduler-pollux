@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class SuratAutoCancelDTO {
 
-    private String nomorSertfikat;
+    private String nomorSertifikat;
     private String namaBankCabang;
     private String namaTertanggung;
     private Date tanggalLahirTertanggung;

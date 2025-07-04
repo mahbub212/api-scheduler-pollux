@@ -52,7 +52,7 @@ public class AutoCancelSuratKonfirmasiAwalService {
     private FileProcessUtil fileProcessUtil;
 
     // running every 01:00 AM, every day
-    @Scheduled(cron = "0 35 11 * * ?")
+    @Scheduled(cron = "0 0 1 * * ?")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiEmail() {
         Map<String, Object> result = new HashMap<>();
 
@@ -129,7 +129,7 @@ public class AutoCancelSuratKonfirmasiAwalService {
             String editedContent = content; // reset content to template state
 
             // edit dynamic contents
-            editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertfikat());
+            editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
             editedContent = editedContent.replace("{tanggal_hari_ini}", today);
             editedContent = editedContent.replace("{nama_bank_cabang}", dto.getNamaBankCabang());
             editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
@@ -183,8 +183,7 @@ public class AutoCancelSuratKonfirmasiAwalService {
             // Copy file from file storage into attachment directory
             // Define the folder path for attachments
             // (ex: //storage.sinarmasmsiglife.co.id/mailpools/attachments/2023/09/20230923661730)
-//            String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
-            String attachmentFolderPath = ATTACHMENT_PATH + generatedId;
+            String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
 
             // create the folder if it doesn't exist
             try {
@@ -237,8 +236,8 @@ public class AutoCancelSuratKonfirmasiAwalService {
             // set emailTo, subject, message, etc.
             String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
 
-            String subject = "Surat Konfirmasi Pembayaran Premi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertfikat();
-            String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertfikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+            String subject = "Surat Konfirmasi Pembayaran Premi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+            String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
 
             MasterEmail emailEntity = new MasterEmail();
             emailEntity.setId(generatedId);
