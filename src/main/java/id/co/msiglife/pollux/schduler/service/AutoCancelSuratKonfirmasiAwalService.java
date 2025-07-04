@@ -52,11 +52,11 @@ public class AutoCancelSuratKonfirmasiAwalService {
     private FileProcessUtil fileProcessUtil;
 
     // running every 01:00 AM, every day
-    @Scheduled(cron = "0 25 11 * * ?")
+    @Scheduled(cron = "0 35 11 * * ?")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiEmail() {
         Map<String, Object> result = new HashMap<>();
 
-        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(8);
+        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(7);
 
         List<SuratAutoCancelDTO> dtoList = results.stream().map(row -> new SuratAutoCancelDTO(
                 (String) row[0],
