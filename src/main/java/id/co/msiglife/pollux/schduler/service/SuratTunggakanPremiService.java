@@ -255,28 +255,44 @@ public class SuratTunggakanPremiService {
     private String templateMessageTunggakanPremi(String namaBankCabang, String namaTertanggung, String nomorSertifikat, String tanggalTerbit) {
         StringBuilder emailContent = new StringBuilder();
 
-        emailContent.append("Kepada Yth. \n");
-        emailContent.append(namaBankCabang).append("\n\n");
+        emailContent.append("<!DOCTYPE html>");
+        emailContent.append("<html lang=\"id\">");
+        emailContent.append("<head>");
+        emailContent.append("<meta charset=\"UTF-8\">");
+        emailContent.append("<title>Surat Tunggakan Premi</title>");
+        emailContent.append("</head>");
+        emailContent.append("<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">");
 
-        emailContent.append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ");
-        emailContent.append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.\n\n");
+        emailContent.append("<p>Kepada Yth.<br><strong>")
+                .append(namaBankCabang)
+                .append("</strong></p>");
 
-        emailContent.append("Berikut kami sampaikan SURAT TUNGGAKAN PREMI ASURANSI JIWA KREDIT ");
-        emailContent.append("untuk sertifikat Asuransi Jiwa Kredit atas nama ").append(namaTertanggung);
-        emailContent.append(" dengan nomor sertifikat ").append(nomorSertifikat);
-        emailContent.append(" yang telah diterbitkan pada tanggal ").append(tanggalTerbit).append(".\n");
+        emailContent.append("<p>Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                .append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.</p>");
 
-        emailContent.append("Sampai dengan hari ini, untuk pembayaran premi atas sertifikat tersebut belum kami terima.\n");
-        emailContent.append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran premi dapat segera diproses ");
-        emailContent.append("guna menjamin keberlangsungan manfaat perlindungan asuransi bagi tertanggung.\n");
+        emailContent.append("<p>Berikut kami sampaikan <strong>SURAT TUNGGAKAN PREMI ASURANSI JIWA KREDIT</strong> ")
+                .append("untuk sertifikat Asuransi Jiwa Kredit atas nama <strong>")
+                .append(namaTertanggung)
+                .append("</strong> dengan nomor sertifikat <strong>")
+                .append(nomorSertifikat)
+                .append("</strong> yang telah diterbitkan pada tanggal <strong>")
+                .append(tanggalTerbit)
+                .append("</strong>.</p>");
 
-        emailContent.append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.\n\n");
+        emailContent.append("<p>Sampai dengan hari ini, untuk pembayaran premi atas sertifikat tersebut belum kami terima.<br>");
+        emailContent.append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran premi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi tertanggung.</p>");
 
-        emailContent.append("Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ");
-        emailContent.append("collectionmri@msiglife.co.id\n\n");
+        emailContent.append("<p>Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.</p>");
 
-        emailContent.append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.\n\n");
-        emailContent.append("Credit Life Billing and Collection");
+        emailContent.append("<p>Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ");
+        emailContent.append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color: #0066cc;\">collectionmri@msiglife.co.id</a></p>");
+
+        emailContent.append("<p>Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.</p>");
+
+        emailContent.append("<p><strong>Credit Life Billing and Collection</strong></p>");
+
+        emailContent.append("</body>");
+        emailContent.append("</html>");
 
         return emailContent.toString();
     }
