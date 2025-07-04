@@ -1,6 +1,8 @@
 package id.co.msiglife.pollux.schduler.util;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -39,7 +41,14 @@ public class ConvertUtil {
 
 	public static String currencyFormatID(BigDecimal n) {
 		Locale locale = new Locale("id", "ID");
-		return NumberFormat.getCurrencyInstance(locale).format(n);
+		DecimalFormat currencyFormatter = (DecimalFormat) NumberFormat.getCurrencyInstance(locale);
+		DecimalFormatSymbols symbols = currencyFormatter.getDecimalFormatSymbols();
+
+		// Add a space after the currency symbol
+		symbols.setCurrencySymbol("Rp ");
+		currencyFormatter.setDecimalFormatSymbols(symbols);
+
+		return currencyFormatter.format(n);
 	}
 
 	public static boolean isDiscountProgramExpired(Date endDate) {
