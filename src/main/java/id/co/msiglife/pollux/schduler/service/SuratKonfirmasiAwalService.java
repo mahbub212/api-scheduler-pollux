@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
 
 @Service
-public class AutoCancelSuratKonfirmasiAwalService {
+public class SuratKonfirmasiAwalService {
 
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
