@@ -26,4 +26,5 @@ public class SuratKonfirmasiCancelPolisDTO {
     private String emailCabang;
     private String emailAo;
     private String regSpaj;
+    private BigDecimal uangPertanggungan;
 }
