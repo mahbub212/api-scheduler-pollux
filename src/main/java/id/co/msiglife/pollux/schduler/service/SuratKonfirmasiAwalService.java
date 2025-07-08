@@ -74,7 +74,8 @@ public class SuratKonfirmasiAwalService {
                 (String) row[12],
                 (String) row[13],
                 (String) row[14],
-                (BigDecimal) row[15]
+                (BigDecimal) row[15],
+                (String) row[16]
         )).collect(Collectors.toList());
 
         // read template file

@@ -29,7 +29,8 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "bankCabangBranch.email_cabang AS Email_Cabang, " +
             "bankCabangBranch.email_ao AS Email_AO, " +
             "pol.reg_spaj AS Reg_SPAJ, " +
-            "hitung.uang_pertanggungan AS Uang_Pertanggungan " +
+            "hitung.uang_pertanggungan AS Uang_Pertanggungan, " +
+            "tertanggungPerson.mspe_email AS Email_Tertanggung " +
             "FROM eka.mst_policy pol " +
             "JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
             "JOIN eka.mst_billing bill ON bill.reg_spaj = pol.reg_spaj " +
