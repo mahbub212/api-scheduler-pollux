@@ -152,7 +152,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
             editedContent = editedContent.replace("{tanggal_terakhir_pembayaran_premi}", convertDateToJakartaTime(LocalDate.now().plusDays(30)));
 
             // create string HTML to a JSoup Document to render XHTML
-            Document document = Jsoup.parse(content);
+            Document document = Jsoup.parse(editedContent);
             document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
 
             // create the folder if it doesn't exist
