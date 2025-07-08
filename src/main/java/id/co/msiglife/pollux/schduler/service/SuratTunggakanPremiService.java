@@ -319,6 +319,7 @@ public class SuratTunggakanPremiService {
             dto.setEmailAo(ConvertUtil.safeString(row[13]));
             dto.setRegSpaj(ConvertUtil.safeString(row[14]));
             dto.setUangPertanggungan(ConvertUtil.safeBigDecimal(row[15]));
+            dto.setEmailTertanggung(ConvertUtil.safeString(row[16]));
             result.add(dto);
         }
 
