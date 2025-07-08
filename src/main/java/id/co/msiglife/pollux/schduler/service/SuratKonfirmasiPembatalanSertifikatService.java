@@ -54,7 +54,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiPembatalanSertifikatEmail() throws Exception {
         Map<String, Object> result = new HashMap<>();
 
-        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(21);
+        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(31);
 
         List<SuratKonfirmasiPembatalanSertifikatDTO> dtoList = results.stream().map(row -> new SuratKonfirmasiPembatalanSertifikatDTO(
                 (String) row[0],
