@@ -53,8 +53,6 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public ApiResponseDTO<Map<String, Object>> sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
-        Map<String, Object> result = new HashMap<>();
-
         List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(21);
 
         List<SuratKonfirmasiCancelPolisDTO> dtoList = results.stream().map(row -> new SuratKonfirmasiCancelPolisDTO(
@@ -75,6 +73,16 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                 (String) row[14],
                 (BigDecimal) row[15]
         )).collect(Collectors.toList());
+
+        if(dtoList != null && !dtoList.isEmpty()){
+            return this.executeTask(dtoList);
+        }
+
+        return new ApiResponseDTO<>(200, "No Data Found for Surat Konfirmasi Sertifikat akan Dibatalkan \n", null);
+    }
+
+    public ApiResponseDTO<Map<String, Object>> executeTask(List<SuratKonfirmasiCancelPolisDTO> dtoList) throws Exception {
+        Map<String, Object> result = new HashMap<>();
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
@@ -110,7 +118,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
 
         List<MasterEmail> emailList = new ArrayList<>();
-        
+
         for (SuratKonfirmasiCancelPolisDTO dto : dtoList) {
             // Fetch the email ID from the SQL function using a native SQL query
             String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
