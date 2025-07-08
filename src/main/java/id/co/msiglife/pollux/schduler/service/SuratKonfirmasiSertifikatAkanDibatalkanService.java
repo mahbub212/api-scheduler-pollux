@@ -12,6 +12,7 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
 
 @Service
-public class SurrenderService {
+public class SuratKonfirmasiSertifikatAkanDibatalkanService {
 
     @Autowired
     MasterEmailRepository masterEmailRepository;
@@ -50,7 +51,8 @@ public class SurrenderService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public ApiResponseDTO<Map<String, Object>> sendKonfirmasiPolisDibatalkanEmail(String regSpaj, String token) throws Exception {
+    @Scheduled(cron = "0 0/10 * * * ?")
+    public ApiResponseDTO<Map<String, Object>> sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         Map<String, Object> result = new HashMap<>();
 
         List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(21);
