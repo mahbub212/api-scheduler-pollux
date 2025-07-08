@@ -2,7 +2,7 @@ package id.co.msiglife.pollux.schduler.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
-import id.co.msiglife.pollux.schduler.dto.SuratKonfirmasiPembatalanSertifikatDTO;
+import id.co.msiglife.pollux.schduler.dto.SuratAutoCancelDTO;
 import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
 import id.co.msiglife.pollux.schduler.util.FileProcessUtil;
@@ -56,7 +56,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
         List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(31);
 
-        List<SuratKonfirmasiPembatalanSertifikatDTO> dtoList = results.stream().map(row -> new SuratKonfirmasiPembatalanSertifikatDTO(
+        List<SuratAutoCancelDTO> dtoList = results.stream().map(row -> new SuratAutoCancelDTO(
                 (String) row[0],
                 (String) row[1],
                 (String) row[2],
@@ -108,7 +108,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         String imgPathFileFooter2 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
         content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
 
-        for (SuratKonfirmasiPembatalanSertifikatDTO dto : dtoList) {
+        for (SuratAutoCancelDTO dto : dtoList) {
             // Fetch the email ID from the SQL function using a native SQL query
             String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
             Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
@@ -117,7 +117,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             String editedContent = content; // reset content to template state
 
             // edit dynamic contents
-            editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertfikat());
+            editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
             editedContent = editedContent.replace("{tanggal_hari_ini}", today);
             editedContent = editedContent.replace("{nama_bank_cabang}", dto.getNamaBankCabang());
             editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
