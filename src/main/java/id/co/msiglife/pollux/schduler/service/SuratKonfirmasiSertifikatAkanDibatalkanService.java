@@ -2,8 +2,7 @@ package id.co.msiglife.pollux.schduler.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
-import id.co.msiglife.pollux.schduler.util.JwtUtil;
-import id.co.msiglife.pollux.schduler.dto.SuratKonfirmasiCancelPolisDTO;
+import id.co.msiglife.pollux.schduler.dto.SuratAutoCancelDTO;
 import id.co.msiglife.pollux.schduler.entity.MasterEmail;
 import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
@@ -11,13 +10,10 @@ import id.co.msiglife.pollux.schduler.util.FileProcessUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Entities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -62,7 +58,18 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(21);
 
-        List<SuratKonfirmasiCancelPolisDTO> dtoList = results.stream().map(row -> new SuratKonfirmasiCancelPolisDTO(
+        if(results != null && !results.isEmpty()){
+            System.out.println("Execute Task for Surat Konfirmasi Sertifikat akan Dibatalkan");
+            return this.executeTask(results);
+        }
+
+        return new ApiResponseDTO<>(200, "No Data Found for Surat Konfirmasi Sertifikat akan Dibatalkan \n", null);
+    }
+
+    public ApiResponseDTO<Map<String, Object>> executeTask(List<Object[]> results) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+
+        List<SuratAutoCancelDTO> dtoList = results.stream().map(row -> new SuratAutoCancelDTO(
                 (String) row[0],
                 (String) row[1],
                 (String) row[2],
@@ -80,17 +87,6 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                 (String) row[14],
                 (BigDecimal) row[15]
         )).collect(Collectors.toList());
-
-        if(dtoList != null && !dtoList.isEmpty()){
-            System.out.println("Execute Task for Surat Konfirmasi Sertifikat akan Dibatalkan");
-            return this.executeTask(dtoList);
-        }
-
-        return new ApiResponseDTO<>(200, "No Data Found for Surat Konfirmasi Sertifikat akan Dibatalkan \n", null);
-    }
-
-    public ApiResponseDTO<Map<String, Object>> executeTask(List<SuratKonfirmasiCancelPolisDTO> dtoList) throws Exception {
-        Map<String, Object> result = new HashMap<>();
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
@@ -127,7 +123,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
 
         List<MasterEmail> emailList = new ArrayList<>();
 
-        for (SuratKonfirmasiCancelPolisDTO dto : dtoList) {
+        for (SuratAutoCancelDTO dto : dtoList) {
             // Fetch the email ID from the SQL function using a native SQL query
             String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
             Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
@@ -136,7 +132,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
             String editedContent = content; // reset content to template state
 
             // edit dynamic contents
-            editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertfikat());
+            editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
             editedContent = editedContent.replace("{tanggal_hari_ini}", today);
             editedContent = editedContent.replace("{nama_bank_cabang}", dto.getNamaBankCabang());
             editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
@@ -239,8 +235,8 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
 //            set emailTo, subject, message, etc.
             String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
 
-            String subject = "Surat Konfirmasi Sertifikat Akan Dibatalkan a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertfikat();
-            String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertfikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+            String subject = "Surat Konfirmasi Sertifikat Akan Dibatalkan a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+            String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
 
             MasterEmail emailEntity = new MasterEmail();
             emailEntity.setId(generatedId);
@@ -267,7 +263,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
             emailEntity.setJenisId(50);
             emailEntity.setFlagNew(0);
             emailEntity.setRegSpaj(dto.getRegSpaj());
-            emailEntity.setPathAttach(attachmentFolderPath);
+            emailEntity.setPathAttach(destinationFilePath);
 
             emailList.add(emailEntity);
             System.out.println("Surat Konfirmasi Sertifikat Akan Dibatalkan Sent Successfully...");
