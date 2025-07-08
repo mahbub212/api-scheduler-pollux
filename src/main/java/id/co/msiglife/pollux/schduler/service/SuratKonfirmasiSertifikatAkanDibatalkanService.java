@@ -25,6 +25,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +55,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public ApiResponseDTO<Map<String, Object>> sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
+        System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(21);
 
         List<SuratKonfirmasiCancelPolisDTO> dtoList = results.stream().map(row -> new SuratKonfirmasiCancelPolisDTO(
@@ -75,6 +78,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         )).collect(Collectors.toList());
 
         if(dtoList != null && !dtoList.isEmpty()){
+            System.out.println("Execute Task for Surat Konfirmasi Sertifikat akan Dibatalkan");
             return this.executeTask(dtoList);
         }
 
