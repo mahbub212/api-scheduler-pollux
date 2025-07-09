@@ -14,5 +14,5 @@ public class StaticValue {
 	public final static Integer SURAT_KONFIRMASI_AWAL_REMINDER_DAYS = 7;
 	public final static Integer TUNGGAKAN_PREMI_REMINDER_DAYS = 14;
 	public final static Integer SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS = 21;
-
+	public final static Integer SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS = 31;
 }
