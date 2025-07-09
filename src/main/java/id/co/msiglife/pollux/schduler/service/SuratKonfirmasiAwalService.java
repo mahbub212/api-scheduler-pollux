@@ -54,7 +54,7 @@ public class SuratKonfirmasiAwalService {
 
     // running every 01:00 AM, every day
 //    @Scheduled(cron = "0 0 1 * * ?")
-    @Scheduled(cron = "* /10 * * * *")
+    @Scheduled(cron = "0 */10 * * * ?")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiEmail() {
         Map<String, Object> result = new HashMap<>();
 
