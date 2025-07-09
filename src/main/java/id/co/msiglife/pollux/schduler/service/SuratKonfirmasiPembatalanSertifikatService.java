@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.convertDateToJakartaTime;
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.currencyFormatID;
+import static id.co.msiglife.pollux.schduler.util.StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS;
 
 @Service
 public class SuratKonfirmasiPembatalanSertifikatService {
@@ -54,7 +55,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiPembatalanSertifikatEmail() throws Exception {
         Map<String, Object> result = new HashMap<>();
 
-        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(31);
+        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
 
         List<SuratAutoCancelDTO> dtoList = results.stream().map(row -> new SuratAutoCancelDTO(
                 (String) row[0],
