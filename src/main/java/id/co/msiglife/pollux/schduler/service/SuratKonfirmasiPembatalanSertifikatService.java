@@ -40,14 +40,14 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     @Autowired
     MasterPolicyRepository masterPolicyRepository;
 
-    @Autowired
-    MasterInsuredRepository masterInsuredRepository;
-
-    @Autowired
-    MasterPositionSPAJRepository masterPositionSpajRepository;
-
-    @Autowired
-    MasterWFDocumentRepository masterWFDocumentRepository;
+//    @Autowired
+//    MasterInsuredRepository masterInsuredRepository;
+//
+//    @Autowired
+//    MasterPositionSPAJRepository masterPositionSpajRepository;
+//
+//    @Autowired
+//    MasterWFDocumentRepository masterWFDocumentRepository;
 
     @Autowired
     private FileProcessUtil fileProcessUtil;
