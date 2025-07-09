@@ -3,15 +3,15 @@ package id.co.msiglife.pollux.schduler.service;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
 import id.co.msiglife.pollux.schduler.dto.SuratAutoCancelDTO;
-import id.co.msiglife.pollux.schduler.entity.MasterEmail;
-import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
-import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
+import id.co.msiglife.pollux.schduler.entity.*;
+import id.co.msiglife.pollux.schduler.repository.*;
 import id.co.msiglife.pollux.schduler.util.FileProcessUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,10 +38,19 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     MasterEmailRepository masterEmailRepository;
 
     @Autowired
-    private FileProcessUtil fileProcessUtil;
+    MasterPolicyRepository masterPolicyRepository;
 
     @Autowired
-    MasterPolicyRepository masterPolicyRepository;
+    MasterInsuredRepository masterInsuredRepository;
+
+    @Autowired
+    MasterPositionSPAJRepository masterPositionSpajRepository;
+
+    @Autowired
+    MasterWFDocumentRepository masterWFDocumentRepository;
+
+    @Autowired
+    private FileProcessUtil fileProcessUtil;
 
     @Value("${spring.custom.mailpool-attachment.path}")
     private String ATTACHMENT_PATH;
@@ -51,6 +61,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Scheduled(cron = "*/10 * * * *")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiPembatalanSertifikatEmail() throws Exception {
         Map<String, Object> result = new HashMap<>();
 
@@ -285,5 +296,51 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 + "</body>"
                 + "</html>";
     }
+
+//    private void updateCancelledStatus(String regSpaj) {
+//        String note = "Premi belum dibayar setelah melewati Tanggal Jatuh Tempo.";
+//
+//        MasterInsured existingInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(regSpaj, 1);
+//        MasterPolicy existingPolicy = masterPolicyRepository.findByRegSpaj(regSpaj);
+//        MasterPositionSPAJ masterPositionSPAJ = new MasterPositionSPAJ();
+//
+//        if (existingPolicy == null) {
+//            throw new RuntimeException("Policy data not found.");
+//        } else if (existingInsured == null) {
+//            throw new RuntimeException("Insured data not found.");
+//        }
+//
+//        if (existingPolicy.getLsspId().equals(12) && existingPolicy.getLspdId().equals(999)) {
+//            throw new RuntimeException("SPAJ " + regSpaj + " sudah pernah melalui proses cancel.");
+//        }
+//
+//        MasterWFDocument masterWFDocument = masterWFDocumentRepository.findMasterWFDocumentByDocNumberAndLswfTypeId(existingPolicy.getRegSpaj(), 78);
+//
+//        if (masterWFDocument == null) {
+//            throw new RuntimeException("WF Document data not found.");
+//        }
+//
+//        existingPolicy.setLsspId(12);
+//        existingPolicy.setLspdId(999);
+//        existingPolicy.setNote(note);
+//
+//        existingInsured.setTglBatal(Date.from(LocalDate.now().atStartOfDay(ZoneId.of("Asia/Jakarta")).toInstant()));
+//
+//        masterPositionSPAJ.setRegSpaj(existingPolicy.getRegSpaj());
+//        masterPositionSPAJ.setPositionDate(existingInsured.getTglBatal());
+//        masterPositionSPAJ.setLsspId(existingPolicy.getLsspId());
+//        masterPositionSPAJ.setLspdId(existingPolicy.getLspdId());
+//        masterPositionSPAJ.setLusId(existingPolicy.getLusId());
+//        masterPositionSPAJ.setDesc(existingPolicy.getNote());
+//        masterPositionSPAJ.setLssaId(existingInsured.getLssaId());
+//
+//        masterPolicyRepository.save(existingPolicy);
+//        masterInsuredRepository.save(existingInsured);
+//        masterPositionSpajRepository.save(masterPositionSPAJ);
+//
+//        masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
+//        masterWFDocument.setLswfStatusId(11);
+//
+//    }
 
 }
