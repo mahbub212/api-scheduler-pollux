@@ -58,7 +58,7 @@ public class SuratTunggakanPremiService {
     MasterEmailRepository masterEmailRepository;
 
     //@Scheduled(cron = "0 0 22 * * ?")
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public void sendEmailTunggakanPremi(){
         List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
         System.out.println("=================== START GENERATE PDF ===================");
