@@ -61,7 +61,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Scheduled(cron = "*/10 * * * *")
+    @Scheduled(cron = "* /10 * * * *")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiPembatalanSertifikatEmail() throws Exception {
         Map<String, Object> result = new HashMap<>();
 
