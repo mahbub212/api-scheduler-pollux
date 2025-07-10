@@ -2,7 +2,9 @@ package id.co.msiglife.pollux.schduler.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.SuratAutoCancelDTO;
+import id.co.msiglife.pollux.schduler.entity.MasterAutoCancelEmailLog;
 import id.co.msiglife.pollux.schduler.entity.MasterEmail;
+import id.co.msiglife.pollux.schduler.repository.MasterAutoCancelEmailLogRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
@@ -57,13 +59,15 @@ public class SuratTunggakanPremiService {
     @Autowired
     MasterEmailRepository masterEmailRepository;
 
+    @Autowired
+    MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
+
     //@Scheduled(cron = "0 0 0 * * ?")
     @Scheduled(cron = "0 */10 * * * ?")
     //@Scheduled(cron = "0 * * * * ?")
     public void sendEmailTunggakanPremi(){
         List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
-        System.out.println(tunggakanPremiDTOList.size());
-        System.out.println("=================== START GENERATE SURAT TUNGGAKAN PREMI PDF ===================");
+        System.out.println("=================== START GENERATE SURAT TUNGGAKAN PREMI PDF (" + tunggakanPremiDTOList.size() + ") Data ===================");
         generatePdfTunggakanPremi(tunggakanPremiDTOList);
         System.out.println("=================== END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
         System.out.println("=================== START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
@@ -74,7 +78,7 @@ public class SuratTunggakanPremiService {
     @Scheduled(cron = "0 */30 * * * ?")
     public void sendEmailTunggakanPremiRetry(){
         List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
-        System.out.println("=================== RETRYING START GENERATE SURAT TUNGGAKAN PREMI PDF ===================");
+        System.out.println("=================== RETRYING START GENERATE SURAT TUNGGAKAN PREMI PDF " + tunggakanPremiDTOList.size() + " Data ===================");
         generatePdfTunggakanPremi(tunggakanPremiDTOList);
         System.out.println("=================== RETRYING END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
         System.out.println("=================== RETRYING START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
@@ -84,7 +88,6 @@ public class SuratTunggakanPremiService {
 
     private void generateAutoMail(List<SuratAutoCancelDTO> tunggakanPremiDTOList) {
 
-        System.out.println(tunggakanPremiDTOList.size());
         for (SuratAutoCancelDTO dto : tunggakanPremiDTOList) {
             try {
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
@@ -152,6 +155,16 @@ public class SuratTunggakanPremiService {
                         emailEntity.setPathAttach(destinationPath.toString());
 
                         masterEmailRepository.save(emailEntity);
+
+                        String savedId = emailEntity.getId();
+                        MasterAutoCancelEmailLog masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                        masterAutoCancelEmailLog.setMeId(savedId);
+                        masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
+                        masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
+                        masterAutoCancelEmailLog.setCreatedAt(sysDate);
+                        masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+
+                        masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
 
                     } catch (IOException e) {
                         System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
