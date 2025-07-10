@@ -57,20 +57,34 @@ public class SuratTunggakanPremiService {
     @Autowired
     MasterEmailRepository masterEmailRepository;
 
-    //@Scheduled(cron = "0 0 22 * * ?")
+    //@Scheduled(cron = "0 0 0 * * ?")
     @Scheduled(cron = "0 */10 * * * ?")
+    //@Scheduled(cron = "0 * * * * ?")
     public void sendEmailTunggakanPremi(){
         List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
-        System.out.println("=================== START GENERATE PDF ===================");
+        System.out.println(tunggakanPremiDTOList.size());
+        System.out.println("=================== START GENERATE SURAT TUNGGAKAN PREMI PDF ===================");
         generatePdfTunggakanPremi(tunggakanPremiDTOList);
-        System.out.println("=================== END GENERATED PDF ===================");
-        System.out.println("=================== START SENDING EMAIL PDF ===================");
+        System.out.println("=================== END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
+        System.out.println("=================== START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
         generateAutoMail(tunggakanPremiDTOList);
-        System.out.println("=================== END SEND EMAIL PDF ===================");
+        System.out.println("=================== END SEND EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
+    }
+
+    @Scheduled(cron = "0 */30 * * * ?")
+    public void sendEmailTunggakanPremiRetry(){
+        List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+        System.out.println("=================== RETRYING START GENERATE SURAT TUNGGAKAN PREMI PDF ===================");
+        generatePdfTunggakanPremi(tunggakanPremiDTOList);
+        System.out.println("=================== RETRYING END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
+        System.out.println("=================== RETRYING START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
+        generateAutoMail(tunggakanPremiDTOList);
+        System.out.println("=================== RETRYING END SEND EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
     }
 
     private void generateAutoMail(List<SuratAutoCancelDTO> tunggakanPremiDTOList) {
 
+        System.out.println(tunggakanPremiDTOList.size());
         for (SuratAutoCancelDTO dto : tunggakanPremiDTOList) {
             try {
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
@@ -99,7 +113,8 @@ public class SuratTunggakanPremiService {
                             try {
                                 throw new IOException("The copied Surat Tunggakan Premi file is not readable: " + destinationFilePath);
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+                                e.printStackTrace();
                             }
                         }
 
@@ -139,14 +154,16 @@ public class SuratTunggakanPremiService {
                         masterEmailRepository.save(emailEntity);
 
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+                        e.printStackTrace();
                     }
                 } else {
                     throw new RuntimeException("File Attachment not exist");
                 }
 
             } catch (Exception e) {
-                throw new RuntimeException("Error when get File Attachment");
+                System.err.println("Error when getting file attachment");
+                e.printStackTrace();
             }
         }
     }
@@ -189,60 +206,76 @@ public class SuratTunggakanPremiService {
             content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
 
             for (SuratAutoCancelDTO dto : suratAutoCancelDTOList ){
-
-                String editedContent = content;
-
-                editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
-                editedContent = editedContent.replace("{tanggal_terbit_tunggakan}", today);
-                editedContent = editedContent.replace("{nama_cabang_bank}", dto.getNamaBankCabang());
-                editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
-                editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
-                editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
-                editedContent = editedContent.replace("{uang_pertanggungan}", currencyFormatID(dto.getUangPertanggungan()));
-                editedContent = editedContent.replace("{tenor_tahun}", dto.getMasaAsuransiTahun().toString());
-                editedContent = editedContent.replace("{tenor_bulan}", dto.getMasaAsuransiBulan().toString());
-                editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
-                editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
-                editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
-                editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
-                editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
-
-                // create string HTML to a JSoup Document to render XHTML
-                Document document = Jsoup.parse(editedContent);
-                document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-
-                // create the folder if it doesn't exist
-                String folderPath = STORAGE_PATH + dto.getRegSpaj();
-
                 try {
-                    File folder = new File(folderPath);
-                    File parentDirectory = folder.getParentFile();
-                    if (parentDirectory.canWrite()) {
-                        if (!folder.exists()) {
-                            folder.mkdirs();
+                    String editedContent = content;
+
+                    // create the folder if it doesn't exist
+                    String folderPath = STORAGE_PATH + dto.getRegSpaj();
+
+                    // PdfRendererBuilder will take this XHTML document and create a PDF as the output file
+                    String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_TUNGGAKAN_PREMI.pdf";
+                    Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
+                    System.out.println("Checking file existence at path: " + outputPdf);
+                    System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
+                    System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
+                    System.out.println("Exists path? " + Files.exists(sourcePath));
+
+                    if (!Files.exists(sourcePath)) {
+
+                        editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
+                        editedContent = editedContent.replace("{tanggal_terbit_tunggakan}", today);
+                        editedContent = editedContent.replace("{nama_cabang_bank}", dto.getNamaBankCabang());
+                        editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
+                        editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
+                        editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
+                        editedContent = editedContent.replace("{uang_pertanggungan}", currencyFormatID(dto.getUangPertanggungan()));
+                        editedContent = editedContent.replace("{tenor_tahun}", dto.getMasaAsuransiTahun().toString());
+                        editedContent = editedContent.replace("{tenor_bulan}", dto.getMasaAsuransiBulan().toString());
+                        editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
+                        editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                        editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
+                        editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
+                        editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+
+                        // create string HTML to a JSoup Document to render XHTML
+                        Document document = Jsoup.parse(editedContent);
+                        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+
+                        try {
+                            File folder = new File(folderPath);
+                            File parentDirectory = folder.getParentFile();
+                            if (parentDirectory.canWrite()) {
+                                if (!folder.exists()) {
+                                    folder.mkdirs();
+                                }
+                            } else {
+                                throw new IOException("No write permissions in the parent directory: " + parentDirectory);
+                            }
+                        } catch (IOException e) {
+                            System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+                            e.printStackTrace();
                         }
+
+                        try (OutputStream os = Files.newOutputStream(sourcePath)) {
+                            PdfRendererBuilder builder = new PdfRendererBuilder();
+                            builder.withUri(sourcePath.toString());
+                            builder.toStream(os);
+                            builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
+                            builder.run();
+                        }
+
+                        fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 17, outputPdf, 0);
                     } else {
-                        throw new IOException("No write permissions in the parent directory: " + parentDirectory);
+                        System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
                     }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                }catch (IOException e){
+                    System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+                    e.printStackTrace();
                 }
-
-                // PdfRendererBuilder will take this XHTML document and create a PDF as the output file
-                String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_TUNGGAKAN_PREMI.pdf";
-
-                try (OutputStream os = Files.newOutputStream(Paths.get(outputPdf))) {
-                    PdfRendererBuilder builder = new PdfRendererBuilder();
-                    builder.withUri(outputPdf);
-                    builder.toStream(os);
-                    builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
-                    builder.run();
-                }
-
-                fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 17, outputPdf, 0);
-
             }
-
         }catch (IOException e){
             throw new RuntimeException(e);
         } catch (Exception e) {
