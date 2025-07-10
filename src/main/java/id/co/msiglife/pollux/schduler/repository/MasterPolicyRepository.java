@@ -41,7 +41,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "JOIN eka.mst_client bankCabangClient ON pol.mspo_customer = bankCabangClient.mcl_id " +
             "JOIN eka.mst_branchpartner_cl bankCabangBranch ON pol.mspo_customer = bankCabangBranch.mcl_id " +
             "JOIN eka.mst_client bankPks ON pks.mcl_id = bankPks.mcl_id " +
-            "JOIN eka.mst_perhitungan_premi_plx hitung ON pol.reg_spaj = hitung.reg_spaj " +
+            "JOIN eka.mst_perhitungan_premi_plx hitung ON pol.reg_spaj = hitung.reg_spaj AND hitung.rate_premi_next = 0 " +
             "WHERE TRUNC(SYSDATE) = TRUNC(pol.mspo_date_print + :days) " +
             "AND EXISTS (SELECT 1 FROM eka.mst_billing bill WHERE bill.reg_spaj = pol.reg_spaj) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
