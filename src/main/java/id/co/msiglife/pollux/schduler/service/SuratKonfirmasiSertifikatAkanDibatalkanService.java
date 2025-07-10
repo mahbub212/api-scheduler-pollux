@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
+import static id.co.msiglife.pollux.schduler.util.StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS;
 
 @Service
 public class SuratKonfirmasiSertifikatAkanDibatalkanService {
@@ -56,7 +57,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
     @Scheduled(cron = "0 0/10 * * * ?")
     public ApiResponseDTO<Map<String, Object>> sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
-        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(21);
+        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
 
         if(results != null && !results.isEmpty()){
             System.out.println("Execute Task for Surat Konfirmasi Sertifikat akan Dibatalkan");
@@ -139,7 +140,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
             editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
             editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
             editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
-            editedContent = editedContent.replace("{tenor}", dto.getMasaAsuransiTahun() + " Tahun" + (dto.getMasaAsuransiBulan() != null && dto.getMasaAsuransiBulan() > 0 ? dto.getMasaAsuransiBulan() + " Bulan" : ""));
+            editedContent = editedContent.replace("{tenor}", dto.getMasaAsuransiTahun() + " Tahun " + (dto.getMasaAsuransiBulan() != null && dto.getMasaAsuransiBulan() > 0 ? dto.getMasaAsuransiBulan() + " Bulan" : ""));
             editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
             editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
             editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());

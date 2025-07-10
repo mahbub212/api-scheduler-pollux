@@ -7,6 +7,7 @@ import id.co.msiglife.pollux.schduler.entity.MasterEmail;
 import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
 import id.co.msiglife.pollux.schduler.util.FileProcessUtil;
+import id.co.msiglife.pollux.schduler.util.StaticValue;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
@@ -52,11 +53,12 @@ public class SuratKonfirmasiAwalService {
     private FileProcessUtil fileProcessUtil;
 
     // running every 01:00 AM, every day
-    @Scheduled(cron = "0 0 1 * * ?")
+//    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public ApiResponseDTO<Map<String, Object>> sendSuratKonfirmasiEmail() {
         Map<String, Object> result = new HashMap<>();
 
-        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(7);
+        List<Object[]> results = masterPolicyRepository.findAutoCancelByDays(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
 
         List<SuratAutoCancelDTO> dtoList = results.stream().map(row -> new SuratAutoCancelDTO(
                 (String) row[0],
