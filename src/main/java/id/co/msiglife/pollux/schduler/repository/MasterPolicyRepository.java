@@ -45,6 +45,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "WHERE TRUNC(SYSDATE) = TRUNC(pol.mspo_date_print + :days) " +
             "AND EXISTS (SELECT 1 FROM eka.mst_billing bill WHERE bill.reg_spaj = pol.reg_spaj) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
+            "AND NOT EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reg_spaj = pol.reg_spaj AND reminder_days = :days) " +
             "ORDER BY pol.mspo_date_print DESC",
             nativeQuery = true)
     List<Object[]> findAutoCancelByDays(@Param("days") Integer days);

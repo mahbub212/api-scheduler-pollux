@@ -61,6 +61,22 @@ public class ConvertUtil {
 		return endDate != null && endDateStr.compareTo(currentDateStr) < 0;
 	}
 
+	public static String safeString(Object obj) {
+		return obj != null ? obj.toString() : null;
+	}
+
+	public static Date safeDate(Object obj) {
+		return obj instanceof Date ? (Date) obj : null;
+	}
+
+	public static Integer safeInt(Object obj) {
+		return obj instanceof BigDecimal ? ((BigDecimal) obj).intValue() : null;
+	}
+
+	public static BigDecimal safeBigDecimal(Object obj) {
+		return obj instanceof BigDecimal ? (BigDecimal) obj : null;
+	}
+
 	public static boolean stringBlank( final String s ) {
 		return s == null || s.trim().isEmpty();
 	}
