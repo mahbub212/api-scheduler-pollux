@@ -59,31 +59,30 @@ public class SuratKonfirmasiAwalService {
     @Scheduled(cron = "0 */10 * * * ?")
     //@Scheduled(cron = "0 * * * * ?")
     public void sendEmailSuratKonfirmasiAwal(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
         System.out.println("=================== START GENERATE SURAT KONFIRMASI AWAL PDF (" + konfirmasiAwalDTOList.size() + ") Data ===================");
-        generatePdfKonfirmasiAwal(konfirmasiAwalDTOList);
+        generatePdfSuratKonfirmasiAwal(konfirmasiAwalDTOList);
         System.out.println("=================== END GENERATED SURAT KONFIRMASI AWAL PDF ===================");
         System.out.println("=================== START SENDING EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-        generateSuratKonfirmasiEmail(konfirmasiAwalDTOList);
+        generateEmailSuratKonfirmasiAwal(konfirmasiAwalDTOList);
         System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI AWAL PDF ===================");
     }
 
     @Scheduled(cron = "0 */30 * * * ?")
     public void sendEmailSuratKonfirmasiAwalRetry(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
         System.out.println("=================== RETRYING START GENERATE SURAT KONFIRMASI AWAL PDF " + konfirmasiAwalDTOList.size() + " Data ===================");
-        generatePdfKonfirmasiAwal(konfirmasiAwalDTOList);
+        generatePdfSuratKonfirmasiAwal(konfirmasiAwalDTOList);
         System.out.println("=================== RETRYING END GENERATED SURAT KONFIRMASI AWAL PDF ===================");
         System.out.println("=================== RETRYING START SENDING EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-        generateSuratKonfirmasiEmail(konfirmasiAwalDTOList);
+        generateEmailSuratKonfirmasiAwal(konfirmasiAwalDTOList);
         System.out.println("=================== RETRYING END SEND EMAIL SURAT KONFIRMASI AWAL PDF ===================");
     }
 
-    public void generateSuratKonfirmasiEmail(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
+    private void generateEmailSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
 
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
             try{
-
                 // Fetch the email ID from the SQL function using a native SQL query
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
 
@@ -102,6 +101,7 @@ public class SuratKonfirmasiAwalService {
 
                 // Validasi keberadaan file
                 if (Files.exists(sourcePath) && Files.isReadable(sourcePath)) {
+
                     // destination file path
                     String destinationFilePath = attachmentFolderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_AWAL.pdf";
                     Path destinationPath = Paths.get(destinationFilePath).toAbsolutePath();
@@ -175,7 +175,7 @@ public class SuratKonfirmasiAwalService {
         }
     }
 
-    public void generatePdfKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
+    private void generatePdfSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
@@ -313,7 +313,7 @@ public class SuratKonfirmasiAwalService {
                 + "</html>";
     }
 
-    public List<SuratAutoCancelDTO> getListKonfirmasiAwal(Integer days) {
+    private List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer days) {
         List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
