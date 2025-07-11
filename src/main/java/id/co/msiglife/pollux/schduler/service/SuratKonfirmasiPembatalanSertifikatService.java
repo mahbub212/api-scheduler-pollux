@@ -2,8 +2,11 @@ package id.co.msiglife.pollux.schduler.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.SuratAutoCancelDTO;
-import id.co.msiglife.pollux.schduler.entity.*;
-import id.co.msiglife.pollux.schduler.repository.*;
+import id.co.msiglife.pollux.schduler.entity.MasterAutoCancelEmailLog;
+import id.co.msiglife.pollux.schduler.entity.MasterEmail;
+import id.co.msiglife.pollux.schduler.repository.MasterAutoCancelEmailLogRepository;
+import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
+import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
 import id.co.msiglife.pollux.schduler.util.FileProcessUtil;
 import id.co.msiglife.pollux.schduler.util.StaticValue;
@@ -24,7 +27,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
 
