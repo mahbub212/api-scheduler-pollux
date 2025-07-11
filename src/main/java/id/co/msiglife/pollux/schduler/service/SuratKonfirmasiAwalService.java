@@ -310,7 +310,7 @@ public class SuratKonfirmasiAwalService {
                 + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.</p>"
                 + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email <a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color: #0066cc;\">collectionmri@msiglife.co.id</a></p>"
                 + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.</p><br>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\"><strong>Credit Life Billing and Collection</strong></p>"
+                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Credit Life Billing and Collection</p>"
                 + "</body>"
                 + "</html>";
     }
