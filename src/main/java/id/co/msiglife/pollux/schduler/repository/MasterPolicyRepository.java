@@ -42,10 +42,30 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "JOIN eka.mst_branchpartner_cl bankCabangBranch ON pol.mspo_customer = bankCabangBranch.mcl_id " +
             "JOIN eka.mst_client bankPks ON pks.mcl_id = bankPks.mcl_id " +
             "JOIN eka.mst_perhitungan_premi_plx hitung ON pol.reg_spaj = hitung.reg_spaj AND hitung.rate_premi_next = 0 " +
+            "JOIN eka.lst_policy_status lps on lps.lssp_id = pol.lssp_id " +
+            "LEFT JOIN (" +
+            "    SELECT " +
+            "      mdw.MSWF_DOC_NUMBER as reg_spaj, " +
+            "      lws.LSWF_STATUS_NAME as status_name " +
+            "    FROM  " +
+            "      EKA.MST_WF_DOCUMENT mdw  " +
+            "      INNER JOIN EKA.LST_WF_STATUS lws ON lws.LSWF_STATUS_ID = mdw.LSWF_STATUS_ID  " +
+            "      AND lws.lswf_type_id = mdw.LSWF_TYPE_ID " +
+            "  ) sts ON sts.reg_spaj = pol.reg_spaj " +
+            "LEFT JOIN ( " +
+            "  SELECT  " +
+            "    mup.reg_spaj,  " +
+            "    mup.status AS status_uw,  " +
+            "    mup.final_decision AS keputusan, " +
+            "    lusp.code AS status_code " +
+            "  FROM EKA.MST_UNDERWRITING_PLX mup " +
+            "  JOIN EKA.LST_UW_STATUS_PLX lusp ON lusp.uw_status_id = mup.status " +
+            "  ) uw ON uw.reg_spaj = pol.reg_spaj " +
             "WHERE TRUNC(SYSDATE) = TRUNC(pol.mspo_date_print + :days) " +
             "AND EXISTS (SELECT 1 FROM eka.mst_billing bill WHERE bill.reg_spaj = pol.reg_spaj) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reg_spaj = pol.reg_spaj AND reminder_days = :days) " +
+            "AND (lower(lps.lssp_status) LIKE 'inforce' OR lower(uw.status_uw) LIKE 'inforce' OR lower(sts.status_name) LIKE 'inforce') " +
             "ORDER BY pol.mspo_date_print DESC",
             nativeQuery = true)
     List<Object[]> findAutoCancelByDays(@Param("days") Integer days);
