@@ -75,11 +75,11 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
     }
 
     @Scheduled(cron = "0 0/15 * * * ?")
-    public ApiResponseDTO<Map<String, Object>> retrySendingKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
+    public void retrySendingKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         System.out.println("Retrying Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
         System.out.println("=================== RETRYING START GENERATE SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF " + sertifikatAkanDibatalkanDTOList.size() + " Data ===================");
-        generatePdfTunggakanPremi(sertifikatAkanDibatalkanDTOList);
+        generatePdfSuratKonfirmasiSertifikatAkanDibatalkan(sertifikatAkanDibatalkanDTOList);
         System.out.println("=================== RETRYING END GENERATED SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
         System.out.println("=================== RETRYING START SENDING EMAIL SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
         generateAutoMail(sertifikatAkanDibatalkanDTOList);
