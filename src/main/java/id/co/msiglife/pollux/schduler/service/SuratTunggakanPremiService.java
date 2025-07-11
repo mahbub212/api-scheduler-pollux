@@ -322,14 +322,14 @@ public class SuratTunggakanPremiService {
         emailContent.append("<p>Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
                 .append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.</p>");
 
-        emailContent.append("<p>Berikut kami sampaikan <strong>SURAT TUNGGAKAN PREMI ASURANSI JIWA KREDIT</strong> ")
-                .append("untuk sertifikat Asuransi Jiwa Kredit atas nama <strong>")
+        emailContent.append("<p>Berikut kami sampaikan <strong>SURAT TUNGGAKAN PREMI ASURANSI JIWA KREDIT</strong>")
+                .append(" untuk sertifikat Asuransi Jiwa Kredit atas nama ")
                 .append(namaTertanggung)
-                .append("</strong> dengan nomor sertifikat <strong>")
+                .append(" dengan nomor sertifikat ")
                 .append(nomorSertifikat)
-                .append("</strong> yang telah diterbitkan pada tanggal <strong>")
+                .append(" yang telah diterbitkan pada tanggal ")
                 .append(tanggalTerbit)
-                .append("</strong>.</p>");
+                .append(".</p>");
 
         emailContent.append("<p>Sampai dengan hari ini, untuk pembayaran premi atas sertifikat tersebut belum kami terima.<br>");
         emailContent.append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran premi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi tertanggung.</p>");
@@ -341,7 +341,7 @@ public class SuratTunggakanPremiService {
 
         emailContent.append("<p>Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.</p>");
 
-        emailContent.append("<p><strong>Credit Life Billing and Collection</strong></p>");
+        emailContent.append("<p>Credit Life Billing and Collection</p>");
 
         emailContent.append("</body>");
         emailContent.append("</html>");
