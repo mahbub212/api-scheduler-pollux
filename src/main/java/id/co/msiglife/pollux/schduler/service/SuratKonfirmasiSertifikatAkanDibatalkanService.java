@@ -61,7 +61,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Scheduled(cron = "0 0/10 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
@@ -74,7 +74,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
     }
 
-    @Scheduled(cron = "0 0/15 * * * ?")
+//    @Scheduled(cron = "0 0/15 * * * ?")
     public void retrySendingKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         System.out.println("Retrying Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
@@ -89,33 +89,23 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
     private void generateAutoMail(List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList) {
         for(SuratAutoCancelDTO dto : sertifikatAkanDibatalkanDTOList){
             try {
-                // Fetch the email ID from the SQL function using a native SQL query
-                String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
-                System.out.println("Printed generated email ID: " + generatedId);
 
-                // Define the folder path for attachments
-                // (ex: //storage.sinarmasmsiglife.co.id/mailpools/attachments/2023/09/20230923661730)
-                String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
-                System.out.println("Printed attachment folder: " + attachmentFolderPath);
-
-                // Create the folder if it doesn't exist
-                File attachmentFolder = new File(attachmentFolderPath);
-                File parentDirectory = attachmentFolder.getParentFile();
-                if (parentDirectory.canWrite()) {
-                    if (!attachmentFolder.exists()) {
-                        attachmentFolder.mkdirs();
-                    }
-                } else {
-                    throw new IOException("No write permissions in the parent directory: " + parentDirectory);
-                }
-
-                // source file path
                 String sourceFilePath = STORAGE_PATH + "/" + dto.getRegSpaj()  + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_SERTIFIKAT_AKAN_DIBATALKAN.pdf";
                 Path sourcePath = Paths.get(sourceFilePath).toAbsolutePath();
 
-                // validate source of both file
-                if (!Files.exists(sourcePath) || !Files.isReadable(sourcePath)) {
+                String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
+                String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
+
+                File folder = new File(attachmentFolderPath);
+                if (!folder.exists()) {
+                    if (!folder.mkdirs()) {
+                        throw new IOException("Failed to create directory: " + attachmentFolderPath);
+                    }
+                }
+
+                // Validasi keberadaan file
+                if (Files.exists(sourcePath) && Files.isReadable(sourcePath)) {
                     try {
                         // destination file path
                         String destinationFilePath = attachmentFolderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_SERTIFIKAT_AKAN_DIBATALKAN.pdf";
