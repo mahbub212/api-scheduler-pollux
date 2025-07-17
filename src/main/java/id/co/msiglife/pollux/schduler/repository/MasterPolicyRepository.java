@@ -70,4 +70,11 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             nativeQuery = true)
     List<Object[]> findAutoCancelByDays(@Param("days") Integer days);
 
+    @Query(value = "SELECT REG_SPAJ " +
+            "FROM MST_POLICY " +
+            "WHERE " +
+            "TRUNC(SYSDATE) = TRUNC(MSPO_DATE_PRINT + 61) AND " +
+            "LSSP_ID != 1 OR MSPO_POLICY_NO != null AND " +
+            "LSSP_ID != 12 AND LSPD_ID != 999", nativeQuery = true)
+    List<Object[]> findPolicyTobeCancelled();
 }
