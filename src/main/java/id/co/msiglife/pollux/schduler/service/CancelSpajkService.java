@@ -51,7 +51,7 @@ public class CancelSpajkService {
     @Autowired
     MasterWfLogActivityPolluxRepository masterWfLogActivityPolluxRepository;
 
-//    @Scheduled(cron = "0 */3 * * * ?")
+    @Scheduled(cron = "0 */3 * * * ?")
     public void cancelSpajkScheduler(){
 
         Map<String, Object> result = new HashMap<>();
