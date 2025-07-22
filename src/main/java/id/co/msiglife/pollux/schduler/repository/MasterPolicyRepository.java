@@ -73,7 +73,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     @Query(value = "SELECT pol.REG_SPAJ " +
             "FROM " +
             "EKA.MST_POLICY pol " +
-            "JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
+            "LEFT JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
             "JOIN EKA.MST_POLICY_SIGNDATE sign ON pol.REG_SPAJ = sign.REG_SPAJ " +
             "LEFT JOIN (" +
             "    SELECT " +
