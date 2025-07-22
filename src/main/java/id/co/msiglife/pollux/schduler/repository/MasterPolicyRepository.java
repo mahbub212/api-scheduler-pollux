@@ -70,4 +70,33 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             nativeQuery = true)
     List<Object[]> findAutoCancelByDays(@Param("days") Integer days);
 
+    @Query(value = "SELECT pol.REG_SPAJ " +
+            "FROM " +
+            "EKA.MST_POLICY pol " +
+            "JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
+            "JOIN EKA.MST_POLICY_SIGNDATE sign ON pol.REG_SPAJ = sign.REG_SPAJ " +
+            "LEFT JOIN (" +
+            "    SELECT " +
+            "      mdw.MSWF_DOC_NUMBER as reg_spaj, " +
+            "      lws.LSWF_STATUS_NAME as status_name " +
+            "    FROM  " +
+            "      EKA.MST_WF_DOCUMENT mdw  " +
+            "      INNER JOIN EKA.LST_WF_STATUS lws ON lws.LSWF_STATUS_ID = mdw.LSWF_STATUS_ID  " +
+            "      AND lws.lswf_type_id = mdw.LSWF_TYPE_ID " +
+            "  ) sts ON sts.reg_spaj = pol.reg_spaj " +
+            "LEFT JOIN ( " +
+            "  SELECT  " +
+            "    mup.reg_spaj,  " +
+            "    mup.status AS status_uw,  " +
+            "    mup.final_decision AS keputusan, " +
+            "    lusp.code AS status_code " +
+            "  FROM EKA.MST_UNDERWRITING_PLX mup " +
+            "  JOIN EKA.LST_UW_STATUS_PLX lusp ON lusp.uw_status_id = mup.status " +
+            "  ) uw ON uw.reg_spaj = pol.reg_spaj " +
+            "WHERE " +
+            "TRUNC(SYSDATE) = TRUNC(sign.MSSD_SIGNDATE + 61) AND " +
+            "(pol.LSSP_ID != 1 OR pol.MSPO_POLICY_NO IS NOT NULL) AND " +
+            "(pol.LSSP_ID != 12 AND pol.LSPD_ID != 999) AND " +
+            "(pol.LSSP_ID != 25 AND pol.LSSP_ID != 27)", nativeQuery = true)
+    List<Object[]> findPolicyTobeCancelled();
 }

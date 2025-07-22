@@ -15,4 +15,9 @@ public class StaticValue {
 	public final static Integer TUNGGAKAN_PREMI_REMINDER_DAYS = 14;
 	public final static Integer SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS = 21;
 	public final static Integer SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS = 31;
+
+	public final static Integer STATUS_WORKSHEET_INFORCED = 5;
+	public final static Integer STATUS_WORKSHEET_DECLINED = 6;
+	public final static Integer STATUS_WORKSHEET_POSTPONED = 7;
+	public final static Integer STATUS_WORKSHEET_APPROVED = 11;
 }
