@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CancelPolicyDTO {
+public class CancelSpajkDTO {
     private String regSpaj;
 }
