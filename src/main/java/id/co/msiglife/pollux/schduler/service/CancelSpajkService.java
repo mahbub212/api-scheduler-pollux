@@ -88,7 +88,7 @@ public class CancelSpajkService {
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
-    @Scheduled(cron = "0 */3 * * * ?")
+    @Scheduled(cron = "0 */5 * * * ?")
     public void cancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
@@ -96,7 +96,7 @@ public class CancelSpajkService {
         System.out.println("=================== FINISHED EXECUTING TASK: CANCEL SPAJK ===================");
     }
 
-    @Scheduled(cron = "0 */7 * * * ?")
+    @Scheduled(cron = "0 */8 * * * ?")
     public void retryCancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== RETRY EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
