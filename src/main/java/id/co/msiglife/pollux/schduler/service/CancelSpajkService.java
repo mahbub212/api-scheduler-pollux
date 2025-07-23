@@ -3,7 +3,7 @@ package id.co.msiglife.pollux.schduler.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
-import id.co.msiglife.pollux.schduler.dto.CancelPolicyDTO;
+import id.co.msiglife.pollux.schduler.dto.CancelSpajkDTO;
 import id.co.msiglife.pollux.schduler.entity.*;
 import id.co.msiglife.pollux.schduler.repository.*;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
@@ -90,6 +90,32 @@ public class CancelSpajkService {
 
     @Scheduled(cron = "0 */3 * * * ?")
     public void cancelSpajkScheduler(){
+        List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
+        System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
+        this.executeTask(cancelSpajkDTOList);
+        System.out.println("=================== FINISHED EXECUTING TASK: CANCEL SPAJK ===================");
+    }
+
+    @Scheduled(cron = "0 */7 * * * ?")
+    public void retryCancelSpajkScheduler(){
+        List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
+        System.out.println("=================== RETRY EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
+        this.executeTask(cancelSpajkDTOList);
+        System.out.println("=================== FINISHED RETRYING EXECUTING TASK: CANCEL SPAJK ===================");
+    }
+
+    private List<CancelSpajkDTO> getCancelSpajkList() {
+        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled();
+        List<CancelSpajkDTO> policyToBeCancelledList = new ArrayList<>();
+        for (Object[] row : resultList) {
+            CancelSpajkDTO dto = new CancelSpajkDTO();
+            dto.setRegSpaj(ConvertUtil.safeString(row[0]));
+            policyToBeCancelledList.add(dto);
+        }
+        return policyToBeCancelledList;
+    }
+
+    private void executeTask(List<CancelSpajkDTO> cancelSpajkDTOList){
 
         Map<String, Object> result = new HashMap<>();
         MasterWfLogActivityPollux wfLog = new MasterWfLogActivityPollux();
@@ -99,144 +125,151 @@ public class CancelSpajkService {
         wfLog.setUserId(0);
 
         try {
+            int errorIn = 3;
+            int iteration = 0;
+
             //get list all spajk to be cancelled
             MasterPositionSPAJ masterPositionSPAJ = new MasterPositionSPAJ();
 
-            List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled();
-            List<CancelPolicyDTO> policyToBeCancelledList = new ArrayList<>();
-            for (Object[] row : resultList) {
-                CancelPolicyDTO dto = new CancelPolicyDTO();
-                dto.setRegSpaj(ConvertUtil.safeString(row[0]));
-                policyToBeCancelledList.add(dto);
-            }
-            System.out.println("Jumlah Policy yang akan dicancel = " + policyToBeCancelledList.size());
+            for (CancelSpajkDTO cancelDto : cancelSpajkDTOList) {
+                try{
+                    System.out.println("iteration ke-" + iteration);
+                    if(iteration == errorIn){
+                        iteration++;
+                        throw new RuntimeException("Coba break");
+                    }
+                    iteration++;
 
-            for (CancelPolicyDTO cancelDto : policyToBeCancelledList) {
-                MasterPolicy existingPolicy = masterPolicyRepository.findByRegSpaj(cancelDto.getRegSpaj());
-                MasterInsured existingInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(cancelDto.getRegSpaj(), 1);
-                MasterWFDocument masterWFDocument = masterWFDocumentRepository.findMasterWFDocumentByDocNumberAndLswfTypeId(cancelDto.getRegSpaj(), 78);
+                    MasterPolicy existingPolicy = masterPolicyRepository.findByRegSpaj(cancelDto.getRegSpaj());
+                    MasterInsured existingInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(cancelDto.getRegSpaj(), 1);
+                    MasterWFDocument masterWFDocument = masterWFDocumentRepository.findMasterWFDocumentByDocNumberAndLswfTypeId(cancelDto.getRegSpaj(), 78);
 
-                // check status cancel apakah sudah pernah diproses
-                Optional<BcaData> bcaDataOrder = mappingBcaRepository.findByRegSpajAndTipeTrans(cancelDto.getRegSpaj(), 3);
+                    // check status cancel apakah sudah pernah diproses
+                    Optional<BcaData> bcaDataOrder = mappingBcaRepository.findByRegSpajAndTipeTrans(cancelDto.getRegSpaj(), 3);
 
-                if (masterWFDocument == null) {
+                    if (masterWFDocument == null) {
 //                return new ApiResponseDTO<>(400, "SPAJ " + existingPolicy.getRegSpaj() + " Document not found.", result);
-                    throw new RuntimeException("SPAJ " + cancelDto.getRegSpaj() + " Document not found.");
-                }else {
-                    ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -4);
-                    Optional<MasterWFDocumentHistory> masterWFDocumentHistoryList = masterWFDocumentHistoryRepository.findFirstByDocIdAndLswfTypeIdAndDocNumberOrderByDocHistIdDesc(masterWFDocument.getDocId(), masterWFDocument.getLswfTypeId(), masterWFDocument.getDocNumber());
-                    MasterUnderwriting existMasterUnderwriting = masterUnderwritingRepository.findbyRegSpajk(masterWFDocument.getDocNumber());
-                    if(existMasterUnderwriting != null) {
-                        ListWFStatus listWFStatus = listWFStatusRepository.findListWFStatusByTypeIdAndStatusId(masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStatusId());
-                        if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("POSTPONE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_POSTPONED || existMasterUnderwriting.getFinalDecision().toUpperCase().equals("DECLINE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_DECLINED || listWFStatus.getStatusId() == STATUS_WORKSHEET_INFORCED || existMasterUnderwriting.getFinalDecision().toUpperCase().equals("CANCEL")) {
-                            if (masterWFDocumentHistoryList.isPresent()) {
-                                MasterWFDocumentHistory masterWFDocumentHistory = masterWFDocumentHistoryList.get();
-                                if (masterWFDocumentHistory.getLswfStateIdTo() != STATUS_WORKSHEET_APPROVED && (listWFStatus.getStatusId() != STATUS_WORKSHEET_POSTPONED && listWFStatus.getStatusId() != STATUS_WORKSHEET_DECLINED)) {
+                        throw new RuntimeException("SPAJ " + cancelDto.getRegSpaj() + " Document not found.");
+                    }else {
+                        ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -4);
+                        Optional<MasterWFDocumentHistory> masterWFDocumentHistoryList = masterWFDocumentHistoryRepository.findFirstByDocIdAndLswfTypeIdAndDocNumberOrderByDocHistIdDesc(masterWFDocument.getDocId(), masterWFDocument.getLswfTypeId(), masterWFDocument.getDocNumber());
+                        MasterUnderwriting existMasterUnderwriting = masterUnderwritingRepository.findbyRegSpajk(masterWFDocument.getDocNumber());
+                        if(existMasterUnderwriting != null) {
+                            ListWFStatus listWFStatus = listWFStatusRepository.findListWFStatusByTypeIdAndStatusId(masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStatusId());
+                            if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("POSTPONE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_POSTPONED || existMasterUnderwriting.getFinalDecision().toUpperCase().equals("DECLINE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_DECLINED || listWFStatus.getStatusId() == STATUS_WORKSHEET_INFORCED || existMasterUnderwriting.getFinalDecision().toUpperCase().equals("CANCEL")) {
+                                if (masterWFDocumentHistoryList.isPresent()) {
+                                    MasterWFDocumentHistory masterWFDocumentHistory = masterWFDocumentHistoryList.get();
+                                    if (masterWFDocumentHistory.getLswfStateIdTo() != STATUS_WORKSHEET_APPROVED && (listWFStatus.getStatusId() != STATUS_WORKSHEET_POSTPONED && listWFStatus.getStatusId() != STATUS_WORKSHEET_DECLINED)) {
 //                                    return new ApiResponseDTO<>(400, "SPAJ is still pending approval. Please complete the approval process before proceeding with the cancellation.", result);
-                                    throw new RuntimeException("SPAJ is still pending approval. Please complete the approval process before proceeding with the cancellation.");
-                                } else {
-                                    if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("DECLINE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_DECLINED) {
+                                        throw new RuntimeException("SPAJ is still pending approval. Please complete the approval process before proceeding with the cancellation.");
+                                    } else {
+                                        if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("DECLINE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_DECLINED) {
 //                                        return new ApiResponseDTO<>(400, "SPAJ with Decline status cannot be canceled.", result);
-                                        throw new RuntimeException("SPAJ with Decline status cannot be canceled.");
-                                    } else if (listWFStatus.getStatusId() == STATUS_WORKSHEET_INFORCED) {
+                                            throw new RuntimeException("SPAJ with Decline status cannot be canceled.");
+                                        } else if (listWFStatus.getStatusId() == STATUS_WORKSHEET_INFORCED) {
 //                                        return new ApiResponseDTO<>(400, "SPAJ with Inforce status cannot be canceled.", result);
-                                        throw new RuntimeException("SPAJ with Inforce status cannot be canceled.");
-                                    } else if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("CANCEL")) {
+                                            throw new RuntimeException("SPAJ with Inforce status cannot be canceled.");
+                                        } else if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("CANCEL")) {
 //                                        return new ApiResponseDTO<>(400, "SPAJ with Cancel status cannot be canceled.", result);
-                                        throw new RuntimeException("SPAJ with Cancel status cannot be canceled.");
-                                    } else if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("POSTPONE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_POSTPONED) {
+                                            throw new RuntimeException("SPAJ with Cancel status cannot be canceled.");
+                                        } else if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("POSTPONE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_POSTPONED) {
 //                                        return new ApiResponseDTO<>(400, "SPAJ with Postpone status cannot be canceled.", result);
-                                        throw new RuntimeException("SPAJ with Postpone status cannot be canceled.");
+                                            throw new RuntimeException("SPAJ with Postpone status cannot be canceled.");
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    //handling spaj bca start
-                    if(bcaDataOrder.isPresent()){
-                        BcaData bcaRevisionData = bcaDataOrder.get();
-                        // update status ORDER di data order api
-                        bcaRevisionData.setOrderStatus(1);
-                        bcaRevisionData.setOrderProcessDate(new Date());
+                        //handling spaj bca start
+                        if(bcaDataOrder.isPresent()){
+                            BcaData bcaRevisionData = bcaDataOrder.get();
+                            // update status ORDER di data order api
+                            bcaRevisionData.setOrderStatus(1);
+                            bcaRevisionData.setOrderProcessDate(new Date());
 //                        bcaRevisionData.setOrderUserProcess(auth.getUserId());
-                        bcaRevisionData.setOrderUserProcess(0);
-                        System.out.println("Update cancel order data BCA Reg SPAJ: " + cancelDto.getRegSpaj());
-                        mappingBcaRepository.save(bcaRevisionData);
-                        System.out.println("Order data updated successfully...");
+                            bcaRevisionData.setOrderUserProcess(0);
+                            System.out.println("Update cancel order data BCA Reg SPAJ: " + cancelDto.getRegSpaj());
+                            mappingBcaRepository.save(bcaRevisionData);
+                            System.out.println("Order data updated successfully...");
 
-                        BcaData existingBcaOrderData = mappingBcaRepository.findByRegSpajAndTipeTrans(cancelDto.getRegSpaj(), 1).get();
-                        existingBcaOrderData.setOrderStatus(2);
-                        existingBcaOrderData.setOrderProcessDate(new Date());
-                        existingBcaOrderData.setOrderUserProcess(0);
-                        System.out.println("Update existing order data BCA Reg SPAJ: " + cancelDto.getRegSpaj());
-                        mappingBcaRepository.save(existingBcaOrderData);
-                        System.out.println("Order data updated successfully...");
+                            BcaData existingBcaOrderData = mappingBcaRepository.findByRegSpajAndTipeTrans(cancelDto.getRegSpaj(), 1).get();
+                            existingBcaOrderData.setOrderStatus(2);
+                            existingBcaOrderData.setOrderProcessDate(new Date());
+                            existingBcaOrderData.setOrderUserProcess(0);
+                            System.out.println("Update existing order data BCA Reg SPAJ: " + cancelDto.getRegSpaj());
+                            mappingBcaRepository.save(existingBcaOrderData);
+                            System.out.println("Order data updated successfully...");
 
-                        ApiResponseDTO<Map<String, Object>> generatePdfBcaResponse = handlingPdfCancelBca(cancelDto.getRegSpaj(), 3, bcaDataOrder, existingPolicy, existingInsured);
-                        if (generatePdfBcaResponse.getCode() != 200) {
-                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            throw new RuntimeException(generatePdfBcaResponse.getMessage());
+                            ApiResponseDTO<Map<String, Object>> generatePdfBcaResponse = handlingPdfCancelBca(cancelDto.getRegSpaj(), 3, bcaDataOrder, existingPolicy, existingInsured);
+                            if (generatePdfBcaResponse.getCode() != 200) {
+                                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                                throw new RuntimeException(generatePdfBcaResponse.getMessage());
+                            }
+
                         }
+                        //handling spaj bca end
+
+                        existingPolicy.setLsspId(12);
+                        existingPolicy.setLspdId(999);
+                        existingPolicy.setNote("CANCELLED AUTOMATICALLY VIA SCHEDULER; EXCEEDED 61 DAYS");
+                        existingInsured.setTglBatal(new Date());
+
+                        masterPositionSPAJ.setRegSpaj(cancelDto.getRegSpaj());
+                        masterPositionSPAJ.setPositionDate(existingInsured.getTglBatal());
+                        masterPositionSPAJ.setLsspId(existingPolicy.getLsspId());
+                        masterPositionSPAJ.setLspdId(existingPolicy.getLspdId());
+//                    masterPositionSPAJ.setLusId(existingPolicy.getLusId());
+                        masterPositionSPAJ.setLusId(0);
+                        masterPositionSPAJ.setDesc(existingPolicy.getNote());
+                        masterPositionSPAJ.setLssaId(existingInsured.getLssaId());
+
+                        masterPolicyRepository.save(existingPolicy);
+                        masterInsuredRepository.save(existingInsured);
+                        masterPositionSPAJRepository.save(masterPositionSPAJ);
+
+                        masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
+                        masterWFDocument.setLswfStatusId(11);
+                        this.insertMasterWFDocumentHistory(
+                                masterWFDocument.getDocId(),
+                                masterWFDocument.getLswfTypeId(),
+                                masterWFDocument.getParentDocId(),
+                                wfConfig.getStateIdFrom(),
+                                wfConfig.getConfigAction(),
+                                //auth.getUserId(),
+                                0,
+                                wfConfig.getStateIdTo(),
+                                new Date(),
+                                null,
+                                null,
+                                null,
+                                masterWFDocument.getDocNumber(),
+                                wfConfig.getStatusId()
+                        );
+
+                        MasterWfRequest masterWfRequest = this.insertMasterWfRequest(
+                                masterWFDocument.getDocId(),
+                                wfConfig.getConfigId(),
+                                wfConfig.getConfigAction(),
+                                masterWFDocument.getLswfTypeId(),
+                                wfConfig.getStateIdFrom(),
+                                new ObjectMapper().writeValueAsString(masterWFDocument),
+                                new Date()
+                        );
+
+                        masterWFDocumentRepository.save(masterWFDocument);
 
                     }
-                    //handling spaj bca end
+                    wfLog.setDocNumber(cancelDto.getRegSpaj());
+                    wfLog.setSuccess(true);
+                    wfLog.setResponse(new ObjectMapper().writeValueAsString(result));
+                    wfLog.setLogDate(new Date());
+                    masterWfLogActivityPolluxRepository.save(wfLog);
 
-                    existingPolicy.setLsspId(12);
-                    existingPolicy.setLspdId(999);
-                    existingPolicy.setNote("CANCELLED AUTOMATICALLY VIA SCHEDULER; EXCEEDED 61 DAYS");
-                    existingInsured.setTglBatal(new Date());
-
-                    masterPositionSPAJ.setRegSpaj(cancelDto.getRegSpaj());
-                    masterPositionSPAJ.setPositionDate(existingInsured.getTglBatal());
-                    masterPositionSPAJ.setLsspId(existingPolicy.getLsspId());
-                    masterPositionSPAJ.setLspdId(existingPolicy.getLspdId());
-//                    masterPositionSPAJ.setLusId(existingPolicy.getLusId());
-                    masterPositionSPAJ.setLusId(0);
-                    masterPositionSPAJ.setDesc(existingPolicy.getNote());
-                    masterPositionSPAJ.setLssaId(existingInsured.getLssaId());
-
-                    masterPolicyRepository.save(existingPolicy);
-                    masterInsuredRepository.save(existingInsured);
-                    masterPositionSPAJRepository.save(masterPositionSPAJ);
-
-                    masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
-                    masterWFDocument.setLswfStatusId(11);
-                    this.insertMasterWFDocumentHistory(
-                            masterWFDocument.getDocId(),
-                            masterWFDocument.getLswfTypeId(),
-                            masterWFDocument.getParentDocId(),
-                            wfConfig.getStateIdFrom(),
-                            wfConfig.getConfigAction(),
-                            //auth.getUserId(),
-                            0,
-                            wfConfig.getStateIdTo(),
-                            new Date(),
-                            null,
-                            null,
-                            null,
-                            masterWFDocument.getDocNumber(),
-                            wfConfig.getStatusId()
-                    );
-
-                    MasterWfRequest masterWfRequest = this.insertMasterWfRequest(
-                            masterWFDocument.getDocId(),
-                            wfConfig.getConfigId(),
-                            wfConfig.getConfigAction(),
-                            masterWFDocument.getLswfTypeId(),
-                            wfConfig.getStateIdFrom(),
-                            new ObjectMapper().writeValueAsString(masterWFDocument),
-                            new Date()
-                    );
-
-                    masterWFDocumentRepository.save(masterWFDocument);
-
+                } catch (Exception e) {
+                    System.err.println("Error when cancelling SPAJK");
+                    e.printStackTrace();
                 }
-            wfLog.setDocNumber(cancelDto.getRegSpaj());
-            wfLog.setSuccess(true);
-            wfLog.setResponse(new ObjectMapper().writeValueAsString(result));
-            wfLog.setLogDate(new Date());
-            masterWfLogActivityPolluxRepository.save(wfLog);
             }
         } catch (Exception e) {
             System.out.println("Error log: ");
