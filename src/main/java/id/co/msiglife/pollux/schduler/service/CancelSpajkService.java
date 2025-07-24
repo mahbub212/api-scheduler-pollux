@@ -88,7 +88,7 @@ public class CancelSpajkService {
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
-    @Scheduled(cron = "0 */5 * * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public void cancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
@@ -96,7 +96,7 @@ public class CancelSpajkService {
         System.out.println("=================== FINISHED EXECUTING TASK: CANCEL SPAJK ===================");
     }
 
-    @Scheduled(cron = "0 */8 * * * ?")
+//    @Scheduled(cron = "0 */8 * * * ?")
     public void retryCancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== RETRY EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
@@ -133,12 +133,12 @@ public class CancelSpajkService {
 
             for (CancelSpajkDTO cancelDto : cancelSpajkDTOList) {
                 try{
-                    System.out.println("iteration ke-" + iteration);
-                    if(iteration == errorIn){
-                        iteration++;
-                        throw new RuntimeException("Coba break");
-                    }
-                    iteration++;
+//                    System.out.println("iteration ke-" + iteration);
+//                    if(iteration == errorIn){
+//                        iteration++;
+//                        throw new RuntimeException("Coba break");
+//                    }
+//                    iteration++;
 
                     MasterPolicy existingPolicy = masterPolicyRepository.findByRegSpaj(cancelDto.getRegSpaj());
                     MasterInsured existingInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(cancelDto.getRegSpaj(), 1);
