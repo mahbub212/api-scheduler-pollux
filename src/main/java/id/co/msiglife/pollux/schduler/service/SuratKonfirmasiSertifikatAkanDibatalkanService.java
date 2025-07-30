@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -220,6 +221,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                     String folderPath = STORAGE_PATH + dto.getRegSpaj();
                     String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_SERTIFIKAT_AKAN_DIBATALKAN.pdf";
                     Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
+                    LocalDate tanggalCetakSertifikat = dto.getTanggalCetakSertifikat() == null ? null : dto.getTanggalCetakSertifikat().toInstant().atZone(ZoneId.of("Asia/Jakarta")).toLocalDate();
                     System.out.println("Checking file existence at path: " + outputPdf);
                     System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
                     System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
@@ -240,7 +242,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                         editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                         editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
                         editedContent = editedContent.replace("{up}", currencyFormatID(dto.getUangPertanggungan()));
-                        editedContent = editedContent.replace("{tanggal_terakhir_pembayaran_premi}", convertDateToJakartaTime(LocalDate.now().plusDays(30)));
+                        editedContent = editedContent.replace("{tanggal_terakhir_pembayaran_premi}", tanggalCetakSertifikat == null ? "" : convertDateToJakartaTime(tanggalCetakSertifikat.plusDays(30)));
 
                         // create string HTML to a JSoup Document to render XHTML
                         Document document = Jsoup.parse(editedContent);
