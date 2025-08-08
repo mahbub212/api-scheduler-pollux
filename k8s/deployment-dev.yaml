@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${PIPELINE_BUILD_IMAGE}
+  namespace: ${PIPELINE_NAME_SPACE}
+  labels:
+    app: ${PIPELINE_BUILD_IMAGE}
+spec:
+  replicas: ${PIPELINE_REPLICA}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: ${PIPELINE_BUILD_IMAGE}
+  template:
+    metadata:
+      labels:
+        app: ${PIPELINE_BUILD_IMAGE}
+    spec:
+      containers:
+        - name: ${PIPELINE_BUILD_IMAGE}
+          image: ${PIPELINE_IMAGE}
+          volumeMounts:
+            - name: flexvol-mount
+              mountPath: /mnt/storage
+            - name: flexvol-mount-eb
+              mountPath: /mnt/ebserver
+          ports:
+            - containerPort: 9092
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 128.21.30.2
+          - 128.21.30.3
+          - 10.96.0.10
+        searches:
+          - pollux.svc.cluster.local
+          - svc.cluster.local
+          - cluster.local
+          - sinarmasmsiglife.co.id
+        options:
+          - name: ndots
+            value: "5"
+      volumes:
+        - name: flexvol-mount
+          hostPath:
+            path: /mnt/storage
+        - name: flexvol-mount-eb
+          hostPath:
+            path: /mnt/ebserver
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${PIPELINE_BUILD_IMAGE}
+  namespace: ${PIPELINE_NAME_SPACE}
+spec:
+  loadBalancerIP: ${PIPELINE_LOAD_BALANCER_IP}
+  selector:
+    app: ${PIPELINE_BUILD_IMAGE}
+  type: NodePort
+  ports:
+    - port: ${PIPELINE_LOAD_BALANCER_PORT}
+      protocol: TCP
+      targetPort: 9092
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${PIPELINE_BUILD_IMAGE}
+  namespace: ${PIPELINE_NAME_SPACE}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${PIPELINE_BUILD_IMAGE}
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 75

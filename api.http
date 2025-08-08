@@ -1,0 +1,92 @@
+### UPDATE WORKFLOW
+POST http://localhost:9095/api/workflow-engine/update-workflow
+Authorization: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlX2lkIjo0NywidXNlcl9pZCI6NzAxMzMsInN1YiI6IkVWRUxZTl9CVU5HQSIsImlhdCI6MTc0MjE4NzA5NiwiZXhwIjoxNzQyMjczNDk2fQ.mc41D2ONzYUsGz4jvMY_O-ms_uoxMcvtNKrmqEBuwAs
+Content-Type: application/json
+
+{
+  "doc_number": "09251453015",
+  "wf_type_id": 78,
+  "state_id_from": 0,
+  "state_id_to": 1
+}
+
+### ROLLBACK WORKFLOW
+POST http://localhost:9095/api/workflow-engine/rollback-workflow
+Content-Type: application/json
+
+{
+  "doc_number": "37202459232",
+  "wf_type_id": 78
+}
+
+### CHECK WORKFLOW (AUTH IMPLEMENTED)
+GET http://localhost:9095/api/workflow/09240552510/position?typeId=78
+Authorization: ENGINE_SPICA
+#Content-Type: application/json
+
+### NEXT WORKFLOW (AUTH IMPLEMENTED)
+GET http://localhost:9095/api/workflow/09250553733/next-workflow?typeId=78&stateIdTo=3
+Authorization: ENGINE_SPICA
+#Content-Type: application/json
+
+### UPDATE WF CONFIG
+PATCH http://localhost:9095/api/scripting/wf-config/78
+Authorization: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlX2lkIjo0NywidXNlcl9pZCI6NTY0Niwic3ViIjoiQURBTUdQIiwiaWF0IjoxNzM5NDE1Njc1LCJleHAiOjE3Mzk1MDIwNzV9.9bHBaQ8nmgsr6QFEjERMqEq3etvOI5i0PVswNC8pa1k
+Content-Type: application/json
+
+{
+  "wf_config_id": 1,
+  "wf_config_action": "Initial"
+}
+
+### GET HISTORY WORKFLOW (AUTH IMPLEMENTED)
+GET http://localhost:9095/api/workflow/09250553356/history?typeId=78
+Authorization: ENGINE_SPICA
+#Content-Type: application/json
+
+### GET WORKFLOW SATES (AUTH IMPLEMENTED)
+ GET http://128.21.37.62:8687/api-scheduler-pollux/api/workflow-data/78/states
+Authorization: ENGINE_SPICA
+#Content-Type: application/json
+
+
+### UPDATE WF STATE (AUTH IMPLEMENTED)
+PATCH http://128.21.37.62:8687/api-scheduler-pollux/api/workflow-data/78/states/1
+Authorization: ENGINE_SPICA
+Content-Type: application/json
+
+{
+  "state_name": "Submitted",
+  "state_display": "SPAJ Created"
+}
+
+### GET WORKFLOW STATUS (AUTH IMPLEMENTED)
+GET https://api-pollux.msiglife.co.id/api-scheduler-pollux/api/workflow-data/78/status?statusId=4
+Authorization: ENGINE_SPICA
+Content-Type: application/json
+
+### UPDATE WF STATUS (AUTH IMPLEMENTED)
+PATCH https://api-pollux.msiglife.co.id/api-scheduler-pollux/api/workflow-data/78/status/4
+Authorization: ENGINE_SPICA
+Content-Type: application/json
+
+{
+  "status_name": "Waiting Acceptance"
+}
+
+### GET WF CONFIG (AUTH IMPLEMENTED)
+GET http://localhost:9095/api/workflow-data/78/configs?statusId=2
+Authorization: ENGINE_SPICA
+
+### UPDATE WF CONFIG (AUTH IMPLEMENTED)
+PATCH https://api-pollux.msiglife.co.id/api-scheduler-pollux/api/workflow-data/78/configs/48
+Authorization: ENGINE_SPICA
+Content-Type: application/json
+
+{
+  "status_id": 2
+}
+
+### GET WF CONFIG
+GET http://128.21.37.62:8687/api-scheduler-pollux/api/workflow/0924055702/next-workflow?typeId=78&stateIdTo=2
+Authorization: ENGINE_SPICA
