@@ -6,7 +6,7 @@ pipeline {
         PIPELINE_REPLICA = 1
         PIPELINE_LOAD_BALANCER_PORT=9095
         PIPELINE_EUREKA_SERVICE_ADDRESS = "http://eureka.cosmos.svc.cluster.local:8080/eureka"
-        PIPELINE_IMAGE = "128.21.35.10:5000/${env.PIPELINE_NAME_SPACE}/${env.PIPELINE_BUILD_IMAGE}${env.BUILD_NUMBER}:${env.BUILD_NUMBER}"
+        PIPELINE_IMAGE = "172.16.0.72:8443/${env.PIPELINE_NAME_SPACE}/${env.PIPELINE_BUILD_IMAGE}:${env.BUILD_NUMBER}"
         APP_PORT = "9095"
         COMMIT_MESSAGE = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
 
@@ -18,7 +18,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                 git branch:'development', credentialsId: 'gitcredentialadmin', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux'
+                 git branch:'biznetgio1', credentialsId: 'biznetgio1', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux'
                
             }
         }
@@ -63,14 +63,14 @@ pipeline {
             steps {
                 sh "ls"
                 sh '''
-                ssh administrator@master-dev whoami
-                scp k8s/deployment${name_space}${build_image}.yaml administrator@master-dev:~/.
-                ssh administrator@master-dev kubectl apply -f deployment${name_space}${build_image}.yaml
-                ssh administrator@master-dev kubectl -n ${name_space} rollout status deployment.app/${build_image}
+                ssh administrator@jenkins whoami
+                scp k8s/deployment${name_space}${build_image}.yaml administrator@jenkins:~/.
+                ssh administrator@jenkins kubectl apply -f deployment${name_space}${build_image}.yaml
+                ssh administrator@jenkins kubectl -n ${name_space} rollout status deployment.app/${build_image}
                 '''
+                sh "docker rmi -f ${env.PIPELINE_IMAGE}"
            }
-           
-
     }
+
   }
 }
