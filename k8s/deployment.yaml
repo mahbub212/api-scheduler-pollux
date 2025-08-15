@@ -28,6 +28,8 @@ spec:
               mountPath: /mnt/storage
             - name: flexvol-mount-eb
               mountPath: /mnt/ebserver
+            - name: flexvol-mount-mailpoolattach
+              mountPath: /mnt/mailpoolattach
           ports:
             - containerPort: ${APP_PORT}
           resources:
@@ -59,6 +61,9 @@ spec:
         - name: flexvol-mount-eb
           hostPath:
             path: /mnt/ebserver
+        - name: flexvol-mount-mailpoolattach
+          hostPath:
+            path: /mnt/mailpoolattach
 ---
 kind: Service
 apiVersion: v1
