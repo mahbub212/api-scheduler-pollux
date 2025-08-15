@@ -96,11 +96,13 @@ public class SuratTunggakanPremiService {
 
                 String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
                 String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
+                /*
                 System.out.println(iteration);
                 if(iteration == errorIn){
                     iteration++;
                     throw new RuntimeException("Coba break");
                 }
+                 */
                 iteration++;
                 File folder = new File(attachmentFolderPath);
                 if (!folder.exists()) {
