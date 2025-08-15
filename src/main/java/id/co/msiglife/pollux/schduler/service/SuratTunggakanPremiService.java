@@ -21,18 +21,15 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.*;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.convertDateToJakartaTime;
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.currencyFormatID;
@@ -62,9 +59,7 @@ public class SuratTunggakanPremiService {
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
-    //@Scheduled(cron = "0 0 0 * * ?")
-    //@Scheduled(cron = "0 */10 * * * ?")
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public void sendEmailTunggakanPremi(){
         List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
         System.out.println("=================== START GENERATE SURAT TUNGGAKAN PREMI PDF (" + tunggakanPremiDTOList.size() + ") Data ===================");
@@ -98,11 +93,13 @@ public class SuratTunggakanPremiService {
 
                 String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
                 String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
+                /*
                 System.out.println(iteration);
                 if(iteration == errorIn){
                     iteration++;
                     throw new RuntimeException("Coba break");
                 }
+                 */
                 iteration++;
                 File folder = new File(attachmentFolderPath);
                 if (!folder.exists()) {
@@ -163,11 +160,17 @@ public class SuratTunggakanPremiService {
                         masterEmailRepository.save(emailEntity);
 
                         String savedId = emailEntity.getId();
-                        MasterAutoCancelEmailLog masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                        MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(dto.getRegSpaj(), StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+
+                        if (masterAutoCancelEmailLog == null) {
+                            masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                        }
+
                         masterAutoCancelEmailLog.setMeId(savedId);
                         masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
                         masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
-                        masterAutoCancelEmailLog.setCreatedAt(sysDate);
+                        masterAutoCancelEmailLog.setUpdatedAt(sysDate);
+                        masterAutoCancelEmailLog.setFlagDone(1);
                         masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
 
                         masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);

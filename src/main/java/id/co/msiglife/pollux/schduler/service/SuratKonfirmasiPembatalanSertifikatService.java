@@ -157,11 +157,17 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                     masterEmailRepository.save(emailEntity);
 
                     String savedId = emailEntity.getId();
-                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+
+                    if (masterAutoCancelEmailLog == null) {
+                        masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                    }
+
                     masterAutoCancelEmailLog.setMeId(savedId);
                     masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
                     masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
-                    masterAutoCancelEmailLog.setCreatedAt(sysDate);
+                    masterAutoCancelEmailLog.setUpdatedAt(sysDate);
+                    masterAutoCancelEmailLog.setFlagDone(1);
                     masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
 
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);

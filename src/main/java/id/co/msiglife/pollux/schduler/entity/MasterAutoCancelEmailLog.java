@@ -19,16 +19,13 @@ public class MasterAutoCancelEmailLog {
         @Column(name = "LOG_ID")
         private Long logId;
 
-        @Column(name = "ME_ID", nullable = false, length = 14)
+        @Column(name = "ME_ID", nullable = true, length = 14)
         private String meId;
 
         @Column(name = "REG_SPAJ", nullable = false, length = 50)
         private String regSpaj;
 
-        @Column(name = "REMINDER_DAYS", nullable = false, length = 3)
-        private Integer reminderDays;
-
-        @Column(name = "PATH_ATTACH", nullable = false, length = 1000)
+        @Column(name = "PATH_ATTACH", nullable = true, length = 1000)
         private String pathAttach;
 
         @Column(name = "CREATED_AT", columnDefinition = "TIMESTAMP DEFAULT SYSTIMESTAMP")
@@ -36,4 +33,11 @@ public class MasterAutoCancelEmailLog {
 
         @Column(name = "UPDATED_AT")
         private Date updatedAt;
+
+        @Column(name = "REMINDER_DAYS", nullable = false, length = 3)
+        private Integer reminderDays;
+
+        @Column(name = "FLAG_DONE", nullable = false, length = 3)
+        private Integer flagDone;
+
 }
