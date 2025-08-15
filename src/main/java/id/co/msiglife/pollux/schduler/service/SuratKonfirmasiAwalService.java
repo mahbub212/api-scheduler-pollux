@@ -155,11 +155,17 @@ public class SuratKonfirmasiAwalService {
                     masterEmailRepository.save(emailEntity);
 
                     String savedId = emailEntity.getId();
-                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(dto.getRegSpaj(), StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
+
+                    if (masterAutoCancelEmailLog == null) {
+                        masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                    }
+
                     masterAutoCancelEmailLog.setMeId(savedId);
                     masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
                     masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
-                    masterAutoCancelEmailLog.setCreatedAt(sysDate);
+                    masterAutoCancelEmailLog.setUpdatedAt(sysDate);
+                    masterAutoCancelEmailLog.setFlagDone(1);
                     masterAutoCancelEmailLog.setReminderDays(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
 
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
