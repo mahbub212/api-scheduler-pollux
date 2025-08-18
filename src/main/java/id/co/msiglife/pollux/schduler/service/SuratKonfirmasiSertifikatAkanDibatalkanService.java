@@ -72,7 +72,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
     }
 
-    @Scheduled(cron = "0 0 4 * * ?")
+    @Scheduled(cron = "0 0 5 * * ?")
     public void retrySendingKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         System.out.println("Retrying Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
