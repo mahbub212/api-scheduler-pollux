@@ -7,6 +7,7 @@ import id.co.msiglife.pollux.schduler.dto.CancelSpajkDTO;
 import id.co.msiglife.pollux.schduler.entity.*;
 import id.co.msiglife.pollux.schduler.repository.*;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
+import id.co.msiglife.pollux.schduler.util.StaticValue;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
@@ -85,10 +86,13 @@ public class CancelSpajkService {
     @Autowired
     ListPromotionPackageRepository listPromotionPackageRepository;
 
+    @Autowired
+    MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
+
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void cancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
@@ -260,6 +264,19 @@ public class CancelSpajkService {
                         masterWFDocumentRepository.save(masterWFDocument);
 
                     }
+
+                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(cancelDto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_DAYS);
+
+                    if (masterAutoCancelEmailLog == null) {
+                        masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                    }
+
+                    masterAutoCancelEmailLog.setRegSpaj(cancelDto.getRegSpaj());
+                    masterAutoCancelEmailLog.setUpdatedAt(existingInsured.getTglBatal());
+                    masterAutoCancelEmailLog.setFlagDone(1);
+                    masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_DAYS);
+                    masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
+
                     wfLog.setDocNumber(cancelDto.getRegSpaj());
                     wfLog.setSuccess(true);
                     wfLog.setResponse(new ObjectMapper().writeValueAsString(result));
