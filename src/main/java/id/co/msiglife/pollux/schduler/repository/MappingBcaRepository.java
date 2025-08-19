@@ -24,7 +24,7 @@ public interface MappingBcaRepository extends JpaRepository<BcaData, String> {
 
     @Query(value = "select * from eka.mst_ordercl_api " +
             "where reg_spaj = :regSpaj", nativeQuery = true)
-    List<BcaData> getDataForUpdateOrderStatus(String regSpaj);
+    List<BcaData> getDataBcaByRegSpaj(String regSpaj);
 
     @Modifying
     @Transactional
@@ -36,4 +36,5 @@ public interface MappingBcaRepository extends JpaRepository<BcaData, String> {
             @Param("orderStatus") Integer orderStatus,
             @Param("orderStatusTo") Integer orderStatusTo
     );
+
 }
