@@ -57,7 +57,7 @@ public class SuratKonfirmasiAwalService {
     @Autowired
     private FileProcessUtil fileProcessUtil;
 
-    @Scheduled(cron = "*/40 * * * * ?")
+    @Scheduled(cron = "0 20 0 * * ?")
     public void sendEmailSuratKonfirmasiAwal(){
         List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
         System.out.println("=================== START GENERATE SURAT KONFIRMASI AWAL PDF (" + konfirmasiAwalDTOList.size() + ") Data ===================");
@@ -68,7 +68,7 @@ public class SuratKonfirmasiAwalService {
         System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI AWAL PDF ===================");
     }
 
-    @Scheduled(cron = "0 0 4 * * ?")
+    @Scheduled(cron = "0 20 4 * * ?")
     public void sendEmailSuratKonfirmasiAwalRetry(){
         List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
         System.out.println("=================== RETRYING START GENERATE SURAT KONFIRMASI AWAL PDF " + konfirmasiAwalDTOList.size() + " Data ===================");

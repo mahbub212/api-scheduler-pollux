@@ -92,7 +92,7 @@ public class CancelSpajkService {
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 40 1 * * ?")
     public void cancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
@@ -100,7 +100,7 @@ public class CancelSpajkService {
         System.out.println("=================== FINISHED EXECUTING TASK: CANCEL SPAJK ===================");
     }
 
-    @Scheduled(cron = "0 0 4 * * ?")
+    @Scheduled(cron = "0 40 5 * * ?")
     public void retryCancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== RETRY EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
@@ -151,35 +151,35 @@ public class CancelSpajkService {
                     // check status cancel apakah sudah pernah diproses
                     Optional<BcaData> bcaDataOrder = mappingBcaRepository.findByRegSpajAndTipeTrans(cancelDto.getRegSpaj(), 3);
 
-                    if (masterWFDocument == null) {
-//                return new ApiResponseDTO<>(400, "SPAJ " + existingPolicy.getRegSpaj() + " Document not found.", result);
-                        throw new RuntimeException("SPAJ " + cancelDto.getRegSpaj() + " Document not found.");
-                    }else {
-                        ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -4);
-                        Optional<MasterWFDocumentHistory> masterWFDocumentHistoryList = masterWFDocumentHistoryRepository.findFirstByDocIdAndLswfTypeIdAndDocNumberOrderByDocHistIdDesc(masterWFDocument.getDocId(), masterWFDocument.getLswfTypeId(), masterWFDocument.getDocNumber());
-                        MasterUnderwriting existMasterUnderwriting = masterUnderwritingRepository.findbyRegSpajk(masterWFDocument.getDocNumber());
-                        if(existMasterUnderwriting != null) {
-                            ListWFStatus listWFStatus = listWFStatusRepository.findListWFStatusByTypeIdAndStatusId(masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStatusId());
-                            if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("POSTPONE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_POSTPONED || existMasterUnderwriting.getFinalDecision().toUpperCase().equals("DECLINE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_DECLINED || listWFStatus.getStatusId() == STATUS_WORKSHEET_INFORCED || existMasterUnderwriting.getFinalDecision().toUpperCase().equals("CANCEL")) {
-                                if (masterWFDocumentHistoryList.isPresent()) {
-                                    MasterWFDocumentHistory masterWFDocumentHistory = masterWFDocumentHistoryList.get();
-                                    if (masterWFDocumentHistory.getLswfStateIdTo() != STATUS_WORKSHEET_APPROVED && (listWFStatus.getStatusId() != STATUS_WORKSHEET_POSTPONED && listWFStatus.getStatusId() != STATUS_WORKSHEET_DECLINED)) {
-//                                    return new ApiResponseDTO<>(400, "SPAJ is still pending approval. Please complete the approval process before proceeding with the cancellation.", result);
-                                        throw new RuntimeException("SPAJ is still pending approval. Please complete the approval process before proceeding with the cancellation.");
-                                    } else {
-                                        if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("DECLINE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_DECLINED) {
-//                                        return new ApiResponseDTO<>(400, "SPAJ with Decline status cannot be canceled.", result);
-                                            throw new RuntimeException("SPAJ with Decline status cannot be canceled.");
-                                        } else if (listWFStatus.getStatusId() == STATUS_WORKSHEET_INFORCED) {
-//                                        return new ApiResponseDTO<>(400, "SPAJ with Inforce status cannot be canceled.", result);
-                                            throw new RuntimeException("SPAJ with Inforce status cannot be canceled.");
-                                        } else if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("CANCEL")) {
-//                                        return new ApiResponseDTO<>(400, "SPAJ with Cancel status cannot be canceled.", result);
-                                            throw new RuntimeException("SPAJ with Cancel status cannot be canceled.");
-                                        } else if (existMasterUnderwriting.getFinalDecision().toUpperCase().equals("POSTPONE") || listWFStatus.getStatusId() == STATUS_WORKSHEET_POSTPONED) {
-//                                        return new ApiResponseDTO<>(400, "SPAJ with Postpone status cannot be canceled.", result);
-                                            throw new RuntimeException("SPAJ with Postpone status cannot be canceled.");
-                                        }
+                    if (masterWFDocument != null) {
+                        ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
+                                masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -4);
+
+                        Optional<MasterWFDocumentHistory> historyOpt =
+                                masterWFDocumentHistoryRepository.findFirstByDocIdAndLswfTypeIdAndDocNumberOrderByDocHistIdDesc(
+                                        masterWFDocument.getDocId(), masterWFDocument.getLswfTypeId(), masterWFDocument.getDocNumber());
+
+                        MasterUnderwriting underwriting = masterUnderwritingRepository.findbyRegSpajk(masterWFDocument.getDocNumber());
+                        if (underwriting != null) {
+                            String decision = underwriting.getFinalDecision().toUpperCase();
+                            ListWFStatus wfStatus = listWFStatusRepository.findListWFStatusByTypeIdAndStatusId(
+                                    masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStatusId());
+
+                            boolean isPostpone = "POSTPONE".equals(decision) || wfStatus.getStatusId().equals(STATUS_WORKSHEET_POSTPONED);
+                            boolean isDecline  = "DECLINE".equals(decision)  || wfStatus.getStatusId().equals(STATUS_WORKSHEET_DECLINED);
+                            boolean isInforce  = STATUS_WORKSHEET_INFORCED.equals(wfStatus.getStatusId());
+                            boolean isCancel   = "CANCEL".equals(decision);
+
+                            if (isPostpone || isDecline || isInforce || isCancel) {
+                                if (historyOpt.isPresent()) {
+                                    MasterWFDocumentHistory history = historyOpt.get();
+
+                                    boolean notApproved = !STATUS_WORKSHEET_APPROVED.equals(history.getLswfStateIdTo());
+                                    boolean notPostponeOrDecline = !STATUS_WORKSHEET_POSTPONED.equals(wfStatus.getStatusId())
+                                            && !STATUS_WORKSHEET_DECLINED.equals(wfStatus.getStatusId());
+
+                                    if (!(notApproved && notPostponeOrDecline)) {
+                                        continue;
                                     }
                                 }
                             }
