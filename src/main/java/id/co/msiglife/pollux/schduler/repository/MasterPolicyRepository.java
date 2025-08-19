@@ -102,8 +102,8 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     @Query(value = "SELECT pol.REG_SPAJ " +
             "FROM " +
             "EKA.MST_POLICY pol " +
-            "LEFT JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
             "JOIN EKA.MST_POLICY_SIGNDATE sign ON pol.REG_SPAJ = sign.REG_SPAJ " +
+            "LEFT JOIN eka.lst_policy_status lps ON lps.lssp_id = pol.lssp_id " +
             "LEFT JOIN (" +
             "    SELECT " +
             "      mdw.MSWF_DOC_NUMBER as reg_spaj, " +
@@ -126,6 +126,26 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "TRUNC(SYSDATE) = TRUNC(sign.MSSD_SIGNDATE + 61) AND " +
             "(pol.LSSP_ID != 1 OR pol.MSPO_POLICY_NO IS NOT NULL) AND " +
             "(pol.LSSP_ID != 12 AND pol.LSPD_ID != 999) AND " +
-            "(pol.LSSP_ID != 25 AND pol.LSSP_ID != 27)", nativeQuery = true)
+            "(pol.LSSP_ID != 25 AND pol.LSSP_ID != 27) " +
+            "AND NOT EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG log " +
+            "    WHERE log.reg_spaj = pol.reg_spaj " +
+            "    AND log.reminder_days = 61) " +
+            "AND NOT \n" +
+            "(LOWER(lps.lssp_status) LIKE 'inforce' \n" +
+            "   OR LOWER(uw.status_uw) LIKE 'inforce' \n" +
+            "   OR LOWER(sts.status_name) LIKE 'inforce') " +
+            "AND NOT \n" +
+            "(LOWER(lps.lssp_status) LIKE 'decline%'\n" +
+            "    OR LOWER(uw.status_uw) LIKE 'decline%'\n" +
+            "    OR LOWER(sts.status_name) LIKE 'decline%')\n" +
+            "AND NOT \n" +
+            "(LOWER(lps.lssp_status) LIKE 'postpone%'\n" +
+            "    OR LOWER(uw.status_uw) LIKE 'postpone%'\n" +
+            "    OR LOWER(sts.status_name) LIKE 'postpone%')\n" +
+            "AND LOWER(uw.keputusan) NOT LIKE 'decline%'\n" +
+            "AND LOWER(uw.keputusan) NOT LIKE 'postpone%'", nativeQuery = true)
+    List<Object[]> findAllPolicyTobeCancelled();
+
+    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = 61 AND flag_done = 0", nativeQuery = true)
     List<Object[]> findPolicyTobeCancelled();
 }
