@@ -59,7 +59,7 @@ public class SuratTunggakanPremiService {
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "*/40 * * * * ?")
     public void sendEmailTunggakanPremi(){
         List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
         System.out.println("=================== START GENERATE SURAT TUNGGAKAN PREMI PDF (" + tunggakanPremiDTOList.size() + ") Data ===================");
@@ -312,40 +312,71 @@ public class SuratTunggakanPremiService {
 
         emailContent.append("<!DOCTYPE html>");
         emailContent.append("<html lang=\"id\">");
-        emailContent.append("<head>");
-        emailContent.append("<meta charset=\"UTF-8\">");
-        emailContent.append("<title>Surat Tunggakan Premi</title>");
-        emailContent.append("</head>");
+        emailContent.append("  <head>");
+        emailContent.append("    <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">");
+        emailContent.append("    <meta charset=\"utf-8\">");
+        emailContent.append("    <meta name=\"x-apple-disable-message-reformatting\">");
+        emailContent.append("    <title>Surat Tunggakan Premi</title>");
+        emailContent.append("  </head>");
         emailContent.append("<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">");
+        emailContent.append("    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#ffffff;\">");
+        emailContent.append("      <tr>");
+        emailContent.append("        <td align=\"left\">");
+        emailContent.append("          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;\">");
+        emailContent.append("            <tr>");
+        emailContent.append("              <td style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#000000;padding:16px;\">");
+        emailContent.append("               <div style=\"margin:0 0 12px 0;\">")
+                    .append("Kepada Yth.")
+                    .append("<br>")
+                    .append("<strong>")
+                    .append(namaBankCabang)
+                    .append("</strong>")
+                    .append("</div>");
 
-        emailContent.append("<p>Kepada Yth.<br><strong>")
-                .append(namaBankCabang)
-                .append("</strong></p>");
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                    .append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.")
+                .append("</div>");
 
-        emailContent.append("<p>Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
-                .append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.</p>");
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Berikut kami sampaikan <strong>SURAT TUNGGAKAN PREMI ASURANSI JIWA KREDIT</strong>")
+                    .append(" untuk sertifikat Asuransi Jiwa Kredit atas nama ")
+                    .append(namaTertanggung)
+                    .append(" dengan nomor sertifikat ")
+                    .append(nomorSertifikat)
+                    .append(" yang telah diterbitkan pada tanggal ")
+                    .append(tanggalTerbit)
+                .append("</div>");
 
-        emailContent.append("<p>Berikut kami sampaikan <strong>SURAT TUNGGAKAN PREMI ASURANSI JIWA KREDIT</strong>")
-                .append(" untuk sertifikat Asuransi Jiwa Kredit atas nama ")
-                .append(namaTertanggung)
-                .append(" dengan nomor sertifikat ")
-                .append(nomorSertifikat)
-                .append(" yang telah diterbitkan pada tanggal ")
-                .append(tanggalTerbit)
-                .append(".</p>");
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Sampai dengan hari ini, untuk pembayaran premi atas sertifikat tersebut belum kami terima.<br>")
+                    .append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran premi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi tertanggung.")
+                .append("</div>");
 
-        emailContent.append("<p>Sampai dengan hari ini, untuk pembayaran premi atas sertifikat tersebut belum kami terima.<br>");
-        emailContent.append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran premi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi tertanggung.</p>");
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
+                .append("</div>");
 
-        emailContent.append("<p>Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.</p>");
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
+                    .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#1a73e8;text-decoration:underline;\">collectionmri@msiglife.co.id</a>.")
+                .append("</div>");
 
-        emailContent.append("<p>Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ");
-        emailContent.append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color: #0066cc;\">collectionmri@msiglife.co.id</a></p>");
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
 
-        emailContent.append("<p>Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.</p>");
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
+                .append("</div>");
 
-        emailContent.append("<p>Credit Life Billing and Collection</p>");
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
 
+        emailContent.append("              <div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+        emailContent.append("              </td>");
+        emailContent.append("            </tr>");
+        emailContent.append("          </table>");
+        emailContent.append("        </td>");
+        emailContent.append("      </tr>");
+        emailContent.append("    </table>");
         emailContent.append("</body>");
         emailContent.append("</html>");
 

@@ -57,7 +57,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "*/40 * * * * ?")
     public void sendEmailSuratPembatalanSertifikat(){
         List<SuratAutoCancelDTO> pembatalanSertifikatDTOList = getListSuratPembatalanSertifikat(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
         System.out.println("=================== START GENERATE SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF (" + pembatalanSertifikatDTOList.size() + ") Data ===================");
@@ -301,23 +301,86 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     }
 
     private String templateSuratKonfirmasiPembatalanSertifikatEmail(String namaCabang, String namaTertanggung, String noSertifikat, String tanggalTerbitSertifikat, String tanggalKemarin) {
-        return "<!DOCTYPE html>"
-                + "<html lang=\"id\">"
-                + "<head>"
-                + "<meta charset=\"UTF-8\">"
-                + "<title>Surat Konfirmasi Pembayaran Premi</title>"
-                + "</head>"
-                + "<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Kepada Yth.<br><strong>" + namaCabang + "</strong></p><br>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.</p>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Berikut kami sampaikan <strong>SURAT KONFIRMASI PEMBATALAN SERTIFIKAT</strong> untuk sertifikat Asuransi Jiwa Kredit atas nama " + namaTertanggung + " dengan nomor sertifikat " + noSertifikat + " yang telah diterbitkan pada tanggal " + tanggalTerbitSertifikat + ".</p>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Kami informasikan bahwa untuk pembayaran premi atas Sertifikat tersebut belum kami terima sampai dengan tanggal jatuh tempo pembayaran premi ditanggal " + tanggalKemarin + ".</p>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.</p>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email <a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color: #0066cc;\">collectionmri@msiglife.co.id</a></p>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.</p><br>"
-                + "<p style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\">Credit Life Billing and Collection</p>"
-                + "</body>"
-                + "</html>";
+
+        StringBuilder emailContent = new StringBuilder();
+
+        emailContent.append("<!DOCTYPE html>");
+        emailContent.append("<html lang=\"id\">");
+        emailContent.append("<head>");
+        emailContent.append("  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">");
+        emailContent.append("  <meta charset=\"UTF-8\">");
+        emailContent.append("  <meta name=\"x-apple-disable-message-reformatting\">");
+        emailContent.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        emailContent.append("  <title>Surat Konfirmasi Pembayaran Premi</title>");
+        emailContent.append("</head>");
+        emailContent.append("<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">");
+
+        // Wrapper table
+        emailContent.append("  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#ffffff;\">");
+        emailContent.append("    <tr>");
+        emailContent.append("      <td align=\"left\">");
+        emailContent.append("        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;\">");
+        emailContent.append("          <tr>");
+        emailContent.append("            <td style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#000000;padding:16px;\">");
+
+        // Content blocks
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">Kepada Yth.<br>")
+                    .append("<strong>")
+                    .append(namaCabang)
+                    .append("</strong>")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                    .append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Berikut kami sampaikan <strong>SURAT KONFIRMASI PEMBATALAN SERTIFIKAT</strong> ")
+                    .append("untuk sertifikat Asuransi Jiwa Kredit atas nama ")
+                    .append(namaTertanggung)
+                    .append(" dengan nomor sertifikat ")
+                    .append(noSertifikat)
+                    .append(" yang telah diterbitkan pada tanggal ")
+                    .append(tanggalTerbitSertifikat)
+                .append(".</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Kami informasikan bahwa untuk pembayaran premi atas Sertifikat tersebut belum kami terima sampai dengan tanggal jatuh tempo pembayaran premi ditanggal ")
+                    .append(tanggalKemarin)
+                .append(".</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
+                    .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#0066cc;\">collectionmri@msiglife.co.id</a>")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                    .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+
+        // Close inner table
+        emailContent.append("            </td>");
+        emailContent.append("          </tr>");
+        emailContent.append("        </table>");
+        emailContent.append("      </td>");
+        emailContent.append("    </tr>");
+        emailContent.append("  </table>");
+
+        emailContent.append("</body>");
+        emailContent.append("</html>");
+
+        return emailContent.toString();
     }
 
     private List<SuratAutoCancelDTO> getListSuratPembatalanSertifikat(Integer days) {
