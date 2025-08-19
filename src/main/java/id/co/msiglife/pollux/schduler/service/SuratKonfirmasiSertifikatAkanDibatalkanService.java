@@ -59,7 +59,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Scheduled(cron = "*/40 * * * * ?")
+    @Scheduled(cron = "0 0 1 * * ?")
     public void sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
