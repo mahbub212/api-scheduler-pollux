@@ -127,10 +127,10 @@ spring:
         #implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     database-platform: org.hibernate.dialect.Oracle12cDialect
     database: oracle
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
   batch:
     job:
       enabled: false

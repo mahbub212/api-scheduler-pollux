@@ -24,7 +24,7 @@ public class PreProcessingSuratKonfirmasiAutoCancelService {
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
-    @Scheduled(cron = "*/30 * * * * ?")
+    @Scheduled(cron = "0 1 0 * * ?")
     public void preparationGenerateSuratKonfirmasi(){
         List<Integer> reminderDays = Arrays.asList(
                 StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS,
