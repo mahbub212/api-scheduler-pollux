@@ -19,7 +19,7 @@ pipeline {
         stage('Checkout') {
             steps {
                  git branch:'biznetgio1', credentialsId: 'biznetgio1', url: 'http://128.21.24.60:8888/pollux/api-scheduler-pollux'
-               
+
             }
         }
         
@@ -70,6 +70,8 @@ pipeline {
                 '''
                 sh "docker rmi -f ${env.PIPELINE_IMAGE}"
            }
+
+
     }
 
   }
