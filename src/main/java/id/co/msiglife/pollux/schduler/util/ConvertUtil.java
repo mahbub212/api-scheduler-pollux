@@ -15,15 +15,15 @@ import java.util.Locale;
 
 public class ConvertUtil {
 
-    public static String convertDateApproval(Date date) {
-        if (date != null) {
-            final String newFormat = "dd/MM/yyyy HH:mm:ss";
-            SimpleDateFormat sdf = new SimpleDateFormat(newFormat);
-            return sdf.format(date);
-        } else {
-            return "-";
-        }
-    }
+	public static String convertDateApproval(Date date) {
+		if (date != null) {
+			final String newFormat = "dd/MM/yyyy HH:mm:ss";
+			SimpleDateFormat sdf = new SimpleDateFormat(newFormat);
+			return sdf.format(date);
+		} else {
+			return "-";
+		}
+	}
 
     public static String convertDateToJakartaTime(Date date) {
         Instant instant = date.toInstant();
@@ -54,12 +54,12 @@ public class ConvertUtil {
     public static boolean isDiscountProgramExpired(Date endDate) {
         Date currentDate = new Date();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String currentDateStr = dateFormat.format(currentDate);
-        String endDateStr = dateFormat.format(endDate);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String currentDateStr = dateFormat.format(currentDate);
+		String endDateStr = dateFormat.format(endDate);
 
-        return endDate != null && endDateStr.compareTo(currentDateStr) < 0;
-    }
+		return endDate != null && endDateStr.compareTo(currentDateStr) < 0;
+	}
 
     public static String safeString(Object obj) {
         return obj != null ? obj.toString() : null;
