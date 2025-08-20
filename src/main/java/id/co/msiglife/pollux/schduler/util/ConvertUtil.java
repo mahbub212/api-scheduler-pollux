@@ -70,8 +70,21 @@ public class ConvertUtil {
     }
 
     public static Integer safeInt(Object obj) {
-        return obj instanceof BigDecimal ? ((BigDecimal) obj).intValue() : null;
+        if (obj == null) return null;
+
+        if (obj instanceof BigDecimal) {
+            return ((BigDecimal) obj).intValue();
+        } else if (obj instanceof Number) {
+            return ((Number) obj).intValue();
+        } else {
+            try {
+                return Integer.parseInt(obj.toString());
+            } catch (NumberFormatException e) {
+                return null; // kalau bukan angka
+            }
+        }
     }
+
 
     public static BigDecimal safeBigDecimal(Object obj) {
         return obj instanceof BigDecimal ? (BigDecimal) obj : null;
