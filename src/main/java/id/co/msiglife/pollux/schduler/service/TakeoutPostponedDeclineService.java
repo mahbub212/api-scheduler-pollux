@@ -60,21 +60,27 @@ public class TakeoutPostponedDeclineService {
                         } else if (dataPostponeDecline.get(i).getLswfStatusId().equals(7)){
                             lswfStateIdTo = -5;
                         }
+                    MasterWFDocument newMasterWFDocument = null;
+                    newMasterWFDocument = dataPostponeDecline.get(i);
+                    newMasterWFDocument.setLswfStateId(lswfStateIdTo);
+                    newMasterWFDocument.setDocCreated(new Date());
+                    newMasterWFDocument.setLusId(0);
+                    masterWFDocumentRepository.saveAndFlush(newMasterWFDocument);
 
-                        this.insertMasterWFDocumentHistory(
-                                dataPostponeDecline.get(i).getDocId(),
-                                78,
-                                dataPostponeDecline.get(i).getParentDocId(),
-                                dataPostponeDecline.get(i).getLswfStateId(),
-                                "Cancellation request from the API",
-                                0,
-                                lswfStateIdTo,
-                                new Date(),
-                                null,
-                                null,
-                                null,
-                                dataPostponeDecline.get(i).getDocNumber(),
-                                dataPostponeDecline.get(i).getLswfStatusId()
+                    this.insertMasterWFDocumentHistory(
+                            dataPostponeDecline.get(i).getDocId(),
+                            78,
+                            dataPostponeDecline.get(i).getParentDocId(),
+                            dataPostponeDecline.get(i).getLswfStateId(),
+                            "Cancellation request from the API",
+                            0,
+                            lswfStateIdTo,
+                            new Date(),
+                            null,
+                            null,
+                            null,
+                            dataPostponeDecline.get(i).getDocNumber(),
+                            dataPostponeDecline.get(i).getLswfStatusId()
                         );
                     }
                 }
