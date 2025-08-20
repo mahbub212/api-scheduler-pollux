@@ -44,6 +44,8 @@ public class TakeoutPostponedDeclineService {
             String message = !e.getMessage().isEmpty() ? e.getMessage() : "Error takeout Postponed / Decline in order bca";
             System.out.println("Error log: " + message);
             e.printStackTrace();
+        } finally {
+            System.gc();
         }
     }
 
@@ -89,6 +91,8 @@ public class TakeoutPostponedDeclineService {
             String message = !e.getMessage().isEmpty() ? e.getMessage() : "Error takeout Postponed / Decline in order bca";
             System.out.println("Error log: " + message);
             e.printStackTrace();
+        } finally {
+            System.gc();
         }
 
     }
