@@ -25,7 +25,7 @@ public class TakeoutPostponedDeclineService {
     @Autowired
     MasterWFDocumentHistoryRepository masterWFDocumentHistoryRepository;
 
-    @Scheduled(cron = "0 40 1 * * ?")
+    @Scheduled(cron = "0 0 2 * * ?")
     public void takeoutPostponedDecline() {
         try {
             System.out.println("=================== START EXECUTING Takeout Postpone Decline Order BCA ===================");
@@ -47,7 +47,7 @@ public class TakeoutPostponedDeclineService {
         }
     }
 
-    @Scheduled(cron = "0 40 1 * * ?")
+    @Scheduled(cron = "0 5 2 * * ?")
     public void createHistoryPostponeDeclineInHistory(){
         try {
             System.out.println("=================== START EXECUTING Takeout Postpone Decline Order BCA ===================");
