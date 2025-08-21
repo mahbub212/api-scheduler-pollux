@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TakeoutPostponedDeclineService {
@@ -29,16 +30,32 @@ public class TakeoutPostponedDeclineService {
     public void takeoutPostponedDecline() {
         try {
             System.out.println("=================== START EXECUTING Takeout Postpone Decline Order BCA ===================");
-            List<BcaData> dataTakeout = mappingBcaRepository.getDataTakeoutPosponedDecline();
-            if (!dataTakeout.isEmpty()){
-                for (int i = 0; i < dataTakeout.size(); i++) {
-                    List<BcaData> dataForUpdate = mappingBcaRepository.getDataBcaByRegSpaj(dataTakeout.get(i).getRegSpaj());
-                    System.out.println("regSpaj : " + dataTakeout.get(i).getRegSpaj());
-                    for (int j = 0; j < dataForUpdate.size(); j++) {
-                        mappingBcaRepository.updateBcaDataOrderStatusAndUserByRegSpaj(dataForUpdate.get(j).getRegSpaj(), dataForUpdate.get(j).getOrderStatus(), dataForUpdate.get(j).getOrderStatus() + 1);
-                    }
-                }
-            }
+            List<BcaData> dataTakeoutCancel = mappingBcaRepository.getDataTakeoutCancel();
+            List<BcaData> dataTakeoutOrder = mappingBcaRepository.getDataTakeoutOrder();
+
+            List<String> regSpajCancelList = dataTakeoutCancel.stream()
+                    .map(BcaData::getRegSpaj)
+                    .collect(Collectors.toList());
+
+            List<String> regSpajOrderList = dataTakeoutOrder.stream()
+                            .map(BcaData::getRegSpaj)
+                            .collect(Collectors.toList());
+
+            mappingBcaRepository.updateBcaDataOrderStatusAndUserByRegSpajAndTipeTransAndOrderStatus(
+                    regSpajCancelList,
+                    0,
+                    3,
+                    1,
+                    0
+            );
+
+            mappingBcaRepository.updateBcaDataOrderStatusAndUserByRegSpajAndTipeTransAndOrderStatus(
+                    regSpajOrderList,
+                    1,
+                    1,
+                    2,
+                    0
+            );
             System.out.println("=================== FINISHING EXECUTING Takeout Postpone Decline Order BCA ===================");
         } catch (RuntimeException e) {
             String message = !e.getMessage().isEmpty() ? e.getMessage() : "Error takeout Postponed / Decline in order bca";

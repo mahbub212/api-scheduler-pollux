@@ -14,9 +14,10 @@ public interface MasterWFDocumentRepository extends JpaRepository<MasterWFDocume
     MasterWFDocument findByLswfTypeIdAndParentDocIdAndDocNumber(Integer lswfTypeId, Integer parentDocId, String docNumber);
     MasterWFDocument findMasterWFDocumentByDocNumberAndLswfTypeId(String docNumber, Integer lswfTypeId);
 
-    @Query(value = "select mwdh.* from eka.MST_WF_DOCUMENT mwdh " +
-            "join eka.mst_ordercl_api moa on mwdh.mswf_doc_number = moa.reg_spaj " +
-            "where mwdh.lswf_type_id = 78 and mwdh.lswf_state_id in (-3 , -2) and moa.order_status = 0 ", nativeQuery = true)
+    @Query(value = "select mwd.* from eka.MST_WF_DOCUMENT mwd \n" +
+            "join eka.mst_ordercl_api moa on mwd.mswf_doc_number = moa.reg_spaj \n" +
+            "join eka.mst_underwriting_plx mup on mup.reg_spaj = mwd.mswf_doc_number \n" +
+            "where moa.order_status = 1 and mup.final_decision in ('Postpone', 'Decline') and mwd.lswf_state_id in (-3, -2) and moa.tipe_trans = 3", nativeQuery = true)
     List<MasterWFDocument> getDataPosponeDecline();
 
 
