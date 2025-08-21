@@ -35,12 +35,13 @@ public interface MappingBcaRepository extends JpaRepository<BcaData, String> {
     List<BcaData> getDataBcaByRegSpaj(String regSpaj);
 
     @Modifying
+    @Transactional
     @Query("UPDATE BcaData b " +
             "SET b.orderStatus = :orderStatusTo, b.orderUserProcess = :userId, b.orderProcessDate = CURRENT_TIMESTAMP " +
             "WHERE b.regSpaj in :regSpajList AND b.tipeTrans = :tipeTrx " +
             " AND b.orderStatus = :orderStatus")
     Integer updateBcaDataOrderStatusAndUserByRegSpajAndTipeTransAndOrderStatus(
-            @Param("regSpaj") List<String> regSpaj,
+            @Param("regSpajList") List<String> regSpaj,
             @Param("orderStatus") Integer orderStatus,
             @Param("tipeTrx") Integer tipeTrx,
             @Param("orderStatusTo") Integer orderStatusTo,
