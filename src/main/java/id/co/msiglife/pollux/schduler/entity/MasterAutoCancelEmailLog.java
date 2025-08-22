@@ -40,4 +40,7 @@ public class MasterAutoCancelEmailLog {
         @Column(name = "FLAG_DONE", nullable = false, length = 3)
         private Integer flagDone;
 
+        @Column(name = "FLAG_POLIS_CANCELED", nullable = false, length = 3)
+        private Integer flagPolisCanceled;
+
 }

@@ -171,6 +171,7 @@ public class SuratTunggakanPremiService {
                         masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
+                        masterAutoCancelEmailLog.setFlagPolisCanceled(0);
                         masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
 
                         masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);

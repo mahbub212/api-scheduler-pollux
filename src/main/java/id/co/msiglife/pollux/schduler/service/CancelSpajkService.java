@@ -92,7 +92,7 @@ public class CancelSpajkService {
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
-    @Scheduled(cron = "0 40 1 * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void cancelSpajkScheduler(){
         List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
         System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
@@ -109,7 +109,7 @@ public class CancelSpajkService {
     }
 
     private List<CancelSpajkDTO> getCancelSpajkList() {
-        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled();
+        List<Object[]> resultList = masterPolicyRepository.findSpajkTobeCancelled();
         List<CancelSpajkDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {
             CancelSpajkDTO dto = new CancelSpajkDTO();

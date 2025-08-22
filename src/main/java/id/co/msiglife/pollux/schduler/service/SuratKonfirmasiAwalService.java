@@ -166,6 +166,7 @@ public class SuratKonfirmasiAwalService {
                     masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                     masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                     masterAutoCancelEmailLog.setFlagDone(1);
+                    masterAutoCancelEmailLog.setFlagPolisCanceled(0);
                     masterAutoCancelEmailLog.setReminderDays(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
 
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);

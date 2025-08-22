@@ -164,6 +164,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                         masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
+                        masterAutoCancelEmailLog.setFlagPolisCanceled(0);
                         masterAutoCancelEmailLog.setReminderDays(SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
 
                         masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
