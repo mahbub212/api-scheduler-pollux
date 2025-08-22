@@ -41,6 +41,40 @@ public class TakeoutPostponedDeclineService {
                             .map(BcaData::getRegSpaj)
                             .collect(Collectors.toList());
 
+            List<MasterWFDocument> dataPostponeDecline = masterWFDocumentRepository.getDataCancel();
+            if (!dataPostponeDecline.isEmpty()){
+                for (int i = 0 ; i < dataPostponeDecline.size() ; i++){
+                    Integer lswfStateIdTo = null;
+                    if (dataPostponeDecline.get(i).getLswfStatusId().equals(6)) {
+                        lswfStateIdTo = -6;
+                    } else if (dataPostponeDecline.get(i).getLswfStatusId().equals(7)){
+                        lswfStateIdTo = -5;
+                    }
+                    MasterWFDocument newMasterWFDocument = null;
+                    newMasterWFDocument = dataPostponeDecline.get(i);
+                    newMasterWFDocument.setLswfStateId(lswfStateIdTo);
+                    newMasterWFDocument.setDocCreated(new Date());
+                    newMasterWFDocument.setLusId(0);
+                    masterWFDocumentRepository.saveAndFlush(newMasterWFDocument);
+
+                    this.insertMasterWFDocumentHistory(
+                            dataPostponeDecline.get(i).getDocId(),
+                            78,
+                            dataPostponeDecline.get(i).getParentDocId(),
+                            dataPostponeDecline.get(i).getLswfStateId(),
+                            "Cancellation request from the API",
+                            0,
+                            lswfStateIdTo,
+                            new Date(),
+                            null,
+                            null,
+                            null,
+                            dataPostponeDecline.get(i).getDocNumber(),
+                            dataPostponeDecline.get(i).getLswfStatusId()
+                    );
+                }
+            }
+
             mappingBcaRepository.updateBcaDataOrderStatusAndUserByRegSpajAndTipeTransAndOrderStatus(
                     regSpajCancelList,
                     0,
@@ -70,7 +104,7 @@ public class TakeoutPostponedDeclineService {
     public void createHistoryPostponeDeclineInHistory(){
         try {
             System.out.println("=================== START EXECUTING Takeout Postpone Decline Order BCA ===================");
-            List<MasterWFDocument> dataPostponeDecline = masterWFDocumentRepository.getDataPosponeDecline();
+            List<MasterWFDocument> dataPostponeDecline = masterWFDocumentRepository.getDataCancel();
             if (!dataPostponeDecline.isEmpty()){
                 for (int i = 0 ; i < dataPostponeDecline.size() ; i++){
                         Integer lswfStateIdTo = null;
