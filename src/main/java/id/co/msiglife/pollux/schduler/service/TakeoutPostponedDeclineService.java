@@ -100,54 +100,6 @@ public class TakeoutPostponedDeclineService {
         }
     }
 
-//    @Scheduled(cron = "0 5 2 * * ?")
-//    public void createHistoryPostponeDeclineInHistory(){
-//        try {
-//            System.out.println("=================== START EXECUTING Takeout Postpone Decline Order BCA ===================");
-//            List<MasterWFDocument> dataPostponeDecline = masterWFDocumentRepository.getDataCancel();
-//            if (!dataPostponeDecline.isEmpty()){
-//                for (int i = 0 ; i < dataPostponeDecline.size() ; i++){
-//                        Integer lswfStateIdTo = null;
-//                        if (dataPostponeDecline.get(i).getLswfStatusId().equals(6)) {
-//                            lswfStateIdTo = -6;
-//                        } else if (dataPostponeDecline.get(i).getLswfStatusId().equals(7)){
-//                            lswfStateIdTo = -5;
-//                        }
-//                    MasterWFDocument newMasterWFDocument = null;
-//                    newMasterWFDocument = dataPostponeDecline.get(i);
-//                    newMasterWFDocument.setLswfStateId(lswfStateIdTo);
-//                    newMasterWFDocument.setDocCreated(new Date());
-//                    newMasterWFDocument.setLusId(0);
-//                    masterWFDocumentRepository.saveAndFlush(newMasterWFDocument);
-//
-//                    this.insertMasterWFDocumentHistory(
-//                            dataPostponeDecline.get(i).getDocId(),
-//                            78,
-//                            dataPostponeDecline.get(i).getParentDocId(),
-//                            dataPostponeDecline.get(i).getLswfStateId(),
-//                            "Cancellation request from the API",
-//                            0,
-//                            lswfStateIdTo,
-//                            new Date(),
-//                            null,
-//                            null,
-//                            null,
-//                            dataPostponeDecline.get(i).getDocNumber(),
-//                            dataPostponeDecline.get(i).getLswfStatusId()
-//                        );
-//                    }
-//                }
-//            System.out.println("=================== FINISHING EXECUTING Takeout Postpone Decline Order BCA ===================");
-//        } catch (RuntimeException e) {
-//            String message = !e.getMessage().isEmpty() ? e.getMessage() : "Error takeout Postponed / Decline in order bca";
-//            System.out.println("Error log: " + message);
-//            e.printStackTrace();
-//        } finally {
-//            System.gc();
-//        }
-//
-//    }
-
     private MasterWFDocumentHistory insertMasterWFDocumentHistory(Long docId, Integer lswfTypeId, Long parentDocId, Integer lswfStateIdFrom, String lswfConfigAction, Integer lusId, Integer lswfStateIdTo, Date docHistCreated, String docStatusKey, Integer docStatusValue, String docHistRemarks, String docNumber, Integer lswfStatusId) {
         MasterWFDocumentHistory masterWFDocumentHistory = new MasterWFDocumentHistory();
         masterWFDocumentHistory.setDocId(docId);

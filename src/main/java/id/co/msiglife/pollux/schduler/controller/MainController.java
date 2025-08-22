@@ -33,9 +33,4 @@ public class MainController {
     public void takeoutPostponedDecline() {
             takeoutPostponedDeclineService.takeoutPostponedDecline();
     }
-
-//    @PostMapping("/api/test-create-history")
-//    public void createHistoryPostponeDeclineInHistory() {
-//        takeoutPostponedDeclineService.createHistoryPostponeDeclineInHistory();
-//    }
 }
