@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -97,6 +98,7 @@ public class CancelPolisService {
         System.out.println("=================== FINISHED RETRYING EXECUTING TASK: CANCEL SPAJK ===================");
     }
 
+    @Transactional
     private void processCancelPolisList(List<CancelPolisDTO> cancelPolisDTOList) {
         if (cancelPolisDTOList == null || cancelPolisDTOList.isEmpty()) return;
 
@@ -160,7 +162,6 @@ public class CancelPolisService {
             MstPtcJm mstPtcJm = insertMstJm();
             jms.add(mstPtcJm);
 
-
             // 8) update master Billing
             masterBilling.setMsbiNoJmBtl(masterProduction.getNoJm());
             masterBilling.setMsbiTglBatal(masterEndors.getMsenInputDate());
@@ -197,7 +198,7 @@ public class CancelPolisService {
             else if (b.get(0) instanceof MasterDetProduction) masterDetProductionRepository.saveAll((List<MasterDetProduction>) b);
             else if (b.get(0) instanceof MstPtcTm)           ptcTmRepository.saveAll((List<MstPtcTm>) b);
             else if (b.get(0) instanceof MstPtcJm)           ptcJmRepository.saveAll((List<MstPtcJm>) b);
-            else if (b.get(0) instanceof MasterBilling)           masterBillingRepository.saveAll((List<MasterBilling>) b);
+            else if (b.get(0) instanceof MasterBilling)      masterBillingRepository.saveAll((List<MasterBilling>) b);
             b.clear();
         }
         em.flush();
