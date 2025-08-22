@@ -29,13 +29,8 @@ public class MainController {
         }
     }
 
-    @PostMapping("/api/test-takeout")
+    @PostMapping("/api/test-takeout-and-history")
     public void takeoutPostponedDecline() {
             takeoutPostponedDeclineService.takeoutPostponedDecline();
-    }
-
-    @PostMapping("/api/test-create-history")
-    public void createHistoryPostponeDeclineInHistory() {
-        takeoutPostponedDeclineService.createHistoryPostponeDeclineInHistory();
     }
 }

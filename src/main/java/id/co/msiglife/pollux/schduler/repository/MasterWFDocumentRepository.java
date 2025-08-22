@@ -17,8 +17,8 @@ public interface MasterWFDocumentRepository extends JpaRepository<MasterWFDocume
     @Query(value = "select mwd.* from eka.MST_WF_DOCUMENT mwd \n" +
             "join eka.mst_ordercl_api moa on mwd.mswf_doc_number = moa.reg_spaj \n" +
             "join eka.mst_underwriting_plx mup on mup.reg_spaj = mwd.mswf_doc_number \n" +
-            "where moa.order_status = 1 and mup.final_decision in ('Postpone', 'Decline') and mwd.lswf_state_id in (-3, -2) and moa.tipe_trans = 3", nativeQuery = true)
-    List<MasterWFDocument> getDataPosponeDecline();
+            "where moa.order_status = 0 and mup.final_decision in ('Postpone', 'Decline') and mwd.lswf_state_id in (-3, -2) and moa.tipe_trans = 3", nativeQuery = true)
+    List<MasterWFDocument> getDataCancel();
 
 
 //    @Query(value = "SELECT MAX(m.MSWF_DOC_ID) FROM EKA.MST_WF_DOCUMENT m", nativeQuery = true)
