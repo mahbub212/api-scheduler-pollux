@@ -1,5 +1,6 @@
 package id.co.msiglife.pollux.schduler.repository.polis;
 
+import id.co.msiglife.pollux.schduler.entity.CancelJmProjection;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 public interface PtcJmRepository extends JpaRepository<MstPtcJm, String> {
 
@@ -51,6 +53,33 @@ public interface PtcJmRepository extends JpaRepository<MstPtcJm, String> {
             "       ( EKA.LST_MONTHLY_KURS.LKU_ID = '02' ) ", nativeQuery = true)
     BigDecimal getKursLkuId02(@Param("ls_year") String year,
                  @Param("ls_month") String month);
+
+    @Query(value =
+            "SELECT " +
+                    "  :ls_no_jm         AS NO_JM, " +
+                    "  ROWNUM            AS NO_JURNAL, " +
+                    "  'JB_' || KETERANGAN || ' No JM lama ' || :ls_no_jm_lama || ' (BATAL)' AS KETERANGAN, " +
+                    "  MJM_JUMLAH        AS MJM_JUMLAH, " +
+                    "  DECODE(MJM_CD,'C','D','C') AS MJM_CD, " +
+                    "  MJM_PROJECT       AS MJM_PROJECT, " +
+                    "  MJM_BUDGET        AS MJM_BUDGET, " +
+                    "  TYPE_TRX          AS TYPE_TRX, " +
+                    "  KEY_JURNAL        AS KEY_JURNAL, " +
+                    "  LKU_ID            AS LKU_ID, " +
+                    "  CONV_RATE         AS CONV_RATE, " +
+                    "  MJM_JUMLAH_USD    AS MJM_JUMLAH_USD, " +
+                    "  NO_POLIS          AS NO_POLIS " +
+                    "FROM EKA.MST_PTC_JM " +
+                    "WHERE KEY_JURNAL = :ls_reg_spaj " +
+                    "  AND TYPE_TRX IN (1,2) " +
+                    "  AND NO_JM = :ls_no_jm_prod",
+            nativeQuery = true)
+    List<CancelJmProjection> buildCancelJmRows(
+            @Param("ls_no_jm") String noJmBaru,
+            @Param("ls_no_jm_lama") String noJmLama,
+            @Param("ls_reg_spaj") String regSpaj,
+            @Param("ls_no_jm_prod") String noJmProd
+    );
 
 }
 

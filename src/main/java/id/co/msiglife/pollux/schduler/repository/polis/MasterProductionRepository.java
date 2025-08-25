@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface MasterProductionRepository extends JpaRepository<MasterProduction, String> {
 	
 	MasterProduction findByRegSpaj(String regSpaj);
+	MasterProduction findByRegSpajAndMsproProdKe(String regSpaj, Integer msproProdKe);
 }
