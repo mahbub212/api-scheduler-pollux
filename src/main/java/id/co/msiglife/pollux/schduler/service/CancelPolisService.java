@@ -91,7 +91,7 @@ public class CancelPolisService {
         List<MasterDetProduction> detProds = new ArrayList<>();
         List<MasterBilling> masterBillingList = new ArrayList<>();
         List<MstPtcTm> tms = new ArrayList<>();
-        List<MstPtcJm> jms = new ArrayList<>();
+        List<MstPtcJm> jmList = new ArrayList<>();
 
         Date dateNow = ptcJmRepository.getTruncatedSysdate();
         BigDecimal kurs = new BigDecimal(1);
@@ -103,7 +103,9 @@ public class CancelPolisService {
             MasterInsured masterInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(dto.getRegSpaj(), 1);
             MasterProductInsured masterProductInsured = masterProductInsuredRepository.findMainProduct(dto.getRegSpaj(), 0, 1).get(0);
             MasterProductSetup masterProductSetup = masterProductSetupRepository.findByProductSetupId(masterPolicy.getProductId());
+            MasterProduction masterProduction = masterProductionRepository.findByRegSpajAndMsproProdKe(dto.getRegSpaj(), 1);
             String noJm = ptcJmRepository.getNoJm();
+            String noEndors = masterPolicyRepository.getNoEndors();
 
             if(!masterPolicy.getLkuId().equals("1")){
                 SimpleDateFormat years = new SimpleDateFormat("yyyy");
@@ -116,7 +118,7 @@ public class CancelPolisService {
 
             // 1) MST_ENDORS
             // for mst endors id (SELECT eka.pac_counter.GET_TAX_ADJ_ID() FROM DUAL;)
-            MasterEndors masterEndors = insertMasterEndors(dto, dateNow);
+            MasterEndors masterEndors = insertMasterEndors(dto, noEndors, dateNow);
             endorses.add(masterEndors);
 
             // 2) MST_DET_ENDORS
@@ -128,21 +130,23 @@ public class CancelPolisService {
             positions.add(masterPositionSPAJ);
 
             // 4) MST_PRODUCTION
-            MasterProduction masterProduction = insertMasterProduction(masterPolicy, dateNow, kurs, masterBilling, dto.getRegSpaj());
+            MasterProduction masterProductionCancel = insertMasterProduction(masterPolicy, dateNow, kurs, masterBilling, dto.getRegSpaj());
             masterProduction.setNoJm(noJm);
-            prods.add(masterProduction);
+            prods.add(masterProductionCancel);
 
             // 5) MST_DET_PRODUCTION
             MasterDetProduction masterDetProduction = insertMasterDetProduction(masterPolicy, dateNow, masterProductInsured, masterProductSetup, dto.getRegSpaj());
             detProds.add(masterDetProduction);
 
             // 6) MST_PTC_TM (no_jm berasal dari generator mu)
-            MstPtcTm mstPtcTm = insertMstTm();
+            MstPtcTm mstPtcTm = insertMstTm(masterProduction, dateNow, noJm);
             tms.add(mstPtcTm);
 
-            // 7) MST_PTC_JM (baris kas/debet/creditnya)
-            MstPtcJm mstPtcJm = insertMstJm();
-            jms.add(mstPtcJm);
+            // 7) MST_PTC_JM_LIST (baris kas/debet/creditnya)
+            List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
+                    noJm, masterProduction.getNoJm(), dto.getRegSpaj(), masterProduction.getNoJm()
+            );
+            jmList = insertMstJm(rows);
 
             // 8) update master Billing
             masterBilling.setMsbiNoJmBtl(masterProduction.getNoJm());
@@ -154,7 +158,7 @@ public class CancelPolisService {
             copyingFilesPolis(dto);
         }
 
-        flushAndClear(endorses, detEndorses, positions, prods, detProds, tms, jms, masterBillingList);
+        flushAndClear(endorses, detEndorses, positions, prods, detProds, tms, jmList, masterBillingList);
 
         // 9) BULK UPDATE status policy & billing
         masterPolicyRepository.updatePolisCanceled(
@@ -240,12 +244,13 @@ public class CancelPolisService {
         return masterDetEndors;
     }
 
-    private MasterEndors insertMasterEndors(CancelPolisDTO CancelPolisDTO, Date dateNow) {
+    private MasterEndors insertMasterEndors(CancelPolisDTO CancelPolisDTO, String noEndors, Date dateNow) {
         MasterEndors masterEndors = new MasterEndors();
         LocalDate localDate = dateNow.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
         Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        masterEndors.setMsenEndorsNo(noEndors);
         masterEndors.setRegSpaj(CancelPolisDTO.getRegSpaj());
         masterEndors.setMsenInternal(0);
         masterEndors.setMsenAlasan("Pembatalan Polis, Premi belum dibayarkan.");
@@ -312,16 +317,38 @@ public class CancelPolisService {
         return masterDetProduction;
     }
 
-    private MstPtcTm insertMstTm(){
+    private MstPtcTm insertMstTm(MasterProduction masterProduction, Date dateNow, String noJm){
         MstPtcTm mstPtcTm = new MstPtcTm();
+        mstPtcTm.setNoJm(noJm);
+        mstPtcTm.setNoJmRef(masterProduction.getNoJm());
+        mstPtcTm.setPosition(1);
+        mstPtcTm.setTglJurnal(dateNow);
+        mstPtcTm.setUserInput(512);
         ptcTmRepository.save(mstPtcTm);
         return mstPtcTm;
     }
 
-    private MstPtcJm insertMstJm(){
-        MstPtcJm mstPtcJm = new MstPtcJm();
-        ptcJmRepository.save(mstPtcJm);
-        return mstPtcJm;
+    private List<MstPtcJm> insertMstJm(List<CancelJmProjection> rows){
+
+        List<MstPtcJm> entities = rows.stream().map(r -> {
+            MstPtcJm e = new MstPtcJm();
+            e.setNoJm(r.getNO_JM());
+            e.setNoJurnal(r.getNO_JURNAL());
+            e.setKeterangan(r.getKETERANGAN());
+            e.setJumlah(r.getMJM_JUMLAH());
+            e.setCd(r.getMJM_CD());
+            e.setProject(r.getMJM_PROJECT());
+            e.setBudget(r.getMJM_BUDGET());
+            e.setTypeTrx(r.getTYPE_TRX());
+            e.setKeyJurnal(r.getKEY_JURNAL());
+            e.setKurs(r.getLKU_ID());
+            e.setKursRate(r.getCONV_RATE());
+            e.setJumlahUsd(r.getMJM_JUMLAH_USD());
+            e.setNoPolis(r.getNO_POLIS());
+            return e;
+        }).collect(Collectors.toList());
+
+        return entities;
     }
 
     public List<CancelPolisDTO> getCancelPolisList() {

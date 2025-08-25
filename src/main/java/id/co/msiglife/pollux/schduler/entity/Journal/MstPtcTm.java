@@ -33,5 +33,8 @@ public class MstPtcTm {
 
     @Column(name = "TGL_INPUT", insertable = false, updatable = false)
     private LocalDateTime tglInput;
+
+    @Column(name = "NO_JM_REF")
+    private String noJmRef;
 }
 

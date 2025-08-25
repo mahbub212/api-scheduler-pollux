@@ -2,13 +2,18 @@ package id.co.msiglife.pollux.schduler.job;
 
 import id.co.msiglife.pollux.schduler.dto.CancelPolisDTO;
 import id.co.msiglife.pollux.schduler.service.CancelPolisService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Component
+@RestController
+@CrossOrigin
+@RequiredArgsConstructor
 public class CancelPolisScheduler {
 
     @Autowired
@@ -17,17 +22,17 @@ public class CancelPolisScheduler {
     @Scheduled(cron = "0 40 1 * * ?")
     public void cancelSpajkScheduler(){
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
-        System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelPolisDTOList.size() + ") Data ===================");
+        System.out.println("=================== START EXECUTING TASK: CANCEL POLIS (" + cancelPolisDTOList.size() + ") Data ===================");
         cancelPolisService.processCancelPolisList(cancelPolisDTOList);
-        System.out.println("=================== FINISHED EXECUTING TASK: CANCEL SPAJK ===================");
+        System.out.println("=================== FINISHED EXECUTING TASK: CANCEL POLIS ===================");
     }
 
     @Scheduled(cron = "0 40 5 * * ?")
     public void retryCancelSpajkScheduler(){
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
-        System.out.println("=================== RETRY EXECUTING TASK: CANCEL SPAJK (" + cancelPolisDTOList.size() + ") Data ===================");
+        System.out.println("=================== RETRY EXECUTING TASK: CANCEL POLIS (" + cancelPolisDTOList.size() + ") Data ===================");
         cancelPolisService.processCancelPolisList(cancelPolisDTOList);
-        System.out.println("=================== FINISHED RETRYING EXECUTING TASK: CANCEL SPAJK ===================");
+        System.out.println("=================== FINISHED RETRYING EXECUTING TASK: CANCEL POLIS ===================");
     }
 
 }
