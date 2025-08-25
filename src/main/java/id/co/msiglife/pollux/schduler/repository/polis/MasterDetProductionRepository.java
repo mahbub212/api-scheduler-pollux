@@ -1,4 +1,4 @@
-package id.co.msiglife.pollux.schduler.repository.CancelPolis;
+package id.co.msiglife.pollux.schduler.repository.polis;
 
 import id.co.msiglife.pollux.schduler.entity.CancelPolis.MasterDetProduction;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -57,29 +57,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Scheduled(cron = "0 40 0 * * ?")
-    public void sendEmailSuratPembatalanSertifikat(){
-        List<SuratAutoCancelDTO> pembatalanSertifikatDTOList = getListSuratPembatalanSertifikat(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
-        System.out.println("=================== START GENERATE SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF (" + pembatalanSertifikatDTOList.size() + ") Data ===================");
-        generatePdfSuratPembatalanSertifikat(pembatalanSertifikatDTOList);
-        System.out.println("=================== END GENERATED SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF ===================");
-        System.out.println("=================== START SENDING EMAIL SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF ===================");
-        generateEmailSuratPembatalanSertifikat(pembatalanSertifikatDTOList);
-        System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF ===================");
-    }
-
-    @Scheduled(cron = "0 40 4 * * ?")
-    public void sendEmailSuratPembatalanSertifikatRetry(){
-        List<SuratAutoCancelDTO> pembatalanSertifikatDTOList = getListSuratPembatalanSertifikat(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
-        System.out.println("=================== RETRYING START GENERATE SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF " + pembatalanSertifikatDTOList.size() + " Data ===================");
-        generatePdfSuratPembatalanSertifikat(pembatalanSertifikatDTOList);
-        System.out.println("=================== RETRYING END GENERATED SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF ===================");
-        System.out.println("=================== RETRYING START SENDING EMAIL SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF ===================");
-        generateEmailSuratPembatalanSertifikat(pembatalanSertifikatDTOList);
-        System.out.println("=================== RETRYING END SEND EMAIL SURAT KONFIRMASI PEMBATALAN SERTIFIKAT PDF ===================");
-    }
-
-    private void generateEmailSuratPembatalanSertifikat(List<SuratAutoCancelDTO> pembatalanSertifikatDTOList) {
+    public void generateEmailSuratPembatalanSertifikat(List<SuratAutoCancelDTO> pembatalanSertifikatDTOList) {
 
         for (SuratAutoCancelDTO dto : pembatalanSertifikatDTOList) {
             try {
@@ -183,7 +161,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         }
     }
 
-    private void generatePdfSuratPembatalanSertifikat(List<SuratAutoCancelDTO> pembatalanSertifikatDTOList) {
+    public void generatePdfSuratPembatalanSertifikat(List<SuratAutoCancelDTO> pembatalanSertifikatDTOList) {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
@@ -385,7 +363,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         return emailContent.toString();
     }
 
-    private List<SuratAutoCancelDTO> getListSuratPembatalanSertifikat(Integer days) {
+    public List<SuratAutoCancelDTO> getListSuratPembatalanSertifikat(Integer days) {
         List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 

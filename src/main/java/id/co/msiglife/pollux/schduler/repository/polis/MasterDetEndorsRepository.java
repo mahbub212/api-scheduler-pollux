@@ -1,14 +1,8 @@
-package id.co.msiglife.pollux.schduler.repository.CancelPolis;
+package id.co.msiglife.pollux.schduler.repository.polis;
 
 import id.co.msiglife.pollux.schduler.entity.CancelPolis.MasterDetEndors;
-import id.co.msiglife.pollux.schduler.entity.CancelPolis.MasterProduction;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import javax.transaction.Transactional;
 
 @Repository
 public interface MasterDetEndorsRepository extends JpaRepository<MasterDetEndors, String> {

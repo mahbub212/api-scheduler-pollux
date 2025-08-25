@@ -1,17 +1,15 @@
 package id.co.msiglife.pollux.schduler.service;
 
 import id.co.msiglife.pollux.schduler.dto.CancelPolisDTO;
-import id.co.msiglife.pollux.schduler.dto.CancelSpajkDTO;
 import id.co.msiglife.pollux.schduler.entity.*;
 import id.co.msiglife.pollux.schduler.entity.CancelPolis.*;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcTm;
 import id.co.msiglife.pollux.schduler.repository.*;
-import id.co.msiglife.pollux.schduler.repository.CancelPolis.*;
+import id.co.msiglife.pollux.schduler.repository.polis.*;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -82,24 +80,8 @@ public class CancelPolisService {
     @PersistenceContext
     private EntityManager em;
 
-    @Scheduled(cron = "0 40 1 * * ?")
-    public void cancelSpajkScheduler(){
-        List<CancelPolisDTO> cancelPolisDTOList = getCancelPolisList();
-        System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelPolisDTOList.size() + ") Data ===================");
-        processCancelPolisList(cancelPolisDTOList);
-        System.out.println("=================== FINISHED EXECUTING TASK: CANCEL SPAJK ===================");
-    }
-
-    @Scheduled(cron = "0 40 5 * * ?")
-    public void retryCancelSpajkScheduler(){
-        List<CancelPolisDTO> cancelPolisDTOList = getCancelPolisList();
-        System.out.println("=================== RETRY EXECUTING TASK: CANCEL SPAJK (" + cancelPolisDTOList.size() + ") Data ===================");
-        processCancelPolisList(cancelPolisDTOList);
-        System.out.println("=================== FINISHED RETRYING EXECUTING TASK: CANCEL SPAJK ===================");
-    }
-
     @Transactional
-    private void processCancelPolisList(List<CancelPolisDTO> cancelPolisDTOList) {
+    public void processCancelPolisList(List<CancelPolisDTO> cancelPolisDTOList) {
         if (cancelPolisDTOList == null || cancelPolisDTOList.isEmpty()) return;
 
         List<MasterEndors> endorses = new ArrayList<>();
@@ -342,7 +324,7 @@ public class CancelPolisService {
         return mstPtcJm;
     }
 
-    private List<CancelPolisDTO> getCancelPolisList() {
+    public List<CancelPolisDTO> getCancelPolisList() {
         List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled();
         List<CancelPolisDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {

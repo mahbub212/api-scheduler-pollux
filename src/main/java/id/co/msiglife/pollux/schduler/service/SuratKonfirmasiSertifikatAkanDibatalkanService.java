@@ -59,32 +59,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Scheduled(cron = "0 0 1 * * ?")
-    public void sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
-        System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
-        List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
-        System.out.println("=================== START GENERATE SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF (" + sertifikatAkanDibatalkanDTOList.size() + ") Data ===================");
-        generatePdfSuratKonfirmasiSertifikatAkanDibatalkan(sertifikatAkanDibatalkanDTOList);
-        System.out.println("=================== END GENERATED SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
-        System.out.println("=================== START SENDING EMAIL SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
-        generateAutoMail(sertifikatAkanDibatalkanDTOList);
-
-        System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
-    }
-
-    @Scheduled(cron = "0 0 5 * * ?")
-    public void retrySendingKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
-        System.out.println("Retrying Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
-        List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
-        System.out.println("=================== RETRYING START GENERATE SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF " + sertifikatAkanDibatalkanDTOList.size() + " Data ===================");
-        generatePdfSuratKonfirmasiSertifikatAkanDibatalkan(sertifikatAkanDibatalkanDTOList);
-        System.out.println("=================== RETRYING END GENERATED SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
-        System.out.println("=================== RETRYING START SENDING EMAIL SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
-        generateAutoMail(sertifikatAkanDibatalkanDTOList);
-        System.out.println("=================== RETRYING END SEND EMAIL SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN PDF ===================");
-    }
-
-    private void generateAutoMail(List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList) {
+    public void generateAutoMail(List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList) {
         for(SuratAutoCancelDTO dto : sertifikatAkanDibatalkanDTOList){
             try {
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
@@ -182,7 +157,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         }
     }
 
-    private void generatePdfSuratKonfirmasiSertifikatAkanDibatalkan(List<SuratAutoCancelDTO> suratAutoCancelDtoList) {
+    public void generatePdfSuratKonfirmasiSertifikatAkanDibatalkan(List<SuratAutoCancelDTO> suratAutoCancelDtoList) {
         try {
             // read template file
             String today = convertDateToJakartaTime(LocalDate.now());
