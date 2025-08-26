@@ -1,6 +1,6 @@
 package id.co.msiglife.pollux.schduler.repository.polis;
 
-import id.co.msiglife.pollux.schduler.entity.CancelPolis.MasterDetBilling;
+import id.co.msiglife.pollux.schduler.entity.polis.MasterDetBilling;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

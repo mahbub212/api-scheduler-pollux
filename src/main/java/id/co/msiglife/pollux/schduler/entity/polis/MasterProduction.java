@@ -1,4 +1,4 @@
-package id.co.msiglife.pollux.schduler.entity.CancelPolis;
+package id.co.msiglife.pollux.schduler.entity.polis;
 
 import lombok.Data;
 

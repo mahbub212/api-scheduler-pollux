@@ -1,4 +1,6 @@
-package id.co.msiglife.pollux.schduler.entity;
+package id.co.msiglife.pollux.schduler.projection;
+
+import java.math.BigDecimal;
 
 public interface CancelJmProjection {
     String getNO_JM();
@@ -11,8 +13,8 @@ public interface CancelJmProjection {
     Integer getTYPE_TRX();
     String getKEY_JURNAL();
     String getLKU_ID();
-    java.math.BigDecimal getCONV_RATE();
-    java.math.BigDecimal getMJM_JUMLAH_USD();
+    BigDecimal getCONV_RATE();
+    BigDecimal getMJM_JUMLAH_USD();
     String getNO_POLIS();
     Integer getTAXNO();
 }

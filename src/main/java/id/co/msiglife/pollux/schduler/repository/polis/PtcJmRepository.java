@@ -1,6 +1,6 @@
 package id.co.msiglife.pollux.schduler.repository.polis;
 
-import id.co.msiglife.pollux.schduler.entity.CancelJmProjection;
+import id.co.msiglife.pollux.schduler.projection.CancelJmProjection;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

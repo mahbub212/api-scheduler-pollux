@@ -1,6 +1,6 @@
 package id.co.msiglife.pollux.schduler.repository.polis;
 
-import id.co.msiglife.pollux.schduler.entity.CancelPolis.MasterProduction;
+import id.co.msiglife.pollux.schduler.entity.polis.MasterProduction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
