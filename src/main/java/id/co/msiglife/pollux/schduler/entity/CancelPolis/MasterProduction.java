@@ -13,7 +13,7 @@ import java.util.Date;
 @Table(name = "MST_PRODUCTION", schema = "EKA")
 @Data
 public class MasterProduction {
-    @Id
+
     @Column(name = "REG_SPAJ")
     private String regSpaj;
 
@@ -38,6 +38,7 @@ public class MasterProduction {
     @Column(name = "MSPRO_PROD_KE")
     private Integer msproProdKe;
 
+    @Id
     @Column(name = "MSPRO_PROD_DATE")
     private Date msproProdDate;
 

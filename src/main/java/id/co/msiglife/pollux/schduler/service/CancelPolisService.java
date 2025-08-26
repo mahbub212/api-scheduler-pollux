@@ -104,9 +104,11 @@ public class CancelPolisService {
             MasterProductInsured masterProductInsured = masterProductInsuredRepository.findMainProduct(dto.getRegSpaj(), 0, 1).get(0);
             MasterProductSetup masterProductSetup = masterProductSetupRepository.findByProductSetupId(masterPolicy.getProductId());
             MasterProduction masterProduction = masterProductionRepository.findByRegSpajAndMsproProdKe(dto.getRegSpaj(), 1);
+
             String noJm = ptcJmRepository.getNoJm();
             String noEndors = masterPolicyRepository.getNoEndors();
 
+            System.out.println("1");
             if(!masterPolicy.getLkuId().equals("1")){
                 SimpleDateFormat years = new SimpleDateFormat("yyyy");
                 SimpleDateFormat months = new SimpleDateFormat("MM");
@@ -115,46 +117,47 @@ public class CancelPolisService {
 
                 kurs = ptcJmRepository.getKursLkuId02(yearNow, monthNow);
             }
-
+            System.out.println("2");
             // 1) MST_ENDORS
             // for mst endors id (SELECT eka.pac_counter.GET_TAX_ADJ_ID() FROM DUAL;)
             MasterEndors masterEndors = insertMasterEndors(dto, noEndors, dateNow);
             endorses.add(masterEndors);
-
+            System.out.println("3");
             // 2) MST_DET_ENDORS
             MasterDetEndors masterDetEndors = insertMasterDetEndors(dto, masterEndors, dateNow);
             detEndorses.add(masterDetEndors);
-
+            System.out.println("4");
             // 3) POSITION SPAJ
             MasterPositionSPAJ masterPositionSPAJ = insertMasterPositionSpaj(dto, masterEndors, masterInsured);
             positions.add(masterPositionSPAJ);
-
+            System.out.println("5");
             // 4) MST_PRODUCTION
             MasterProduction masterProductionCancel = insertMasterProduction(masterPolicy, dateNow, kurs, masterBilling, dto.getRegSpaj());
-            masterProduction.setNoJm(noJm);
+            masterProductionCancel.setNoJm(noJm);
             prods.add(masterProductionCancel);
-
+            System.out.println("6");
             // 5) MST_DET_PRODUCTION
-            MasterDetProduction masterDetProduction = insertMasterDetProduction(masterPolicy, dateNow, masterProductInsured, masterProductSetup, dto.getRegSpaj());
-            detProds.add(masterDetProduction);
+            masterDetProductionRepository.copyDetProductionBySpaj(dto.getRegSpaj());
 
+            System.out.println("7");
             // 6) MST_PTC_TM (no_jm berasal dari generator mu)
             MstPtcTm mstPtcTm = insertMstTm(masterProduction, dateNow, noJm);
             tms.add(mstPtcTm);
-
+            System.out.println("8");
             // 7) MST_PTC_JM_LIST (baris kas/debet/creditnya)
             List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
-                    noJm, masterProduction.getNoJm(), dto.getRegSpaj(), masterProduction.getNoJm()
+                    noJm, masterProduction.getNoJm(), dto.getRegSpaj()
             );
-            jmList = insertMstJm(rows);
-
+            System.out.println(rows.size());
+            insertMstJm(rows, ptcJmRepository);
+            System.out.println("9");
             // 8) update master Billing
-            masterBilling.setMsbiNoJmBtl(masterProduction.getNoJm());
+            masterBilling.setMsbiNoJmBtl(noJm);
             masterBilling.setMsbiTglBatal(masterEndors.getMsenInputDate());
             masterBilling.setLspdId(ConvertUtil.safeLong(25));
             masterBilling.setMsbiActive(0);
             masterBillingList.add(masterBilling);
-
+            System.out.println("10");
             copyingFilesPolis(dto);
         }
 
@@ -289,32 +292,7 @@ public class CancelPolisService {
         masterProduction.setLcaId(masterPolicy.getLcaId());
         masterProduction.setLwkId(masterPolicy.getLwkId());
         masterProduction.setLsrgId(Long.valueOf(masterPolicy.getLsrgId()));
-        masterProductionRepository.save(masterProduction);
         return masterProduction;
-    }
-
-    private MasterDetProduction insertMasterDetProduction(MasterPolicy masterPolicy, Date dateNow, MasterProductInsured masterProductInsured, MasterProductSetup masterProductSetup, String regSpaj){
-
-        MasterDetProduction masterDetProduction = new MasterDetProduction();
-        LocalDate localDate = dateNow.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-        masterDetProduction.setLstbId(masterPolicy.getLstbId());
-        masterDetProduction.setRegSpaj(regSpaj);
-        masterDetProduction.setMsproProdKe(1);
-        masterDetProduction.setMsproProdDate(localDate);
-        masterDetProduction.setLsbsId(masterProductInsured.getLsbsId());
-        masterDetProduction.setLsdbsNumber(masterProductSetup.getProductNumber());
-        masterDetProduction.setMsbiTahunKe(1);
-        masterDetProduction.setMsbiPremiKe(1);
-        masterDetProduction.setMsdprPremium(BigDecimal.valueOf(masterProductInsured.getPremium()));
-        masterDetProduction.setMsdprDiscount(BigDecimal.valueOf(masterProductInsured.getDiscount()));
-        masterDetProduction.setMsdprTsi(masterProductInsured.getTsi());
-        masterDetProduction.setMsdprUrut(masterProductInsured.getUrut());
-
-        masterDetProductionRepository.save(masterDetProduction);
-        return masterDetProduction;
     }
 
     private MstPtcTm insertMstTm(MasterProduction masterProduction, Date dateNow, String noJm){
@@ -328,27 +306,23 @@ public class CancelPolisService {
         return mstPtcTm;
     }
 
-    private List<MstPtcJm> insertMstJm(List<CancelJmProjection> rows){
-
-        List<MstPtcJm> entities = rows.stream().map(r -> {
-            MstPtcJm e = new MstPtcJm();
-            e.setNoJm(r.getNO_JM());
-            e.setNoJurnal(r.getNO_JURNAL());
-            e.setKeterangan(r.getKETERANGAN());
-            e.setJumlah(r.getMJM_JUMLAH());
-            e.setCd(r.getMJM_CD());
-            e.setProject(r.getMJM_PROJECT());
-            e.setBudget(r.getMJM_BUDGET());
-            e.setTypeTrx(r.getTYPE_TRX());
-            e.setKeyJurnal(r.getKEY_JURNAL());
-            e.setKurs(r.getLKU_ID());
-            e.setKursRate(r.getCONV_RATE());
-            e.setJumlahUsd(r.getMJM_JUMLAH_USD());
-            e.setNoPolis(r.getNO_POLIS());
-            return e;
-        }).collect(Collectors.toList());
-
-        return entities;
+    private void insertMstJm(List<CancelJmProjection> rows, PtcJmRepository ptcJmRepository){
+        rows.forEach(r -> ptcJmRepository.insertMstPtcJm(
+                r.getNO_JM(),
+                r.getNO_JURNAL(),
+                r.getKETERANGAN(),
+                r.getMJM_JUMLAH(),
+                r.getMJM_CD(),
+                r.getMJM_PROJECT(),
+                r.getMJM_BUDGET(),
+                r.getTYPE_TRX(),
+                r.getKEY_JURNAL(),
+                r.getLKU_ID(),
+                r.getCONV_RATE(),
+                r.getMJM_JUMLAH_USD(),
+                r.getNO_POLIS(),
+                r.getTAXNO() // pastikan ada di projection-mu
+        ));
     }
 
     public List<CancelPolisDTO> getCancelPolisList() {
