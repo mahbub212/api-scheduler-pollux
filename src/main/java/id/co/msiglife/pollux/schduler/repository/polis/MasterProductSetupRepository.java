@@ -1,6 +1,6 @@
 package id.co.msiglife.pollux.schduler.repository.polis;
 
-import id.co.msiglife.pollux.schduler.entity.CancelPolis.MasterProductSetup;
+import id.co.msiglife.pollux.schduler.entity.polis.MasterProductSetup;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

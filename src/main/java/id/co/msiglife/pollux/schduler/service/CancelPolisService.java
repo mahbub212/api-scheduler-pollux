@@ -2,9 +2,10 @@ package id.co.msiglife.pollux.schduler.service;
 
 import id.co.msiglife.pollux.schduler.dto.CancelPolisDTO;
 import id.co.msiglife.pollux.schduler.entity.*;
-import id.co.msiglife.pollux.schduler.entity.CancelPolis.*;
+import id.co.msiglife.pollux.schduler.entity.polis.*;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcTm;
+import id.co.msiglife.pollux.schduler.projection.CancelJmProjection;
 import id.co.msiglife.pollux.schduler.repository.*;
 import id.co.msiglife.pollux.schduler.repository.polis.*;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
@@ -154,8 +155,6 @@ public class CancelPolisService {
             masterBilling.setLspdId(ConvertUtil.safeLong(25));
             masterBilling.setMsbiActive(0);
             masterBillingList.add(masterBilling);
-
-            copyingFilesPolis(dto);
         }
 
         flushAndClear(endorses, detEndorses, positions, prods, detProds, tms, jmList, masterBillingList);
@@ -189,37 +188,6 @@ public class CancelPolisService {
         }
         em.flush();
         em.clear();
-    }
-
-    private String copyingFilesPolis(CancelPolisDTO dto){
-        try {
-            String sourceFilePath = STORAGE_PATH + "/" + dto.getRegSpaj()  + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
-            Path sourcePath = Paths.get(sourceFilePath).toAbsolutePath();
-            Path destinationPath = Paths.get(STORAGE_POLIS_PATH).toAbsolutePath();;
-            // Validasi keberadaan file
-            if (Files.exists(sourcePath) && Files.isReadable(sourcePath)) {
-
-                // destination file path
-                String destinationFilePath = STORAGE_POLIS_PATH + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
-                destinationPath = Paths.get(destinationFilePath).toAbsolutePath();
-
-                // copy the file
-                Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-
-                // check if the copies of both files are readable
-                if (!Files.isReadable(destinationPath)) {
-                    try {
-                        throw new IOException("The copied Surat Konfirmasi Pembatalan Sertifikat file is not readable: " + destinationFilePath);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            return destinationPath.toString();
-        } catch (Exception e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
     }
 
     private MasterPositionSPAJ insertMasterPositionSpaj(CancelPolisDTO CancelPolisDTO, MasterEndors masterEndors, MasterInsured masterInsured) {
