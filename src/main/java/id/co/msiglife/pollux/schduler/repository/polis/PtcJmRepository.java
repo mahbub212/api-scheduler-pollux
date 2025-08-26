@@ -68,17 +68,17 @@ public interface PtcJmRepository extends JpaRepository<MstPtcJm, String> {
                     "  LKU_ID            AS LKU_ID, " +
                     "  CONV_RATE         AS CONV_RATE, " +
                     "  MJM_JUMLAH_USD    AS MJM_JUMLAH_USD, " +
-                    "  NO_POLIS          AS NO_POLIS " +
+                    "  NO_POLIS          AS NO_POLIS, " +
+                    "  TAXNO             AS TAXNO " +
                     "FROM EKA.MST_PTC_JM " +
                     "WHERE KEY_JURNAL = :ls_reg_spaj " +
-                    "  AND TYPE_TRX IN (1,2) " +
-                    "  AND NO_JM = :ls_no_jm_prod",
+                    "  AND TYPE_TRX IN (1,2) ",
             nativeQuery = true)
     List<CancelJmProjection> buildCancelJmRows(
             @Param("ls_no_jm") String noJmBaru,
             @Param("ls_no_jm_lama") String noJmLama,
-            @Param("ls_reg_spaj") String regSpaj,
-            @Param("ls_no_jm_prod") String noJmProd
+            @Param("ls_reg_spaj") String regSpaj
+            //@Param("ls_no_jm_prod") String noJmProd
     );
 
 }

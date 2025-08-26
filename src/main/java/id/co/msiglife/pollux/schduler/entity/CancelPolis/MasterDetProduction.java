@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Table(name = "MST_DET_PRODUCTION", schema = "EKA")
 @Data
 public class MasterDetProduction {
-    @Id
+
     @Column(name = "REG_SPAJ")
     private String regSpaj;
 
@@ -26,6 +26,7 @@ public class MasterDetProduction {
     @Column(name = "LSTB_ID")
     private Integer lstbId;
 
+    @Id
     @Column(name = "MSPRO_PROD_KE")
     private Integer msproProdKe;
 

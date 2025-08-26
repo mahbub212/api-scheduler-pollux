@@ -14,5 +14,6 @@ public interface CancelJmProjection {
     java.math.BigDecimal getCONV_RATE();
     java.math.BigDecimal getMJM_JUMLAH_USD();
     String getNO_POLIS();
+    Integer getTAXNO();
 }
 
