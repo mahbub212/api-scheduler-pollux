@@ -6,7 +6,7 @@ public interface CancelJmProjection {
     String getNO_JM();
     Integer getNO_JURNAL();
     String getKETERANGAN();
-    java.math.BigDecimal getMJM_JUMLAH();
+    BigDecimal getMJM_JUMLAH();
     String getMJM_CD();
     String getMJM_PROJECT();
     String getMJM_BUDGET();
