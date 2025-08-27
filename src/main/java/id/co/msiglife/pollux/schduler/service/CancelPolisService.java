@@ -121,33 +121,40 @@ public class CancelPolisService {
             // 1) MST_ENDORS
             // for mst endors id (SELECT eka.pac_counter.GET_TAX_ADJ_ID() FROM DUAL;)
             MasterEndors masterEndors = insertMasterEndors(dto, noEndors, dateNow);
-            endorses.add(masterEndors);
 
             // 2) MST_DET_ENDORS
             MasterDetEndors masterDetEndors = insertMasterDetEndors(dto, masterEndors, dateNow);
-            detEndorses.add(masterDetEndors);
 
             // 3) MST_PRODUCTION
             MasterProduction masterProductionCancel = insertMasterProduction(masterPolicy, dateNow, kurs, masterBilling, dto.getRegSpaj());
             masterProductionCancel.setNoJm(noJm);
-            prods.add(masterProductionCancel);
+
 
             // 4) MST_DET_PRODUCTION
             masterDetProductionRepository.copyDetProductionBySpaj(dto.getRegSpaj());
 
             // 5) POSITION SPAJ
             MasterPositionSPAJ masterPositionSPAJ = insertMasterPositionSpaj(dto, masterEndors, masterInsured);
-            positions.add(masterPositionSPAJ);
 
             // 6) MST_PTC_TM (no_jm berasal dari generator mu)
             MstPtcTm mstPtcTm = insertMstTm(masterProduction, dateNow, noJm);
-            tms.add(mstPtcTm);
 
             // 7) MST_PTC_JM_LIST (baris kas/debet/creditnya)
             List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
                     noJm, masterProduction.getNoJm(), dto.getRegSpaj()
             );
             insertMstJm(rows, ptcJmRepository);
+
+            if(ConvertUtil.bigDecimalNEQZero(ptcJmRepository.isBalanceJournal(noJm))){
+                System.out.println("Journal Not Balance");
+                continue;
+            }
+
+            endorses.add(masterEndors);
+            detEndorses.add(masterDetEndors);
+            prods.add(masterProductionCancel);
+            positions.add(masterPositionSPAJ);
+            tms.add(mstPtcTm);
 
             // 9) update master Billing
             masterBilling.setMsbiNoJmBtl(noJm);

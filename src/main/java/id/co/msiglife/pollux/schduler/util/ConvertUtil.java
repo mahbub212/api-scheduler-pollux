@@ -100,6 +100,13 @@ public class ConvertUtil {
         }
     }
 
+    public static boolean bigDecimalGTZero(BigDecimal value) {
+        return value != null && value.compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    public static boolean bigDecimalNEQZero(BigDecimal value) {
+        return value != null && value.compareTo(BigDecimal.ZERO) != 0;
+    }
 
     public static BigDecimal safeBigDecimal(Object obj) {
         return obj instanceof BigDecimal ? (BigDecimal) obj : null;
