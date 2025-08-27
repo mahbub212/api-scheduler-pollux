@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
 import id.co.msiglife.pollux.schduler.service.TakeoutPostponedDeclineService;
+import id.co.msiglife.pollux.schduler.job.PreProcessingAutoCancelScheduler;
+import id.co.msiglife.pollux.schduler.job.SuratKonfirmasiPembatalanSertifikatScheduler;
 import id.co.msiglife.pollux.schduler.job.CancelPolisScheduler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,8 @@ public class MainController {
     private final TakeoutPostponedDeclineService takeoutPostponedDeclineService;
 
     private final CancelPolisScheduler cancelPolisScheduler;
+    private final SuratKonfirmasiPembatalanSertifikatScheduler suratKonfirmasiPembatalanSertifikatScheduler;
+    private final PreProcessingAutoCancelScheduler preProcessingAutoCancelScheduler;
 
     @GetMapping("/api")
     public ResponseEntity<?> helloWorld() {
@@ -41,4 +45,15 @@ public class MainController {
     public void cancelPolist(){
         cancelPolisScheduler.cancelSpajkScheduler();
     }
+
+    @PostMapping("/api/test-pre-prosessing")
+    public void preprosesingSuratKonfirmas(){
+        preProcessingAutoCancelScheduler.preparationGenerateSuratKonfirmasi();
+    }
+
+    @PostMapping("/api/test-pembatalan-sertifikat")
+    public void suratPembatalanSertifikat(){
+        suratKonfirmasiPembatalanSertifikatScheduler.sendEmailSuratPembatalanSertifikat();
+    }
+
 }

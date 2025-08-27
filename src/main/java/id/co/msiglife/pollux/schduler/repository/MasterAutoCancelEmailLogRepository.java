@@ -13,7 +13,7 @@ public interface MasterAutoCancelEmailLogRepository  extends JpaRepository<Maste
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "UPDATE EKA.MST_AUTO_CANCEL_EMAIL_LOG  " +
-            "      SET FLAG_POLIS_CANCELED = 1, UPDATE_AT = SYSDATE   " +
+            "      SET FLAG_POLIS_CANCELED = 1, UPDATED_AT = SYSDATE   " +
             "      WHERE ( EKA.MST_AUTO_CANCEL_EMAIL_LOG.REG_SPAJ IN (:regSpaj) ) AND  " +
             "        ( EKA.MST_AUTO_CANCEL_EMAIL_LOG.REMINDER_DAYS = 31 )",
             nativeQuery = true)

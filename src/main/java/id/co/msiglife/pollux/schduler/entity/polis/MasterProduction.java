@@ -1,19 +1,19 @@
 package id.co.msiglife.pollux.schduler.entity.polis;
 
+import id.co.msiglife.pollux.schduler.composite.CompMasterProduction;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
 @Table(name = "MST_PRODUCTION", schema = "EKA")
 @Data
+@IdClass(CompMasterProduction.class)
 public class MasterProduction {
 
+    @Id
     @Column(name = "REG_SPAJ")
     private String regSpaj;
 
@@ -35,10 +35,10 @@ public class MasterProduction {
     @Column(name = "UPP_EVA")
     private BigDecimal uppEva;
 
+    @Id
     @Column(name = "MSPRO_PROD_KE")
     private Integer msproProdKe;
 
-    @Id
     @Column(name = "MSPRO_PROD_DATE")
     private Date msproProdDate;
 
