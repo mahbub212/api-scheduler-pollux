@@ -36,9 +36,6 @@ public class CancelPolisService {
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
-    @Value("${spring.custom.storage-polis.path}")
-    private String STORAGE_POLIS_PATH;
-
     @Autowired
     private MasterBillingRepository masterBillingRepository;
 
@@ -143,12 +140,13 @@ public class CancelPolisService {
             List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
                     noJm, masterProduction.getNoJm(), dto.getRegSpaj()
             );
-            insertMstJm(rows, ptcJmRepository);
-
+            
             if(ConvertUtil.bigDecimalNEQZero(ptcJmRepository.isBalanceJournal(noJm))){
                 System.out.println("Journal Not Balance");
                 continue;
             }
+
+            insertMstJm(rows, ptcJmRepository);
 
             endorses.add(masterEndors);
             detEndorses.add(masterDetEndors);
