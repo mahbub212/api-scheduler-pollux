@@ -146,7 +146,7 @@ public class CancelPolisService {
             insertMstJm(rows, ptcJmRepository);
 
             if(ConvertUtil.bigDecimalNEQZero(ptcJmRepository.isBalanceJournal(noJm))){
-                System.out.println("Journal Not Balance");
+                System.out.println("Journal Not Balance No Reg Spaj " + dto.getRegSpaj() + "No Jm" + noJm);
                 continue;
             }
 
