@@ -94,6 +94,8 @@ public class CancelPolisService {
         Date dateNow = ptcJmRepository.getTruncatedSysdate();
         BigDecimal kurs = new BigDecimal(1);
 
+        List<CancelPolisDTO> cancelPolisProceed = new ArrayList<>();
+
         for (int i = 0; i < cancelPolisDTOList.size(); i++) {
             CancelPolisDTO dto = cancelPolisDTOList.get(i);
             MasterPolicy masterPolicy = masterPolicyRepository.findByRegSpaj(dto.getRegSpaj());
@@ -113,6 +115,11 @@ public class CancelPolisService {
                 String monthNow = months.format(dateNow);
 
                 kurs = ptcJmRepository.getKursLkuId02(yearNow, monthNow);
+            }
+
+            if(ConvertUtil.bigDecimalNEQZero(ptcJmRepository.isBalanceJournal(masterProduction.getNoJm()))){
+                System.out.println("Journal Master Not Balance Reg Spaj : " + dto.getRegSpaj() + " No Jm : " + masterProduction.getNoJm());
+                continue;
             }
 
             // 1) MST_ENDORS
@@ -140,19 +147,19 @@ public class CancelPolisService {
             List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
                     noJm, masterProduction.getNoJm(), dto.getRegSpaj()
             );
-            
+            insertMstJm(rows, ptcJmRepository);
+
             if(ConvertUtil.bigDecimalNEQZero(ptcJmRepository.isBalanceJournal(noJm))){
-                System.out.println("Journal Not Balance");
+                System.out.println("Journal Cancel Not Balance Reg Spaj : " + dto.getRegSpaj() + " No Jm : " + masterProduction.getNoJm());
                 continue;
             }
-
-            insertMstJm(rows, ptcJmRepository);
 
             endorses.add(masterEndors);
             detEndorses.add(masterDetEndors);
             prods.add(masterProductionCancel);
             positions.add(masterPositionSPAJ);
             tms.add(mstPtcTm);
+            cancelPolisProceed.add(dto);
 
             // 9) update master Billing
             masterBilling.setMsbiNoJmBtl(noJm);
@@ -166,13 +173,13 @@ public class CancelPolisService {
 
         // 9) BULK UPDATE status policy & billing
         masterPolicyRepository.updatePolisCanceled(
-                cancelPolisDTOList.stream()
+                cancelPolisProceed.stream()
                         .map(CancelPolisDTO::getRegSpaj)
                         .collect(Collectors.toList())
         );
 
         // 10) updatePolisCanceled
-        masterAutoCancelEmailLogRepository.updatePolisCanceled(cancelPolisDTOList.stream()
+        masterAutoCancelEmailLogRepository.updatePolisCanceled(cancelPolisProceed.stream()
                 .map(CancelPolisDTO::getRegSpaj)
                 .collect(Collectors.toList())
         );

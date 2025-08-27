@@ -1,19 +1,20 @@
 package id.co.msiglife.pollux.schduler.entity.polis;
 
+import id.co.msiglife.pollux.schduler.composite.CompMasterDetProduction;
+import id.co.msiglife.pollux.schduler.composite.CompMasterProduction;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "MST_DET_PRODUCTION", schema = "EKA")
 @Data
+@IdClass(CompMasterDetProduction.class)
 public class MasterDetProduction {
 
+    @Id
     @Column(name = "REG_SPAJ")
     private String regSpaj;
 
