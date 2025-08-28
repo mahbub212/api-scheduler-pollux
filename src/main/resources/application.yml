@@ -94,8 +94,6 @@ spring:
       path: "/mnt/storage/mailpools/attachments/group/"
     storage:
        path: "/mnt/storage/pollux/dev/"
-    storage-polis:
-      path: "/mnt/storage/pollux/polis/"
 #      path: "//storage-uat.sinarmasmsiglife.co.id/pdfmri/"
 #      path: "//PENTAHO/Dev/00.IT_USE/UAT_MRI/"
 #      path: "C:/Works/Pollux/Source/api-pollux-productsetup/storage/"

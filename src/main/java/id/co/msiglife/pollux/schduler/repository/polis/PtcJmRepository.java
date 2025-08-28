@@ -81,10 +81,14 @@ public interface PtcJmRepository extends JpaRepository<MstPtcJm, String> {
             //@Param("ls_no_jm_prod") String noJmProd
     );
 
-    @Query(value = "SELECT NVL(SUM(CASE WHEN m.MJM_CD = 'D' THEN m.MJM_JUMLAH " +
-            "WHEN m.MJM_CD = 'C' THEN -m.MJM_JUMLAH ELSE 0 END), 0) " +
-            "FROM EKA.MST_PTC_JM m " +
-            "WHERE m.NO_JM = :noJm ", nativeQuery = true)
+    @Query(
+            value =
+                    "SELECT NVL(SUM(CASE WHEN m.MJM_CD = 'D' THEN m.MJM_JUMLAH " +
+                            "WHEN m.MJM_CD = 'C' THEN -m.MJM_JUMLAH ELSE 0 END), 0) " +
+                            "FROM EKA.MST_PTC_JM m " +
+                            "WHERE m.NO_JM = :noJm",
+            nativeQuery = true
+    )
     BigDecimal isBalanceJournal(@Param("noJm") String noJm);
 
 }
