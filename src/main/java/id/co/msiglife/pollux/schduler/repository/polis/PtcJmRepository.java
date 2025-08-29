@@ -91,5 +91,10 @@ public interface PtcJmRepository extends JpaRepository<MstPtcJm, String> {
     )
     BigDecimal isBalanceJournal(@Param("noJm") String noJm);
 
+    @Query(value = "SELECT * " +
+            "FROM EKA.MST_PTC_JM m " +
+            "WHERE m.NO_JM = :noJm ", nativeQuery = true)
+    List<MstPtcJm> journalCreated(@Param("noJm") String noJm);
+
 }
 
