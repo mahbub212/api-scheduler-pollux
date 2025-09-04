@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TakeoutPostponedDeclineService {
@@ -25,66 +26,80 @@ public class TakeoutPostponedDeclineService {
     @Autowired
     MasterWFDocumentHistoryRepository masterWFDocumentHistoryRepository;
 
-    @Scheduled(cron = "0 40 1 * * ?")
+    @Scheduled(cron = "0 0 2 * * ?")
     public void takeoutPostponedDecline() {
         try {
             System.out.println("=================== START EXECUTING Takeout Postpone Decline Order BCA ===================");
-            List<BcaData> dataTakeout = mappingBcaRepository.getDataTakeoutPosponedDecline();
-            if (!dataTakeout.isEmpty()){
-                for (int i = 0; i < dataTakeout.size(); i++) {
-                    List<BcaData> dataForUpdate = mappingBcaRepository.getDataBcaByRegSpaj(dataTakeout.get(i).getRegSpaj());
-                    System.out.println("regSpaj : " + dataTakeout.get(i).getRegSpaj());
-                    for (int j = 0; j < dataForUpdate.size(); j++) {
-                        mappingBcaRepository.updateBcaDataOrderStatusAndUserByRegSpaj(dataForUpdate.get(j).getRegSpaj(), dataForUpdate.get(j).getOrderStatus(), dataForUpdate.get(j).getOrderStatus() + 1);
-                    }
-                }
-            }
-            System.out.println("=================== FINISHING EXECUTING Takeout Postpone Decline Order BCA ===================");
-        } catch (RuntimeException e) {
-            String message = !e.getMessage().isEmpty() ? e.getMessage() : "Error takeout Postponed / Decline in order bca";
-            System.out.println("Error log: " + message);
-            e.printStackTrace();
-        }
-    }
+            List<BcaData> dataTakeoutCancel = mappingBcaRepository.getDataTakeoutCancel();
+            List<BcaData> dataTakeoutOrder = mappingBcaRepository.getDataTakeoutOrder();
 
-    @Scheduled(cron = "0 40 1 * * ?")
-    public void createHistoryPostponeDeclineInHistory(){
-        try {
-            System.out.println("=================== START EXECUTING Takeout Postpone Decline Order BCA ===================");
-            List<MasterWFDocument> dataPostponeDecline = masterWFDocumentRepository.getDataPosponeDecline();
+            List<String> regSpajCancelList = dataTakeoutCancel.stream()
+                    .map(BcaData::getRegSpaj)
+                    .collect(Collectors.toList());
+
+            List<String> regSpajOrderList = dataTakeoutOrder.stream()
+                            .map(BcaData::getRegSpaj)
+                            .collect(Collectors.toList());
+
+            List<MasterWFDocument> dataPostponeDecline = masterWFDocumentRepository.getDataCancel();
             if (!dataPostponeDecline.isEmpty()){
                 for (int i = 0 ; i < dataPostponeDecline.size() ; i++){
-                        Integer lswfStateIdTo = null;
-                        if (dataPostponeDecline.get(i).getLswfStatusId().equals(6)) {
-                            lswfStateIdTo = -6;
-                        } else if (dataPostponeDecline.get(i).getLswfStatusId().equals(7)){
-                            lswfStateIdTo = -5;
-                        }
+                    Integer lswfStateIdTo = null;
 
-                        this.insertMasterWFDocumentHistory(
-                                dataPostponeDecline.get(i).getDocId(),
-                                78,
-                                dataPostponeDecline.get(i).getParentDocId(),
-                                dataPostponeDecline.get(i).getLswfStateId(),
-                                "Cancellation request from the API",
-                                0,
-                                lswfStateIdTo,
-                                new Date(),
-                                null,
-                                null,
-                                null,
-                                dataPostponeDecline.get(i).getDocNumber(),
-                                dataPostponeDecline.get(i).getLswfStatusId()
-                        );
+                    if (dataPostponeDecline.get(i).getLswfStatusId().equals(6)) {
+                        lswfStateIdTo = -6;
+                    } else if (dataPostponeDecline.get(i).getLswfStatusId().equals(7)){
+                        lswfStateIdTo = -5;
                     }
+
+                    this.insertMasterWFDocumentHistory(
+                            dataPostponeDecline.get(i).getDocId(),
+                            78,
+                            dataPostponeDecline.get(i).getParentDocId(),
+                            dataPostponeDecline.get(i).getLswfStateId(),
+                            "Cancellation request from the API",
+                            0,
+                            lswfStateIdTo,
+                            new Date(),
+                            null,
+                            null,
+                            null,
+                            dataPostponeDecline.get(i).getDocNumber(),
+                            dataPostponeDecline.get(i).getLswfStatusId()
+                    );
+
+                    MasterWFDocument newMasterWFDocument = null;
+                    newMasterWFDocument = dataPostponeDecline.get(i);
+                    newMasterWFDocument.setLswfStateId(lswfStateIdTo);
+                    newMasterWFDocument.setDocCreated(new Date());
+                    newMasterWFDocument.setLusId(0);
+                    masterWFDocumentRepository.saveAndFlush(newMasterWFDocument);
                 }
+            }
+
+            mappingBcaRepository.updateBcaDataOrderStatusAndUserByRegSpajAndTipeTransAndOrderStatus(
+                    regSpajCancelList,
+                    0,
+                    3,
+                    1,
+                    0
+            );
+
+            mappingBcaRepository.updateBcaDataOrderStatusAndUserByRegSpajAndTipeTransAndOrderStatus(
+                    regSpajOrderList,
+                    1,
+                    1,
+                    2,
+                    0
+            );
             System.out.println("=================== FINISHING EXECUTING Takeout Postpone Decline Order BCA ===================");
         } catch (RuntimeException e) {
             String message = !e.getMessage().isEmpty() ? e.getMessage() : "Error takeout Postponed / Decline in order bca";
             System.out.println("Error log: " + message);
             e.printStackTrace();
+        } finally {
+            System.gc();
         }
-
     }
 
     private MasterWFDocumentHistory insertMasterWFDocumentHistory(Long docId, Integer lswfTypeId, Long parentDocId, Integer lswfStateIdFrom, String lswfConfigAction, Integer lusId, Integer lswfStateIdTo, Date docHistCreated, String docStatusKey, Integer docStatusValue, String docHistRemarks, String docNumber, Integer lswfStatusId) {
