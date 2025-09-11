@@ -166,7 +166,6 @@ public class CancelPolisService {
                         masterWFDocument.getParentDocId(),
                         wfConfig.getStateIdFrom(),
                         wfConfig.getConfigAction(),
-                        //auth.getUserId(),
                         0,
                         wfConfig.getStateIdTo(),
                         new Date(),
