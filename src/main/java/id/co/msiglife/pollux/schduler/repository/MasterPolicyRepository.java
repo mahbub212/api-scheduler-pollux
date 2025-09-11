@@ -65,7 +65,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
             "AND EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reg_spaj = pol.reg_spaj AND reminder_days = :days and flag_done = 0) " +
             "AND (lower(lps.lssp_status) LIKE 'inforce' OR lower(uw.status_uw) LIKE 'inforce' OR lower(sts.status_name) LIKE 'inforce') " +
-            "AND (pol.lssp_id = 8 " +
+            "AND (pol.lssp_id != 8 " +
             "      OR LOWER(lps.lssp_status) LIKE '%cancel%' " +
             "      OR (pol.lssp_id = 12 AND pol.lspd_id = 999)) " +
             "ORDER BY pol.mspo_date_print DESC",
