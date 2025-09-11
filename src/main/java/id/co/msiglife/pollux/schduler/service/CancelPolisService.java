@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,6 +74,15 @@ public class CancelPolisService {
     @Autowired
     private MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
+    @Autowired
+    MasterWFDocumentRepository masterWFDocumentRepository;
+
+    @Autowired
+    MasterWFDocumentHistoryRepository masterWFDocumentHistoryRepository;
+
+    @Autowired
+    ListWFConfigRepository listWFConfigRepository;
+
     @PersistenceContext
     private EntityManager em;
 
@@ -106,6 +116,7 @@ public class CancelPolisService {
                 MasterProductInsured masterProductInsured = masterProductInsuredRepository.findMainProduct(dto.getRegSpaj(), 0, 1).get(0);
                 MasterProductSetup masterProductSetup = masterProductSetupRepository.findByProductSetupId(masterPolicy.getProductId());
                 MasterProduction masterProduction = masterProductionRepository.findByRegSpajAndMsproProdKe(dto.getRegSpaj(), 1);
+                MasterWFDocument masterWFDocument = masterWFDocumentRepository.findMasterWFDocumentByDocNumberAndLswfTypeId(dto.getRegSpaj(), 78);
 
                 String noJm = ptcJmRepository.getNoJm();
                 String noEndors = masterPolicyRepository.getNoEndors();
@@ -142,6 +153,29 @@ public class CancelPolisService {
 
                 // 5) POSITION SPAJ
                 MasterPositionSPAJ masterPositionSPAJ = insertMasterPositionSpaj(dto, masterEndors, masterInsured);
+
+                // insert WF engine
+                ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
+                        masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -7);
+
+                masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
+                masterWFDocument.setLswfStatusId(11);
+                this.insertMasterWFDocumentHistory(
+                        masterWFDocument.getDocId(),
+                        masterWFDocument.getLswfTypeId(),
+                        masterWFDocument.getParentDocId(),
+                        wfConfig.getStateIdFrom(),
+                        wfConfig.getConfigAction(),
+                        //auth.getUserId(),
+                        0,
+                        wfConfig.getStateIdTo(),
+                        new Date(),
+                        null,
+                        null,
+                        null,
+                        masterWFDocument.getDocNumber(),
+                        wfConfig.getStatusId()
+                );
 
                 // 6) MST_PTC_TM (no_jm berasal dari generator mu)
                 //pindah sekalian Tm dan Jm
@@ -218,6 +252,24 @@ public class CancelPolisService {
         masterPositionSPAJ.setLusId(0);
         masterPositionSPAJ.setDesc(masterEndors.getMsenAlasan());
         return masterPositionSPAJ;
+    }
+
+    private MasterWFDocumentHistory insertMasterWFDocumentHistory(Long docId, Integer lswfTypeId, Long parentDocId, Integer lswfStateIdFrom, String lswfConfigAction, Integer lusId, Integer lswfStateIdTo, Date docHistCreated, String docStatusKey, Integer docStatusValue, String docHistRemarks, String docNumber, Integer lswfStatusId) {
+        MasterWFDocumentHistory masterWFDocumentHistory = new MasterWFDocumentHistory();
+        masterWFDocumentHistory.setDocId(docId);
+        masterWFDocumentHistory.setLswfTypeId(lswfTypeId);
+        masterWFDocumentHistory.setParentDocId(parentDocId);
+        masterWFDocumentHistory.setLswfStateIdFrom(lswfStateIdFrom);
+        masterWFDocumentHistory.setLswfConfigAction(lswfConfigAction);
+        masterWFDocumentHistory.setLusId(lusId);
+        masterWFDocumentHistory.setLswfStateIdTo(lswfStateIdTo);
+        masterWFDocumentHistory.setDocHistCreated(docHistCreated);
+        masterWFDocumentHistory.setDocStatusKey(docStatusKey);
+        masterWFDocumentHistory.setDocStatusValue(docStatusValue);
+        masterWFDocumentHistory.setDocHistRemarks(docHistRemarks);
+        masterWFDocumentHistory.setDocNumber(docNumber);
+        masterWFDocumentHistory.setLswfStatusId(lswfStatusId);
+        return masterWFDocumentHistoryRepository.save(masterWFDocumentHistory);
     }
 
     private MasterDetEndors insertMasterDetEndors(CancelPolisDTO CancelPolisDTO, MasterEndors masterEndors, Date now) {
