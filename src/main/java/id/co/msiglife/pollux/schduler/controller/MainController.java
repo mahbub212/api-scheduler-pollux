@@ -3,10 +3,11 @@ package id.co.msiglife.pollux.schduler.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
+import id.co.msiglife.pollux.schduler.job.*;
+import id.co.msiglife.pollux.schduler.service.CancelSpajkService;
+import id.co.msiglife.pollux.schduler.service.SuratKonfirmasiSertifikatAkanDibatalkanService;
+import id.co.msiglife.pollux.schduler.service.SuratTunggakanPremiService;
 import id.co.msiglife.pollux.schduler.service.TakeoutPostponedDeclineService;
-import id.co.msiglife.pollux.schduler.job.PreProcessingAutoCancelScheduler;
-import id.co.msiglife.pollux.schduler.job.SuratKonfirmasiPembatalanSertifikatScheduler;
-import id.co.msiglife.pollux.schduler.job.CancelPolisScheduler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,10 @@ public class MainController {
     private final CancelPolisScheduler cancelPolisScheduler;
     private final SuratKonfirmasiPembatalanSertifikatScheduler suratKonfirmasiPembatalanSertifikatScheduler;
     private final PreProcessingAutoCancelScheduler preProcessingAutoCancelScheduler;
+    private final SuratKonfirmasiSertifikatAkanDibatalkanScheduler suratKonfirmasiSertifikatAkanDibatalkanScheduler;
+    private final SuratTunggakanPremiScheduler suratTunggakanPremiScheduler;
+    private final CancelSpajkScheduler cancelSpajkScheduler;
+    private final SuratKonfirmasiAwalScheduler suratKonfirmasiAwalScheduler;
 
     @GetMapping("/api")
     public ResponseEntity<?> helloWorld() {
@@ -54,6 +59,26 @@ public class MainController {
     @PostMapping("/api/test-pembatalan-sertifikat")
     public void suratPembatalanSertifikat(){
         suratKonfirmasiPembatalanSertifikatScheduler.sendEmailSuratPembatalanSertifikat();
+    }
+
+    @PostMapping("/api/test-sertifikat-akan-dibatalkan")
+    public void suratPembatalanAkanSertifikat() throws Exception {
+        suratKonfirmasiSertifikatAkanDibatalkanScheduler.sendKonfirmasiSertifikatAkanDibatalkanEmail();
+    }
+
+    @PostMapping("/api/test-surat-tunggakan-premi")
+    public void suratTunggakanPremi(){
+        suratTunggakanPremiScheduler.sendEmailTunggakanPremi();
+    }
+
+    @PostMapping("/api/test-surat-konfirmasi-awal")
+    public void suratKonfirmasiAwal(){
+        suratKonfirmasiAwalScheduler.sendEmailSuratKonfirmasiAwal();
+    }
+
+    @PostMapping("/api/test-cancel-spajk")
+    public void cancelSpajk(){
+        cancelSpajkScheduler.cancelSpajkScheduler();
     }
 
 }
