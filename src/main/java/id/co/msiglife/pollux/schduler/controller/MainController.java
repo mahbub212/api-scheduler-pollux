@@ -1,21 +1,12 @@
 package id.co.msiglife.pollux.schduler.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
 import id.co.msiglife.pollux.schduler.job.*;
-import id.co.msiglife.pollux.schduler.service.CancelSpajkService;
-import id.co.msiglife.pollux.schduler.service.SuratKonfirmasiSertifikatAkanDibatalkanService;
-import id.co.msiglife.pollux.schduler.service.SuratTunggakanPremiService;
 import id.co.msiglife.pollux.schduler.service.TakeoutPostponedDeclineService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @CrossOrigin
