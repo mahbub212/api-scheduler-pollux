@@ -195,6 +195,7 @@ public class SuratTunggakanPremiService {
         try {
 
             String today = convertDateToJakartaTime(LocalDate.now());
+            String thirtyDaysLater = convertDateToJakartaTime(LocalDate.now().plusDays(30));
 
             // read template file
             String filePath = "template/surat_tunggakan_premi_template.html";
@@ -258,6 +259,7 @@ public class SuratTunggakanPremiService {
                         editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
                         editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                         editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                        editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
 
                         // create string HTML to a JSoup Document to render XHTML
                         Document document = Jsoup.parse(editedContent);
