@@ -164,6 +164,7 @@ public class SuratKonfirmasiAwalService {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
+        String thirtyDaysLater = convertDateToJakartaTime(LocalDate.now().plusDays(30));
         String filePath = "template/surat_konfirmasi_awal_template.html";
         String content;
 
@@ -233,6 +234,7 @@ public class SuratKonfirmasiAwalService {
                 editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
                 editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
