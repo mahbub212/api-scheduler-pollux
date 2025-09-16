@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -164,7 +165,6 @@ public class SuratKonfirmasiAwalService {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
-        String thirtyDaysLater = convertDateToJakartaTime(LocalDate.now().plusDays(30));
         String filePath = "template/surat_konfirmasi_awal_template.html";
         String content;
 
@@ -208,6 +208,13 @@ public class SuratKonfirmasiAwalService {
 
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
             String editedContent = content; // reset content to template state
+
+            Date tanggalCetak = dto.getTanggalCetakSertifikat();
+            LocalDate localDate = tanggalCetak.toInstant()
+                    .atZone(ZoneId.of("Asia/Jakarta"))
+                    .toLocalDate();
+
+            String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
 
             // define folderPath and outputPdf, then check if related file is already exists
             String folderPath = STORAGE_PATH + dto.getRegSpaj();
