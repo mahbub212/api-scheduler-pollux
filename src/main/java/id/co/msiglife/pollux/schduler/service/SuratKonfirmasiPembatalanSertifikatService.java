@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -185,7 +186,6 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
-        String yesterday = convertDateToJakartaTime(LocalDate.now().minusDays(1));
         String filePath = "template/surat_konfirmasi_pembatalan_sertifikat.html";
         String content;
 
@@ -230,6 +230,13 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         for (SuratAutoCancelDTO dto : pembatalanSertifikatDTOList) {
             String editedContent = content; // reset content to template state
 
+            Date tanggalCetak = dto.getTanggalCetakSertifikat();
+            LocalDate localDate = tanggalCetak.toInstant()
+                    .atZone(ZoneId.of("Asia/Jakarta"))
+                    .toLocalDate();
+
+            String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
+
             // define folderPath and outputPdf, then check if related file is already exists
             String folderPath = STORAGE_PATH + dto.getRegSpaj();
             String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
@@ -255,7 +262,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
                 editedContent = editedContent.replace("{up}", currencyFormatID(dto.getUangPertanggungan()));
-                editedContent = editedContent.replace("{tanggal_jatuh_tempo_pembayaran_premi}", yesterday);
+                editedContent = editedContent.replace("{tanggal_jatuh_tempo_pembayaran_premi}", thirtyDaysLater);
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
