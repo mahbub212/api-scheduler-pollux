@@ -6,6 +6,7 @@ import id.co.msiglife.pollux.schduler.entity.polis.*;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcTm;
 import id.co.msiglife.pollux.schduler.exception.NotBalancedException;
+import id.co.msiglife.pollux.schduler.exception.WfConfigNotFoundException;
 import id.co.msiglife.pollux.schduler.projection.CancelJmProjection;
 import id.co.msiglife.pollux.schduler.repository.*;
 import id.co.msiglife.pollux.schduler.repository.polis.*;
@@ -154,9 +155,24 @@ public class CancelPolisService {
                 // 5) POSITION SPAJ
                 MasterPositionSPAJ masterPositionSPAJ = insertMasterPositionSpaj(dto, masterEndors, masterInsured);
 
+                // 6) MST_PTC_TM (no_jm berasal dari generator mu)
+                //pindah sekalian Tm dan Jm
+
+                // 7) MST_PTC_JM_LIST (baris kas/debet/creditnya)
+                List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
+                        noJm, masterProduction.getNoJm(), dto.getRegSpaj()
+                );
+                journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm, ptcJmRepository);
+
+                System.out.println(ptcJmRepository.journalCreated(noJm));
+
                 // insert WF engine
                 ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
                         masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -7);
+
+                if(wfConfig == null){
+                    throw new WfConfigNotFoundException("Wf Config Not Found");
+                }
 
                 masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
                 masterWFDocument.setLswfStatusId(11);
@@ -176,17 +192,6 @@ public class CancelPolisService {
                         wfConfig.getStatusId()
                 );
 
-                // 6) MST_PTC_TM (no_jm berasal dari generator mu)
-                //pindah sekalian Tm dan Jm
-
-                // 7) MST_PTC_JM_LIST (baris kas/debet/creditnya)
-                List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
-                        noJm, masterProduction.getNoJm(), dto.getRegSpaj()
-                );
-                journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm, ptcJmRepository);
-
-                System.out.println(ptcJmRepository.journalCreated(noJm));
-
                 endorses.add(masterEndors);
                 detEndorses.add(masterDetEndors);
                 prods.add(masterProductionCancel);
@@ -200,6 +205,10 @@ public class CancelPolisService {
                 masterBilling.setLspdId(ConvertUtil.safeLong(25));
                 masterBilling.setMsbiActive(0);
                 masterBillingList.add(masterBilling);
+            } catch(WfConfigNotFoundException e){
+                System.out.println(e.getMessage() + " " + dto.getRegSpaj() + " -> " + e.getMessage());
+                // lanjut ke item berikutnya; data JM/TM utk item ini sudah rollback
+                continue;
             } catch(NotBalancedException e){
                 System.out.println("Journal Cancel Not Balance RegSpaj: " + dto.getRegSpaj() + " -> " + e.getMessage());
                 // lanjut ke item berikutnya; data JM/TM utk item ini sudah rollback
