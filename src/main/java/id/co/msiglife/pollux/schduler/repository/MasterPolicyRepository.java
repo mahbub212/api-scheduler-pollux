@@ -65,6 +65,9 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
             "AND EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reg_spaj = pol.reg_spaj AND reminder_days = :days and flag_done = 0) " +
             "AND (lower(lps.lssp_status) LIKE 'inforce' OR lower(uw.status_uw) LIKE 'inforce' OR lower(sts.status_name) LIKE 'inforce') " +
+            "AND (pol.lssp_id != 8) " +
+            "AND LOWER(lps.lssp_status) NOT LIKE '%cancel%' " +
+            "AND (pol.lssp_id != 12 AND pol.lspd_id != 999) " +
             "ORDER BY pol.mspo_date_print DESC",
             nativeQuery = true)
     List<Object[]> findAutoCancelByDays(@Param("days") Integer days);
@@ -95,6 +98,9 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "AND (LOWER(lps.lssp_status) LIKE 'inforce' " +
             "     OR LOWER(uw.status_uw) LIKE 'inforce' " +
             "     OR LOWER(sts.status_name) LIKE 'inforce') " +
+            "AND (pol.lssp_id != 8) " +
+            "AND LOWER(lps.lssp_status) NOT LIKE '%cancel%' " +
+            "AND (pol.lssp_id != 12 AND pol.lspd_id != 999) " +
             "ORDER BY pol.mspo_date_print DESC",
             nativeQuery = true)
     List<Object[]> findAllSuratAutoCancel(@Param("days") Integer days);
@@ -125,7 +131,9 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "WHERE " +
             "TRUNC(SYSDATE) = TRUNC(sign.MSSD_SIGNDATE + 61) AND " +
             "(pol.LSSP_ID != 1 OR pol.MSPO_POLICY_NO IS NOT NULL) AND " +
-            "(pol.LSSP_ID != 12 AND pol.LSPD_ID != 999) AND " +
+            "(pol.lssp_id != 8) AND " +
+            "LOWER(lps.lssp_status) NOT LIKE '%cancel%' AND " +
+            "(pol.lssp_id != 12 AND pol.lspd_id != 999) AND " +
             "(pol.LSSP_ID != 25 AND pol.LSSP_ID != 27) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG log " +
             "    WHERE log.reg_spaj = pol.reg_spaj " +
