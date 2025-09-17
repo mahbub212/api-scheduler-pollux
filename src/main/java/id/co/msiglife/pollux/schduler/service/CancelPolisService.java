@@ -155,6 +155,17 @@ public class CancelPolisService {
                 // 5) POSITION SPAJ
                 MasterPositionSPAJ masterPositionSPAJ = insertMasterPositionSpaj(dto, masterEndors, masterInsured);
 
+                // 6) MST_PTC_TM (no_jm berasal dari generator mu)
+                //pindah sekalian Tm dan Jm
+
+                // 7) MST_PTC_JM_LIST (baris kas/debet/creditnya)
+                List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
+                        noJm, masterProduction.getNoJm(), dto.getRegSpaj()
+                );
+                journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm, ptcJmRepository);
+
+                System.out.println(ptcJmRepository.journalCreated(noJm));
+
                 // insert WF engine
                 ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
                         masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -7);
@@ -180,17 +191,6 @@ public class CancelPolisService {
                         masterWFDocument.getDocNumber(),
                         wfConfig.getStatusId()
                 );
-
-                // 6) MST_PTC_TM (no_jm berasal dari generator mu)
-                //pindah sekalian Tm dan Jm
-
-                // 7) MST_PTC_JM_LIST (baris kas/debet/creditnya)
-                List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
-                        noJm, masterProduction.getNoJm(), dto.getRegSpaj()
-                );
-                journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm, ptcJmRepository);
-
-                System.out.println(ptcJmRepository.journalCreated(noJm));
 
                 endorses.add(masterEndors);
                 detEndorses.add(masterDetEndors);
