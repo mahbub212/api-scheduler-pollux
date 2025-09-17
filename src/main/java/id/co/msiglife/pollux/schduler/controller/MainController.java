@@ -35,7 +35,7 @@ public class MainController {
 
     @PostMapping("/api/test-cancel-polis")
     public void cancelPolist(){
-        cancelPolisScheduler.cancelSpajkScheduler();
+        cancelPolisScheduler.cancelPolisScheduler();
     }
 
     @PostMapping("/api/test-pre-prosessing")

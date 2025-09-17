@@ -20,7 +20,7 @@ public class CancelPolisScheduler {
     private CancelPolisService cancelPolisService;
 
     @Scheduled(cron = "0 40 1 * * ?")
-    public void cancelSpajkScheduler(){
+    public void cancelPolisScheduler(){
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
         System.out.println("=================== START EXECUTING TASK: CANCEL POLIS (" + cancelPolisDTOList.size() + ") Data ===================");
         cancelPolisService.processCancelPolisList(cancelPolisDTOList);
@@ -28,7 +28,7 @@ public class CancelPolisScheduler {
     }
 
     @Scheduled(cron = "0 40 5 * * ?")
-    public void retryCancelSpajkScheduler(){
+    public void retryCancelPolisScheduler(){
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
         System.out.println("=================== RETRY EXECUTING TASK: CANCEL POLIS (" + cancelPolisDTOList.size() + ") Data ===================");
         cancelPolisService.processCancelPolisList(cancelPolisDTOList);
