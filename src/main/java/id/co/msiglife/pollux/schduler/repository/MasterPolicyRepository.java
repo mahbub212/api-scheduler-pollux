@@ -158,8 +158,8 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = 61 AND flag_done = 0", nativeQuery = true)
     List<Object[]> findSpajkTobeCancelled();
 
-    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = 31 AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
-    List<Object[]> findPolicyTobeCancelled();
+    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = :daysPolicyCanceled AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
+    List<Object[]> findPolicyTobeCancelled(@Param("daysPolicyCanceled") Integer days);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "UPDATE EKA.MST_POLICY  " +

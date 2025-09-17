@@ -12,6 +12,7 @@ import id.co.msiglife.pollux.schduler.repository.*;
 import id.co.msiglife.pollux.schduler.repository.polis.*;
 import id.co.msiglife.pollux.schduler.service.JournalService.JournalService;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
+import id.co.msiglife.pollux.schduler.util.StaticValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -360,7 +361,7 @@ public class CancelPolisService {
 
 
     public List<CancelPolisDTO> getCancelPolisList() {
-        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled();
+        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
         List<CancelPolisDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {
             CancelPolisDTO dto = new CancelPolisDTO();
