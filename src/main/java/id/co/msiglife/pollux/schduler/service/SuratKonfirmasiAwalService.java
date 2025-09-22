@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -229,6 +230,13 @@ public class SuratKonfirmasiAwalService {
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
             String editedContent = content; // reset content to template state
 
+            Date tanggalCetak = dto.getTanggalCetakSertifikat();
+            LocalDate localDate = tanggalCetak.toInstant()
+                    .atZone(ZoneId.of("Asia/Jakarta"))
+                    .toLocalDate();
+
+            String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
+
             // define folderPath and outputPdf, then check if related file is already exists
             String folderPath = STORAGE_PATH + dto.getRegSpaj();
             String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_AWAL.pdf";
@@ -254,6 +262,7 @@ public class SuratKonfirmasiAwalService {
                 editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
                 editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
