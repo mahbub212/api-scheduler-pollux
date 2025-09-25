@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -210,6 +211,13 @@ public class SuratTunggakanPremiService {
                 try {
                     String editedContent = content;
 
+                    Date tanggalCetak = dto.getTanggalCetakSertifikat();
+                    LocalDate localDate = tanggalCetak.toInstant()
+                            .atZone(ZoneId.of("Asia/Jakarta"))
+                            .toLocalDate();
+
+                    String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
+
                     // create the folder if it doesn't exist
                     String folderPath = STORAGE_PATH + dto.getRegSpaj();
 
@@ -237,6 +245,7 @@ public class SuratTunggakanPremiService {
                         editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
                         editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                         editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                        editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
 
                         // create string HTML to a JSoup Document to render XHTML
                         Document document = Jsoup.parse(editedContent);
