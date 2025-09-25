@@ -22,4 +22,3 @@ public class StaticValue {
 	public final static Integer STATUS_WORKSHEET_POSTPONED = 7;
 	public final static Integer STATUS_WORKSHEET_APPROVED = 11;
 }
-
