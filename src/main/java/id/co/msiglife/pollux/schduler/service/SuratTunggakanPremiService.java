@@ -60,29 +60,7 @@ public class SuratTunggakanPremiService {
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
-    @Scheduled(cron = "0 20 1 * * ?")
-    public void sendEmailTunggakanPremi(){
-        List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
-        System.out.println("=================== START GENERATE SURAT TUNGGAKAN PREMI PDF (" + tunggakanPremiDTOList.size() + ") Data ===================");
-        generatePdfTunggakanPremi(tunggakanPremiDTOList);
-        System.out.println("=================== END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
-        System.out.println("=================== START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-        generateAutoMail(tunggakanPremiDTOList);
-        System.out.println("=================== END SEND EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-    }
-
-    @Scheduled(cron = "0 20 5 * * ?")
-    public void sendEmailTunggakanPremiRetry(){
-        List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
-        System.out.println("=================== RETRYING START GENERATE SURAT TUNGGAKAN PREMI PDF " + tunggakanPremiDTOList.size() + " Data ===================");
-        generatePdfTunggakanPremi(tunggakanPremiDTOList);
-        System.out.println("=================== RETRYING END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
-        System.out.println("=================== RETRYING START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-        generateAutoMail(tunggakanPremiDTOList);
-        System.out.println("=================== RETRYING END SEND EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-    }
-
-    private void generateAutoMail(List<SuratAutoCancelDTO> tunggakanPremiDTOList) {
+    public void generateAutoMail(List<SuratAutoCancelDTO> tunggakanPremiDTOList) {
         int errorIn = 3;
         int iteration = 0;
         for (SuratAutoCancelDTO dto : tunggakanPremiDTOList) {
@@ -172,6 +150,7 @@ public class SuratTunggakanPremiService {
                         masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
+                        masterAutoCancelEmailLog.setFlagPolisCanceled(0);
                         masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
 
                         masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
@@ -191,7 +170,7 @@ public class SuratTunggakanPremiService {
         }
     }
 
-    private void generatePdfTunggakanPremi(List<SuratAutoCancelDTO> suratAutoCancelDTOList){
+    public void generatePdfTunggakanPremi(List<SuratAutoCancelDTO> suratAutoCancelDTOList){
 
         try {
 

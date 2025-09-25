@@ -2,6 +2,7 @@ package id.co.msiglife.pollux.schduler.repository;
 
 import id.co.msiglife.pollux.schduler.entity.MasterPolicy;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -155,5 +156,23 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     List<Object[]> findAllPolicyTobeCancelled();
 
     @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = 61 AND flag_done = 0", nativeQuery = true)
-    List<Object[]> findPolicyTobeCancelled();
+    List<Object[]> findSpajkTobeCancelled();
+
+    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = :daysPolicyCanceled AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
+    List<Object[]> findPolicyTobeCancelled(@Param("daysPolicyCanceled") Integer days);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = "UPDATE EKA.MST_POLICY  " +
+            "      SET LSSP_ID = 8   " +
+            "      WHERE ( EKA.MST_POLICY.REG_SPAJ IN (:regSpaj) ) AND  " +
+            "        ( EKA.MST_POLICY.LSTB_ID = 2 )",
+            nativeQuery = true)
+    void updatePolisCanceled(@Param("regSpaj") List<String> regSpaj);
+
+    @Query(value =
+            "SELECT eka.pac_counter.Get_no_endors_seq() FROM DUAL",
+            nativeQuery = true)
+    String getNoEndors();
+
+
 }

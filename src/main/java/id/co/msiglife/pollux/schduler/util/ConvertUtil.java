@@ -69,6 +69,21 @@ public class ConvertUtil {
         return obj instanceof Date ? (Date) obj : null;
     }
 
+    public static Long safeLong(Object obj) {
+        if (obj instanceof Long) {
+            return (Long) obj;
+        } else if (obj instanceof Number) {
+            return ((Number) obj).longValue();
+        } else if (obj instanceof String) {
+            try {
+                return Long.parseLong((String) obj);
+            } catch (NumberFormatException e) {
+                e.printStackTrace(); // kalau string-nya ga bisa diparse
+            }
+        }
+        return null;
+    }
+
     public static Integer safeInt(Object obj) {
         if (obj == null) return null;
 
@@ -85,6 +100,13 @@ public class ConvertUtil {
         }
     }
 
+    public static boolean bigDecimalGTZero(BigDecimal value) {
+        return value != null && value.compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    public static boolean bigDecimalNEQZero(BigDecimal value) {
+        return value != null && value.compareTo(BigDecimal.ZERO) != 0;
+    }
 
     public static BigDecimal safeBigDecimal(Object obj) {
         return obj instanceof BigDecimal ? (BigDecimal) obj : null;

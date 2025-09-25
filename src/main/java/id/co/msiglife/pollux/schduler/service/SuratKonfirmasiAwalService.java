@@ -58,29 +58,7 @@ public class SuratKonfirmasiAwalService {
     @Autowired
     private FileProcessUtil fileProcessUtil;
 
-    @Scheduled(cron = "0 20 0 * * ?")
-    public void sendEmailSuratKonfirmasiAwal(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
-        System.out.println("=================== START GENERATE SURAT KONFIRMASI AWAL PDF (" + konfirmasiAwalDTOList.size() + ") Data ===================");
-        generatePdfSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== END GENERATED SURAT KONFIRMASI AWAL PDF ===================");
-        System.out.println("=================== START SENDING EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-        generateEmailSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-    }
-
-    @Scheduled(cron = "0 20 4 * * ?")
-    public void sendEmailSuratKonfirmasiAwalRetry(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
-        System.out.println("=================== RETRYING START GENERATE SURAT KONFIRMASI AWAL PDF " + konfirmasiAwalDTOList.size() + " Data ===================");
-        generatePdfSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== RETRYING END GENERATED SURAT KONFIRMASI AWAL PDF ===================");
-        System.out.println("=================== RETRYING START SENDING EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-        generateEmailSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== RETRYING END SEND EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-    }
-
-    private void generateEmailSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
+    public void generateEmailSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
 
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
             try{
@@ -167,6 +145,7 @@ public class SuratKonfirmasiAwalService {
                     masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                     masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                     masterAutoCancelEmailLog.setFlagDone(1);
+                    masterAutoCancelEmailLog.setFlagPolisCanceled(0);
                     masterAutoCancelEmailLog.setReminderDays(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
 
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
@@ -182,7 +161,7 @@ public class SuratKonfirmasiAwalService {
         }
     }
 
-    private void generatePdfSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
+    public void generatePdfSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
@@ -388,7 +367,7 @@ public class SuratKonfirmasiAwalService {
         return emailContent.toString();
     }
 
-    private List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer days) {
+    public List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer days) {
         List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
