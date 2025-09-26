@@ -5,18 +5,15 @@ import id.co.msiglife.pollux.schduler.entity.MasterAutoCancelEmailLog;
 import id.co.msiglife.pollux.schduler.repository.MasterAutoCancelEmailLogRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
-import id.co.msiglife.pollux.schduler.util.StaticValue;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 @Service
-public class PreProcessingSuratKonfirmasiAutoCancelService {
+public class PreProcessingAutoCancelService {
 
     @Autowired
     MasterPolicyRepository masterPolicyRepository;
@@ -24,26 +21,7 @@ public class PreProcessingSuratKonfirmasiAutoCancelService {
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
-    @Scheduled(cron = "0 1 0 * * ?")
-    public void preparationGenerateSuratKonfirmasi(){
-        List<Integer> reminderDays = Arrays.asList(
-                StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS,
-                StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS,
-                StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS,
-                StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
-
-        List<PreProcessingKonfirmasiSuratDTO> preProcessingDTOList = generatePreProcessingSurat(reminderDays);
-        System.out.println("=================== START INSERT PRE PROCESSING DATA (" + preProcessingDTOList.size() + ") Data ===================");
-        saveToLoggerAutoCancel(preProcessingDTOList);
-        System.out.println("=================== END GENERATED PRE PROCESSING DATA ===================");
-
-        List<PreProcessingKonfirmasiSuratDTO> preProcessingCancelList = generatePreProcessingCancelSPAJK();
-        System.out.println("=================== START INSERT PRE PROCESSING CANCELING DATA (" + preProcessingCancelList.size() + ") Data ===================");
-        saveToLoggerAutoCancelSPAJK(preProcessingCancelList);
-        System.out.println("=================== END GENERATED PRE PROCESSING CANCELING DATA ===================");
-    }
-
-    private void saveToLoggerAutoCancel(List<PreProcessingKonfirmasiSuratDTO> preProcessingDTOList) {
+    public void saveToLoggerAutoCancel(List<PreProcessingKonfirmasiSuratDTO> preProcessingDTOList) {
         try{
             for (PreProcessingKonfirmasiSuratDTO dto : preProcessingDTOList) {
                 MasterAutoCancelEmailLog masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
@@ -61,7 +39,7 @@ public class PreProcessingSuratKonfirmasiAutoCancelService {
         }
     }
 
-    private void saveToLoggerAutoCancelSPAJK(List<PreProcessingKonfirmasiSuratDTO> preProcessingDTOList) {
+    public void saveToLoggerAutoCancelSPAJK(List<PreProcessingKonfirmasiSuratDTO> preProcessingDTOList) {
         try{
             for (PreProcessingKonfirmasiSuratDTO dto : preProcessingDTOList) {
                 MasterAutoCancelEmailLog masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();

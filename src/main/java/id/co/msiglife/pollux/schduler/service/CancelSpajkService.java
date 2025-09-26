@@ -92,24 +92,8 @@ public class CancelSpajkService {
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
-    @Scheduled(cron = "0 40 1 * * ?")
-    public void cancelSpajkScheduler(){
-        List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
-        System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
-        this.executeTask(cancelSpajkDTOList);
-        System.out.println("=================== FINISHED EXECUTING TASK: CANCEL SPAJK ===================");
-    }
-
-    @Scheduled(cron = "0 40 5 * * ?")
-    public void retryCancelSpajkScheduler(){
-        List<CancelSpajkDTO> cancelSpajkDTOList = getCancelSpajkList();
-        System.out.println("=================== RETRY EXECUTING TASK: CANCEL SPAJK (" + cancelSpajkDTOList.size() + ") Data ===================");
-        this.executeTask(cancelSpajkDTOList);
-        System.out.println("=================== FINISHED RETRYING EXECUTING TASK: CANCEL SPAJK ===================");
-    }
-
-    private List<CancelSpajkDTO> getCancelSpajkList() {
-        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled();
+    public List<CancelSpajkDTO> getCancelSpajkList() {
+        List<Object[]> resultList = masterPolicyRepository.findSpajkTobeCancelled();
         List<CancelSpajkDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {
             CancelSpajkDTO dto = new CancelSpajkDTO();
@@ -119,7 +103,7 @@ public class CancelSpajkService {
         return policyToBeCancelledList;
     }
 
-    private void executeTask(List<CancelSpajkDTO> cancelSpajkDTOList){
+    public void executeTask(List<CancelSpajkDTO> cancelSpajkDTOList){
 
         Map<String, Object> result = new HashMap<>();
         MasterWfLogActivityPollux wfLog = new MasterWfLogActivityPollux();

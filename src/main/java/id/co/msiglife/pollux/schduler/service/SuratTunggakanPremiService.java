@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,29 +60,7 @@ public class SuratTunggakanPremiService {
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
-    @Scheduled(cron = "0 20 1 * * ?")
-    public void sendEmailTunggakanPremi(){
-        List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
-        System.out.println("=================== START GENERATE SURAT TUNGGAKAN PREMI PDF (" + tunggakanPremiDTOList.size() + ") Data ===================");
-        generatePdfTunggakanPremi(tunggakanPremiDTOList);
-        System.out.println("=================== END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
-        System.out.println("=================== START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-        generateAutoMail(tunggakanPremiDTOList);
-        System.out.println("=================== END SEND EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-    }
-
-    @Scheduled(cron = "0 20 5 * * ?")
-    public void sendEmailTunggakanPremiRetry(){
-        List<SuratAutoCancelDTO> tunggakanPremiDTOList = getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
-        System.out.println("=================== RETRYING START GENERATE SURAT TUNGGAKAN PREMI PDF " + tunggakanPremiDTOList.size() + " Data ===================");
-        generatePdfTunggakanPremi(tunggakanPremiDTOList);
-        System.out.println("=================== RETRYING END GENERATED SURAT TUNGGAKAN PREMI PDF ===================");
-        System.out.println("=================== RETRYING START SENDING EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-        generateAutoMail(tunggakanPremiDTOList);
-        System.out.println("=================== RETRYING END SEND EMAIL SURAT TUNGGAKAN PREMI PDF ===================");
-    }
-
-    private void generateAutoMail(List<SuratAutoCancelDTO> tunggakanPremiDTOList) {
+    public void generateAutoMail(List<SuratAutoCancelDTO> tunggakanPremiDTOList) {
         int errorIn = 3;
         int iteration = 0;
         for (SuratAutoCancelDTO dto : tunggakanPremiDTOList) {
@@ -171,6 +150,7 @@ public class SuratTunggakanPremiService {
                         masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
+                        masterAutoCancelEmailLog.setFlagPolisCanceled(0);
                         masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
 
                         masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
@@ -190,7 +170,7 @@ public class SuratTunggakanPremiService {
         }
     }
 
-    private void generatePdfTunggakanPremi(List<SuratAutoCancelDTO> suratAutoCancelDTOList){
+    public void generatePdfTunggakanPremi(List<SuratAutoCancelDTO> suratAutoCancelDTOList){
 
         try {
 
@@ -231,6 +211,13 @@ public class SuratTunggakanPremiService {
                 try {
                     String editedContent = content;
 
+                    Date tanggalCetak = dto.getTanggalCetakSertifikat();
+                    LocalDate localDate = tanggalCetak.toInstant()
+                            .atZone(ZoneId.of("Asia/Jakarta"))
+                            .toLocalDate();
+
+                    String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
+
                     // create the folder if it doesn't exist
                     String folderPath = STORAGE_PATH + dto.getRegSpaj();
 
@@ -258,6 +245,7 @@ public class SuratTunggakanPremiService {
                         editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
                         editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                         editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                        editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
 
                         // create string HTML to a JSoup Document to render XHTML
                         Document document = Jsoup.parse(editedContent);

@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -57,29 +58,7 @@ public class SuratKonfirmasiAwalService {
     @Autowired
     private FileProcessUtil fileProcessUtil;
 
-    @Scheduled(cron = "0 20 0 * * ?")
-    public void sendEmailSuratKonfirmasiAwal(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
-        System.out.println("=================== START GENERATE SURAT KONFIRMASI AWAL PDF (" + konfirmasiAwalDTOList.size() + ") Data ===================");
-        generatePdfSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== END GENERATED SURAT KONFIRMASI AWAL PDF ===================");
-        System.out.println("=================== START SENDING EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-        generateEmailSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== END SEND EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-    }
-
-    @Scheduled(cron = "0 20 4 * * ?")
-    public void sendEmailSuratKonfirmasiAwalRetry(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
-        System.out.println("=================== RETRYING START GENERATE SURAT KONFIRMASI AWAL PDF " + konfirmasiAwalDTOList.size() + " Data ===================");
-        generatePdfSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== RETRYING END GENERATED SURAT KONFIRMASI AWAL PDF ===================");
-        System.out.println("=================== RETRYING START SENDING EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-        generateEmailSuratKonfirmasiAwal(konfirmasiAwalDTOList);
-        System.out.println("=================== RETRYING END SEND EMAIL SURAT KONFIRMASI AWAL PDF ===================");
-    }
-
-    private void generateEmailSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
+    public void generateEmailSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
 
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
             try{
@@ -166,6 +145,7 @@ public class SuratKonfirmasiAwalService {
                     masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                     masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                     masterAutoCancelEmailLog.setFlagDone(1);
+                    masterAutoCancelEmailLog.setFlagPolisCanceled(0);
                     masterAutoCancelEmailLog.setReminderDays(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
 
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
@@ -181,7 +161,7 @@ public class SuratKonfirmasiAwalService {
         }
     }
 
-    private void generatePdfSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
+    public void generatePdfSuratKonfirmasiAwal(List<SuratAutoCancelDTO> konfirmasiAwalDTOList) {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
@@ -229,6 +209,13 @@ public class SuratKonfirmasiAwalService {
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
             String editedContent = content; // reset content to template state
 
+            Date tanggalCetak = dto.getTanggalCetakSertifikat();
+            LocalDate localDate = tanggalCetak.toInstant()
+                    .atZone(ZoneId.of("Asia/Jakarta"))
+                    .toLocalDate();
+
+            String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
+
             // define folderPath and outputPdf, then check if related file is already exists
             String folderPath = STORAGE_PATH + dto.getRegSpaj();
             String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_AWAL.pdf";
@@ -254,6 +241,7 @@ public class SuratKonfirmasiAwalService {
                 editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
                 editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
@@ -379,7 +367,7 @@ public class SuratKonfirmasiAwalService {
         return emailContent.toString();
     }
 
-    private List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer days) {
+    public List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer days) {
         List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
