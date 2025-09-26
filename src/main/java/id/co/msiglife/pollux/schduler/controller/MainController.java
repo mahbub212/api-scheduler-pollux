@@ -33,7 +33,6 @@ public class MainController {
         }
     }
 
-    /*
     @PostMapping("/api/test-cancel-polis")
     public void cancelPolist(){
         cancelPolisScheduler.cancelPolisScheduler();
@@ -45,9 +44,8 @@ public class MainController {
     }
 
     @PostMapping("/api/test-pembatalan-sertifikat")
-    public void suratPembatalanSertifikat(){
+    public void suratPembatalanSertifikat() {
         suratKonfirmasiPembatalanSertifikatScheduler.sendEmailSuratPembatalanSertifikat();
     }
-     */
 
 }
