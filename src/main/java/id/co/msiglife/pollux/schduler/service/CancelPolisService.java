@@ -229,7 +229,7 @@ public class CancelPolisService {
         // 10) updatePolisCanceled
         masterAutoCancelEmailLogRepository.updatePolisCanceled(cancelPolisProceed.stream()
                 .map(CancelPolisDTO::getRegSpaj)
-                .collect(Collectors.toList())
+                .collect(Collectors.toList()), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS
         );
     }
 
