@@ -55,6 +55,11 @@ management:
       enabled: true
     ping:
       enabled: true
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    password: polluxservice
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
 
 # Konfigurasi untuk profil dev
 ---
@@ -65,7 +70,7 @@ spring:
   datasource:
     url: jdbc:oracle:thin:@128.21.23.31:1521:AJSDB?oracle.jdbc.timezoneAsRegion=false
     username: POLLUXDEV
-    password: ACfOqi1x
+    password: ENC(jVMxRnPsWT4LERlNv4DaljN4mx0fI+LB)
     driver-class-name: oracle.jdbc.driver.OracleDriver
     hikari:
       auto-commit: true
@@ -110,7 +115,7 @@ spring:
   datasource:
     url: jdbc:oracle:thin:@128.21.22.31:1530:ajsdb
     username: dev
-    password: linkdev
+    password: ENC(c1Hxqs/EVX7QSV9a6z2j0g==)
     driver-class-name: oracle.jdbc.driver.OracleDriver
     hikari:
       auto-commit: true
