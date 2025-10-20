@@ -1,5 +1,6 @@
 package id.co.msiglife.pollux.schduler;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.util.TimeZone;
 
 @EnableAsync
 @EnableScheduling
+@EnableEncryptableProperties
 public class SchedulerApplication implements CommandLineRunner {
 
     @Value("${spring.profiles.active}")
