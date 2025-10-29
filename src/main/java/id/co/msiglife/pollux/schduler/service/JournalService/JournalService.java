@@ -52,8 +52,6 @@ public class JournalService {
                 r.getTAXNO() // pastikan ada di projection-mu
         ));
 
-        em.flush();
-
         BigDecimal bal = ptcJmRepository.isBalanceJournal(noJm);
         if (bal != null && bal.compareTo(BigDecimal.ZERO) != 0) {
             throw new NotBalancedException("NoJM " + noJm + " not balance: " + bal);

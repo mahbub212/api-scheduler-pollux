@@ -19,7 +19,7 @@ public class CancelPolisScheduler {
     @Autowired
     private CancelPolisService cancelPolisService;
 
-    @Scheduled(cron = "0 20 2 * * ?")
+    //@Scheduled(cron = "0 20 2 * * ?")
     public void cancelPolisScheduler(){
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
         System.out.println("=================== START EXECUTING TASK: CANCEL POLIS (" + cancelPolisDTOList.size() + ") Data ===================");
@@ -27,7 +27,7 @@ public class CancelPolisScheduler {
         System.out.println("=================== FINISHED EXECUTING TASK: CANCEL POLIS ===================");
     }
 
-    @Scheduled(cron = "0 0 6 * * ?")
+    //@Scheduled(cron = "0 0 6 * * ?")
     public void retryCancelPolisScheduler(){
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
         System.out.println("=================== RETRY EXECUTING TASK: CANCEL POLIS (" + cancelPolisDTOList.size() + ") Data ===================");
