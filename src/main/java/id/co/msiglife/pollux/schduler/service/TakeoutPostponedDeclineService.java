@@ -73,7 +73,7 @@ public class TakeoutPostponedDeclineService {
                     newMasterWFDocument.setLswfStateId(lswfStateIdTo);
                     newMasterWFDocument.setDocCreated(new Date());
                     newMasterWFDocument.setLusId(0);
-                    masterWFDocumentRepository.saveAndFlush(newMasterWFDocument);
+                    masterWFDocumentRepository.save(newMasterWFDocument);
                 }
             }
 
