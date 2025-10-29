@@ -51,7 +51,7 @@ pipeline {
         	sh "printenv"
             echo "replace env"
             sh "ls k8s/"
-            sh "envsubst < k8s/deployment.yaml > k8s/deployment${PIPELINE_NAME_SPACE}${PIPELINE_BUILD_IMAGE}.yaml "
+            sh "envsubst < k8s/deployment-dev.yaml > k8s/deployment${PIPELINE_NAME_SPACE}${PIPELINE_BUILD_IMAGE}.yaml "
             sh "cat k8s/deployment${PIPELINE_NAME_SPACE}${PIPELINE_BUILD_IMAGE}.yaml"
             sh "pwd"
 
