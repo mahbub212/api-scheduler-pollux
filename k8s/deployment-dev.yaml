@@ -31,7 +31,7 @@ spec:
             - name: flexvol-mount-mailpoolattach
               mountPath: /mnt/mailpoolattach
           ports:
-            - containerPort: 9095
+            - containerPort: containerPort
           resources:
             requests:
               memory: "200Mi"
@@ -41,17 +41,17 @@ spec:
               cpu: "2000m"
           readinessProbe:
             tcpSocket:
-              port: 9095
+              port: ${APP_PORT}
             initialDelaySeconds: 10
             periodSeconds: 30
           livenessProbe:
             tcpSocket:
-              port: 9095
+              port: ${APP_PORT}
             failureThreshold: 10
             periodSeconds: 30
           startupProbe:
             tcpSocket:
-              port: 9095
+              port: ${APP_PORT}
             failureThreshold: 30
             periodSeconds: 10
       volumes:
@@ -78,4 +78,4 @@ spec:
   ports:
     - port: ${PIPELINE_LOAD_BALANCER_PORT}
       protocol: TCP
-      targetPort: 9095
+      targetPort: ${APP_PORT}
