@@ -130,6 +130,10 @@ public class CancelPolisService {
         ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
                 masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -7);
 
+        if (wfConfig == null) {
+            throw new WfConfigNotFoundException("WF Config Not Found");
+        }
+
         String noJm = ptcJmRepository.getNoJm();
         System.out.println("No Jm : " + noJm);
         String noEndors = masterPolicyRepository.getNoEndors();
@@ -164,10 +168,6 @@ public class CancelPolisService {
         );
 
         journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm);
-
-        if (wfConfig == null) {
-            throw new WfConfigNotFoundException("WF Config Not Found");
-        }
 
         masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
         masterWFDocument.setLswfStatusId(11);
