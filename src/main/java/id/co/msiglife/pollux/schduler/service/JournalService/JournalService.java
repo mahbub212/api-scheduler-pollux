@@ -64,7 +64,7 @@ public class JournalService {
         mstPtcTm.setNoJmRef(masterProduction.getNoJm());
         mstPtcTm.setPosition(1);
         mstPtcTm.setTglJurnal(dateNow);
-        mstPtcTm.setUserInput(512);
+        mstPtcTm.setUserInput(0);
         ptcTmRepository.save(mstPtcTm);
         return mstPtcTm;
     }
