@@ -96,37 +96,25 @@ public class CancelPolisService {
         if (cancelPolisDTOList == null || cancelPolisDTOList.isEmpty()) return;
 
         // Track successfully processed records
-        List<CancelPolisDTO> cancelPolisProceed = new ArrayList<>();
 
         for (CancelPolisDTO dto : cancelPolisDTOList) {
             try {
+                System.out.println("In Progress canceled polis : " + dto.getRegSpaj());
                 processSingleCancelPolis(dto);
-                cancelPolisProceed.add(dto);
             } catch (WfConfigNotFoundException e) {
+                masterAutoCancelEmailLogRepository.updatePolisFailed(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
                 System.out.println("WF Config Not Found for RegSpaj: " + dto.getRegSpaj() + " -> " + e.getMessage());
-            } catch (NotBalancedException e) {
-                System.out.println("Journal Cancel Not Balanced for RegSpaj: " + dto.getRegSpaj() + " -> " + e.getMessage());
             } catch (Exception e) {
+                masterAutoCancelEmailLogRepository.updatePolisFailed(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
                 System.out.println("Unexpected error while processing RegSpaj: " + dto.getRegSpaj() + " -> " + e.getMessage());
             }
         }
-
-        masterPolicyRepository.updatePolisCanceled(
-                cancelPolisProceed.stream()
-                        .map(CancelPolisDTO::getRegSpaj)
-                        .collect(Collectors.toList())
-        );
-
-        masterAutoCancelEmailLogRepository.updatePolisCanceled(
-                cancelPolisProceed.stream()
-                        .map(CancelPolisDTO::getRegSpaj)
-                        .collect(Collectors.toList()),
-                StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS
-        );
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void processSingleCancelPolis(CancelPolisDTO dto) {
+        masterAutoCancelEmailLogRepository.updatePolisInProgress(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+
         Date dateNow = ptcJmRepository.getTruncatedSysdate();
         BigDecimal kurs = new BigDecimal(1);
 
@@ -138,7 +126,12 @@ public class CancelPolisService {
         MasterProduction masterProduction = masterProductionRepository.findByRegSpajAndMsproProdKe(dto.getRegSpaj(), 1);
         MasterWFDocument masterWFDocument = masterWFDocumentRepository.findMasterWFDocumentByDocNumberAndLswfTypeId(dto.getRegSpaj(), 78);
 
+        // WF Config update
+        ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
+                masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -7);
+
         String noJm = ptcJmRepository.getNoJm();
+        System.out.println("No Jm : " + noJm);
         String noEndors = masterPolicyRepository.getNoEndors();
 
         // Handle currency conversion
@@ -149,11 +142,6 @@ public class CancelPolisService {
             String monthNow = months.format(dateNow);
 
             kurs = ptcJmRepository.getKursLkuId02(yearNow, monthNow);
-        }
-
-        // Check journal balance
-        if (ConvertUtil.bigDecimalNEQZero(ptcJmRepository.isBalanceJournal(masterProduction.getNoJm()))) {
-            throw new NotBalancedException("NoJM " + noJm);
         }
 
         // Create entities
@@ -175,11 +163,7 @@ public class CancelPolisService {
                 noJm, masterProduction.getNoJm(), dto.getRegSpaj()
         );
 
-        journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm, ptcJmRepository);
-
-        // WF Config update
-        ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
-                masterWFDocument.getLswfTypeId(), masterWFDocument.getLswfStateId(), -7);
+        journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm);
 
         if (wfConfig == null) {
             throw new WfConfigNotFoundException("WF Config Not Found");
@@ -217,6 +201,9 @@ public class CancelPolisService {
         masterBilling.setLspdId(ConvertUtil.safeLong(25));
         masterBilling.setMsbiActive(0);
         masterBillingRepository.save(masterBilling);
+
+        masterPolicyRepository.updatePolisCanceledSingle(dto.getRegSpaj());
+        masterAutoCancelEmailLogRepository.updatePolisCanceled(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
 
         System.out.println("Successfully canceled polis: " + dto.getRegSpaj());
     }
