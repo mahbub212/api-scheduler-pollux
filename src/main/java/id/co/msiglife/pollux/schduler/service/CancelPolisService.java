@@ -160,7 +160,8 @@ public class CancelPolisService {
         MasterEndors masterEndors = makeMasterEndors(dto, noEndors, dateNow);
         MasterDetEndors masterDetEndors = makeMasterDetEndors(dto, masterEndors, dateNow);
 
-        MasterProduction masterProductionCancel = makeMasterProduction(masterPolicy, dateNow, kurs, masterBilling, dto.getRegSpaj());
+        MasterProduction masterProductionCancel = makeMasterProduction(masterPolicy, dateNow, kurs, masterBilling,
+                dto.getRegSpaj(), masterProduction.getMsproPolicyCost());
         masterProductionCancel.setNoJm(noJm);
 
         MasterDetProduction masterDetProduction = makeMasterDetProduction(
@@ -285,7 +286,8 @@ public class CancelPolisService {
         return masterEndors;
     }
 
-    private MasterProduction makeMasterProduction(MasterPolicy masterPolicy, Date dateNow, BigDecimal kurs, MasterBilling masterBilling, String regSpaj) {
+    private MasterProduction makeMasterProduction(MasterPolicy masterPolicy, Date dateNow, BigDecimal kurs,
+                                                  MasterBilling masterBilling, String regSpaj, BigDecimal policyCost) {
         MasterProduction masterProduction = new MasterProduction();
         masterProduction.setLstbId(masterPolicy.getLstbId());
         masterProduction.setRegSpaj(regSpaj);
@@ -294,11 +296,11 @@ public class CancelPolisService {
         masterProduction.setMsbiTahunKe(1);
         masterProduction.setMsbiPremiKe(1);
         masterProduction.setMsproJnProd("3");
-        masterProduction.setLkuId("01");
+        masterProduction.setLkuId(masterPolicy.getLkuId());
         masterProduction.setMsproNilaiKurs(kurs);//
         masterProduction.setMsproBegDate(masterPolicy.getBegDate());
         masterProduction.setMsproEndDate(masterPolicy.getEndDate());
-        masterProduction.setMsproPolicyCost(masterBilling.getMsbiPolicyCost());
+        masterProduction.setMsproPolicyCost(policyCost);
         masterProduction.setMsproCardCost(masterBilling.getMsbiTtlCardCost());
         masterProduction.setMsproStamp(masterBilling.getMsbiStamp());
         masterProduction.setMsproJmlMember(1);
