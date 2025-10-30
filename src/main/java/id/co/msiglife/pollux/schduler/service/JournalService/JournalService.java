@@ -1,5 +1,6 @@
 package id.co.msiglife.pollux.schduler.service.JournalService;
 
+import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcTm;
 import id.co.msiglife.pollux.schduler.entity.polis.MasterProduction;
 import id.co.msiglife.pollux.schduler.exception.NotBalancedException;
@@ -30,8 +31,8 @@ public class JournalService {
     @PersistenceContext
     private EntityManager em;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public void insertMstTmJm(List<CancelJmProjection> rows, MasterProduction masterProduction, Date dateNow, String noJm, PtcJmRepository ptcJmRepository){
+    @Transactional
+    public void insertMstTmJm(List<CancelJmProjection> rows, MasterProduction masterProduction, Date dateNow, String noJm){
 
         insertMstTm(masterProduction, dateNow, noJm);
 
@@ -49,13 +50,8 @@ public class JournalService {
                 r.getCONV_RATE(),
                 r.getMJM_JUMLAH_USD(),
                 r.getNO_POLIS(),
-                r.getTAXNO() // pastikan ada di projection-mu
+                r.getTAXNO()
         ));
-
-        BigDecimal bal = ptcJmRepository.isBalanceJournal(noJm);
-        if (bal != null && bal.compareTo(BigDecimal.ZERO) != 0) {
-            throw new NotBalancedException("NoJM " + noJm + " not balance: " + bal);
-        }
     }
 
     private MstPtcTm insertMstTm(MasterProduction masterProduction, Date dateNow, String noJm){

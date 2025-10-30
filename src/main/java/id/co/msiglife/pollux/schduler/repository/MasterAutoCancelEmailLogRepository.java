@@ -14,8 +14,24 @@ public interface MasterAutoCancelEmailLogRepository  extends JpaRepository<Maste
     @Modifying(clearAutomatically = true)
     @Query(value = "UPDATE EKA.MST_AUTO_CANCEL_EMAIL_LOG  " +
             "      SET FLAG_POLIS_CANCELED = 1, UPDATED_AT = SYSDATE   " +
-            "      WHERE ( EKA.MST_AUTO_CANCEL_EMAIL_LOG.REG_SPAJ IN (:regSpaj) ) AND  " +
-            "        ( EKA.MST_AUTO_CANCEL_EMAIL_LOG.REMINDER_DAYS = :daysPolicyCanceled )",
+            "      WHERE EKA.MST_AUTO_CANCEL_EMAIL_LOG.REG_SPAJ = :regSpaj AND  " +
+            "      EKA.MST_AUTO_CANCEL_EMAIL_LOG.REMINDER_DAYS = :daysPolicyCanceled ",
             nativeQuery = true)
-    void updatePolisCanceled(@Param("regSpaj") List<String> regSpaj, @Param("daysPolicyCanceled") Integer days);
+    void updatePolisCanceled(@Param("regSpaj") String regSpaj, @Param("daysPolicyCanceled") Integer days);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE EKA.MST_AUTO_CANCEL_EMAIL_LOG  " +
+            "      SET FLAG_POLIS_CANCELED = 9, UPDATED_AT = SYSDATE   " +
+            "      WHERE EKA.MST_AUTO_CANCEL_EMAIL_LOG.REG_SPAJ = :regSpaj AND  " +
+            "      EKA.MST_AUTO_CANCEL_EMAIL_LOG.REMINDER_DAYS = :daysPolicyCanceled ",
+            nativeQuery = true)
+    void updatePolisInProgress(@Param("regSpaj") String regSpaj, @Param("daysPolicyCanceled") Integer days);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE EKA.MST_AUTO_CANCEL_EMAIL_LOG  " +
+            "      SET FLAG_POLIS_CANCELED = -1, UPDATED_AT = SYSDATE   " +
+            "      WHERE EKA.MST_AUTO_CANCEL_EMAIL_LOG.REG_SPAJ = :regSpaj AND  " +
+            "      EKA.MST_AUTO_CANCEL_EMAIL_LOG.REMINDER_DAYS = :daysPolicyCanceled ",
+            nativeQuery = true)
+    void updatePolisFailed(@Param("regSpaj") String regSpaj, @Param("daysPolicyCanceled") Integer days);
 }
