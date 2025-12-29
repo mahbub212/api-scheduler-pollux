@@ -27,6 +27,6 @@ public interface MasterProductInsuredRepository extends JpaRepository<MasterProd
             "    LEFT JOIN EKA.MST_PRODSETUP_CL mpc ON pi.lsbs_id = mpc.lsbs_id AND pi.lsdbs_number = mpc.lsdbs_number " +
             "    LEFT JOIN EKA.LST_DET_BISNIS ldb ON pi.lsbs_id = ldb.lsbs_id AND pi.lsdbs_number = ldb.lsdbs_number " +
             "    WHERE pi.reg_spaj = :regSpaj and (pi.lsbs_id BETWEEN 300 AND 599 OR pi.lsbs_id >= 900) and mpc.lini_bisnis = 0",
-    nativeQuery = true)
+            nativeQuery = true)
     String checkLiniBisnis(@Param("regSpaj") String regSpaj);
 }
