@@ -117,7 +117,7 @@ public class SuratTunggakanPremiService {
                         emailEntity.setFrom("cosmos@msiglife.co.id");
                         emailEntity.setFromAlias("Notifikasi POLLUX");
                         emailEntity.setTo(emailTo);
-                        emailEntity.setCc("underwritingmriproses@msiglife.co.id");
+                        emailEntity.setCc("underwritingmriproses@msiglife.co.id;collectionmri@msiglife.co.id");
                         emailEntity.setBcc(null);
                         emailEntity.setSubject(subject);
                         emailEntity.setMessage(message);
