@@ -165,50 +165,31 @@ public class SuratKonfirmasiAwalService {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
-        String filePath = "template/surat_konfirmasi_awal_template.html";
-        String content;
 
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
-            assert inputStream != null;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                StringBuilder contentBuilder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    contentBuilder.append(line).append(System.lineSeparator());
-                }
-                content = contentBuilder.toString();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        String headerKonven = "template/images/watermark_header.png";
+        String footerKonven1 = "template/images/watermark_footer1.png";
+        String footerKonven2 = "template/images/watermark_footer2.png";
+        String headerSyariah = "template/images/watermark_header_syariah.png";
+        String footerSyariah1 = "template/images/watermark_footer1_syariah_2.png";
+        String footerSyariah2 = "template/images/watermark_footer1_syariah_3.png";
 
-        // replace content resources
-        try {
-            String base64Font = this.fileProcessUtil.encodeFontToBase64("template/fonts/Ubuntu/Ubuntu-Regular.ttf");
-            content = content.replace("[[MY_FONT_PATH]]", base64Font);
-
-            String imgPathWTHeader = this.fileProcessUtil.getBase64Image("template/images/watermark_header.png");
-            content = content.replace("../../images/watermark_header.png", imgPathWTHeader);
-
-            String imgPathWt = this.fileProcessUtil.getBase64Image("template/images/watermark.png");
-            content = content.replace("../../images/watermark.png", imgPathWt);
-
-            String imgPathFileFooter1 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer1.png");
-            content = content.replace("../../images/watermark_footer1.png", imgPathFileFooter1);
-
-            String imgPathFileFooter2 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
-            content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
-        } catch (Exception e) {
-            System.err.println("Failed to read content resources." + " | Error: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        String templateSyariah = initTemplateResource(loadTemplate(getTemplatePath(true)), headerSyariah, footerSyariah1, footerSyariah2);
+        String templateKonven = initTemplateResource(loadTemplate(getTemplatePath(false)), headerKonven, footerKonven1, footerKonven2);
 
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
-            String editedContent = content; // reset content to template state
 
+            if (dto.isSyariah()) {
+                processSuratKonfirmasiAwal(dto, templateSyariah, today);
+            } else {
+                processSuratKonfirmasiAwal(dto, templateKonven, today);
+            }
+        }
+    }
+
+    private void processSuratKonfirmasiAwal(SuratAutoCancelDTO dto, String content, String today) {
+
+        String editedContent = content; // reset content to template state
+        try {
             Date tanggalCetak = dto.getTanggalCetakSertifikat();
             LocalDate localDate = tanggalCetak.toInstant()
                     .atZone(ZoneId.of("Asia/Jakarta"))
@@ -283,6 +264,60 @@ public class SuratKonfirmasiAwalService {
             } else {
                 System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getTemplatePath(boolean isSyariah) {
+        return isSyariah
+                ? "template/syariahTemplate/surat_konfirmasi_awal_syariah_template.html"
+                : "template/surat_konfirmasi_awal_template.html";
+    }
+
+    private String loadTemplate(String filePath) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+            if (inputStream == null) {
+                throw new RuntimeException("Template not found: " + filePath);
+            }
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append(System.lineSeparator());
+                }
+                return sb.toString();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String initTemplateResource(String content, String header, String footer1, String footer2) {
+        try {
+
+            String base64Font = fileProcessUtil.encodeFontToBase64(
+                    "template/fonts/Ubuntu/Ubuntu-Regular.ttf");
+            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+
+            content = content.replace("../../images/watermark_header.png",
+                    fileProcessUtil.getBase64Image(header));
+
+            content = content.replace("../../images/watermark.png",
+                    fileProcessUtil.getBase64Image("template/images/watermark.png"));
+
+            content = content.replace("../../images/watermark_footer1.png",
+                    fileProcessUtil.getBase64Image(footer1));
+
+            content = content.replace("../../images/watermark_footer2.png",
+                    fileProcessUtil.getBase64Image(footer2));
+
+            return content;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed init template resource", e);
         }
     }
 

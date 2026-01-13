@@ -172,119 +172,100 @@ public class SuratTunggakanPremiService {
 
     public void generatePdfTunggakanPremi(List<SuratAutoCancelDTO> suratAutoCancelDTOList){
 
-        try {
+        String today = convertDateToJakartaTime(LocalDate.now());
 
-            String today = convertDateToJakartaTime(LocalDate.now());
+        String headerKonven = "template/images/watermark_header.png";
+        String footerKonven1 = "template/images/watermark_footer1.png";
+        String footerKonven2 = "template/images/watermark_footer2.png";
+        String headerSyariah = "template/images/watermark_header_syariah.png";
+        String footerSyariah1 = "template/images/watermark_footer1_syariah_2.png";
+        String footerSyariah2 = "template/images/watermark_footer1_syariah_3.png";
 
-            // read template file
-            String filePath = "template/surat_tunggakan_premi_template.html";
-            String content;
+        String templateSyariah = initTemplateResource(loadTemplate(getTemplatePath(true)), headerSyariah, footerSyariah1, footerSyariah2);
+        String templateKonven = initTemplateResource(loadTemplate(getTemplatePath(false)), headerKonven, footerKonven1, footerKonven2);
 
-            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
-                assert inputStream != null;
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                    StringBuilder contentBuilder = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        contentBuilder.append(line).append(System.lineSeparator());
-                    }
-                    content = contentBuilder.toString();
-                }
+        for (SuratAutoCancelDTO dto : suratAutoCancelDTOList) {
+
+            if (dto.isSyariah()) {
+                processSuratTunggakanPremi(dto, templateSyariah, today);
+            } else {
+                processSuratTunggakanPremi(dto, templateKonven, today);
             }
 
-            String base64Font = fileProcessUtil.encodeFontToBase64("template/fonts/Ubuntu/Ubuntu-Regular.ttf");
-            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+        }
+    }
 
-            String imgPathWTHeader = fileProcessUtil.getBase64Image("template/images/watermark_header.png");
-            content = content.replace("../../images/watermark_header.png", imgPathWTHeader);
+    private void processSuratTunggakanPremi(SuratAutoCancelDTO dto, String content, String today) {
 
-            String imgPathWt = fileProcessUtil.getBase64Image("template/images/watermark.png");
-            content = content.replace("../../images/watermark.png", imgPathWt);
+        String editedContent = content; // reset content to template state
 
-            String imgPathFileFooter1 = fileProcessUtil.getBase64Image("template/images/watermark_footer1.png");
-            content = content.replace("../../images/watermark_footer1.png", imgPathFileFooter1);
+        try {
+            Date tanggalCetak = dto.getTanggalCetakSertifikat();
+            LocalDate localDate = tanggalCetak.toInstant()
+                    .atZone(ZoneId.of("Asia/Jakarta"))
+                    .toLocalDate();
 
-            String imgPathFileFooter2 = fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
-            content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
+            String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
 
-            for (SuratAutoCancelDTO dto : suratAutoCancelDTOList ){
+            // create the folder if it doesn't exist
+            String folderPath = STORAGE_PATH + dto.getRegSpaj();
+
+            // PdfRendererBuilder will take this XHTML document and create a PDF as the output file
+            String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_TUNGGAKAN_PREMI.pdf";
+            Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
+            System.out.println("Checking file existence at path: " + outputPdf);
+            System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
+            System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
+            System.out.println("Exists path? " + Files.exists(sourcePath));
+
+            if (!Files.exists(sourcePath)) {
+
+                editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
+                editedContent = editedContent.replace("{tanggal_terbit_tunggakan}", today);
+                editedContent = editedContent.replace("{nama_cabang_bank}", dto.getNamaBankCabang());
+                editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
+                editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
+                editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
+                editedContent = editedContent.replace("{uang_pertanggungan}", currencyFormatID(dto.getUangPertanggungan()));
+                editedContent = editedContent.replace("{tenor_tahun}", dto.getMasaAsuransiTahun().toString());
+                editedContent = editedContent.replace("{tenor_bulan}", dto.getMasaAsuransiBulan().toString());
+                editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
+                editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
+                editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
+                editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
+
+                // create string HTML to a JSoup Document to render XHTML
+                Document document = Jsoup.parse(editedContent);
+                document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+
                 try {
-                    String editedContent = content;
-
-                    Date tanggalCetak = dto.getTanggalCetakSertifikat();
-                    LocalDate localDate = tanggalCetak.toInstant()
-                            .atZone(ZoneId.of("Asia/Jakarta"))
-                            .toLocalDate();
-
-                    String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
-
-                    // create the folder if it doesn't exist
-                    String folderPath = STORAGE_PATH + dto.getRegSpaj();
-
-                    // PdfRendererBuilder will take this XHTML document and create a PDF as the output file
-                    String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_TUNGGAKAN_PREMI.pdf";
-                    Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
-                    System.out.println("Checking file existence at path: " + outputPdf);
-                    System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
-                    System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
-                    System.out.println("Exists path? " + Files.exists(sourcePath));
-
-                    if (!Files.exists(sourcePath)) {
-
-                        editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
-                        editedContent = editedContent.replace("{tanggal_terbit_tunggakan}", today);
-                        editedContent = editedContent.replace("{nama_cabang_bank}", dto.getNamaBankCabang());
-                        editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
-                        editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
-                        editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
-                        editedContent = editedContent.replace("{uang_pertanggungan}", currencyFormatID(dto.getUangPertanggungan()));
-                        editedContent = editedContent.replace("{tenor_tahun}", dto.getMasaAsuransiTahun().toString());
-                        editedContent = editedContent.replace("{tenor_bulan}", dto.getMasaAsuransiBulan().toString());
-                        editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
-                        editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
-                        editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
-                        editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
-                        editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
-                        editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
-
-                        // create string HTML to a JSoup Document to render XHTML
-                        Document document = Jsoup.parse(editedContent);
-                        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-
-                        try {
-                            File folder = new File(folderPath);
-                            File parentDirectory = folder.getParentFile();
-                            if (parentDirectory.canWrite()) {
-                                if (!folder.exists()) {
-                                    folder.mkdirs();
-                                }
-                            } else {
-                                throw new IOException("No write permissions in the parent directory: " + parentDirectory);
-                            }
-                        } catch (IOException e) {
-                            System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
-                            e.printStackTrace();
+                    File folder = new File(folderPath);
+                    File parentDirectory = folder.getParentFile();
+                    if (parentDirectory.canWrite()) {
+                        if (!folder.exists()) {
+                            folder.mkdirs();
                         }
-
-                        try (OutputStream os = Files.newOutputStream(sourcePath)) {
-                            PdfRendererBuilder builder = new PdfRendererBuilder();
-                            builder.withUri(sourcePath.toString());
-                            builder.toStream(os);
-                            builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
-                            builder.run();
-                        }
-
-                        fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 17, outputPdf, 0);
                     } else {
-                        System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
+                        throw new IOException("No write permissions in the parent directory: " + parentDirectory);
                     }
-                }catch (IOException e){
-                    System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
-                    e.printStackTrace();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
                     e.printStackTrace();
                 }
+
+                try (OutputStream os = Files.newOutputStream(sourcePath)) {
+                    PdfRendererBuilder builder = new PdfRendererBuilder();
+                    builder.withUri(sourcePath.toString());
+                    builder.toStream(os);
+                    builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
+                    builder.run();
+                }
+
+                fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 17, outputPdf, 0);
+            } else {
+                System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
             }
         }catch (IOException e){
             throw new RuntimeException(e);
@@ -294,6 +275,57 @@ public class SuratTunggakanPremiService {
 
     }
 
+    private String getTemplatePath(boolean isSyariah) {
+        return isSyariah
+                ? "template/syariahTemplate/surat_tunggakan_premi_syariah_template.html"
+                : "template/surat_tunggakan_premi_template.html";
+    }
+
+    private String loadTemplate(String filePath) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+            if (inputStream == null) {
+                throw new RuntimeException("Template not found: " + filePath);
+            }
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append(System.lineSeparator());
+                }
+                return sb.toString();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String initTemplateResource(String content, String header, String footer1, String footer2) {
+        try {
+
+            String base64Font = fileProcessUtil.encodeFontToBase64(
+                    "template/fonts/Ubuntu/Ubuntu-Regular.ttf");
+            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+
+            content = content.replace("../../images/watermark_header.png",
+                    fileProcessUtil.getBase64Image(header));
+
+            content = content.replace("../../images/watermark.png",
+                    fileProcessUtil.getBase64Image("template/images/watermark.png"));
+
+            content = content.replace("../../images/watermark_footer1.png",
+                    fileProcessUtil.getBase64Image(footer1));
+
+            content = content.replace("../../images/watermark_footer2.png",
+                    fileProcessUtil.getBase64Image(footer2));
+
+            return content;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed init template resource", e);
+        }
+    }
 
     private String templateMessageTunggakanPremi(String namaBankCabang, String namaTertanggung, String nomorSertifikat, String tanggalTerbit) {
         StringBuilder emailContent = new StringBuilder();
