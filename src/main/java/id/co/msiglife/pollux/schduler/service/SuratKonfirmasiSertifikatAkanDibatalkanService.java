@@ -161,107 +161,147 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         try {
             // read template file
             String today = convertDateToJakartaTime(LocalDate.now());
-            String filePath = "template/surat_konfirmasi_sertifikat_akan_dibatalkan_template.html";
-            String content;
 
-            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
-                assert inputStream != null;
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                    StringBuilder contentBuilder = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        contentBuilder.append(line).append(System.lineSeparator());
-                    }
-                    content = contentBuilder.toString();
-                }
-            }
+            String headerKonven = "template/images/watermark_header.png";
+            String footerKonven1 = "template/images/watermark_footer1.png";
+            String footerKonven2 = "template/images/watermark_footer2.png";
+            String headerSyariah = "template/images/watermark_header_syariah.png";
+            String footerSyariah1 = "template/images/watermark_footer1_syariah_2.png";
+            String footerSyariah2 = "template/images/watermark_footer1_syariah_3.png";
 
-            // replace content resources
-            String base64Font = this.fileProcessUtil.encodeFontToBase64("template/fonts/Ubuntu/Ubuntu-Regular.ttf");
-            content = content.replace("[[MY_FONT_PATH]]", base64Font);
-
-            String imgPathWTHeader = this.fileProcessUtil.getBase64Image("template/images/watermark_header.png");
-            content = content.replace("../../images/watermark_header.png", imgPathWTHeader);
-
-            String imgPathWt = this.fileProcessUtil.getBase64Image("template/images/watermark.png");
-            content = content.replace("../../images/watermark.png", imgPathWt);
-
-            String imgPathFileFooter1 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer1.png");
-            content = content.replace("../../images/watermark_footer1.png", imgPathFileFooter1);
-
-            String imgPathFileFooter2 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
-            content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
+            String templateSyariah = initTemplateResource(loadTemplate(getTemplatePath(true)), headerSyariah, footerSyariah1, footerSyariah2);
+            String templateKonven = initTemplateResource(loadTemplate(getTemplatePath(false)), headerKonven, footerKonven1, footerKonven2);
 
             for(SuratAutoCancelDTO dto : suratAutoCancelDtoList){
-                try{
-                    String editedContent = content; // reset content to template state
-
-                    // create the folder if it doesn't exist
-                    String folderPath = STORAGE_PATH + dto.getRegSpaj();
-                    String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_SERTIFIKAT_AKAN_DIBATALKAN.pdf";
-                    Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
-                    LocalDate tanggalCetakSertifikat = dto.getTanggalCetakSertifikat() == null ? null : dto.getTanggalCetakSertifikat().toInstant().atZone(ZoneId.of("Asia/Jakarta")).toLocalDate();
-                    System.out.println("Checking file existence at path: " + outputPdf);
-                    System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
-                    System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
-                    System.out.println("Exists path? " + Files.exists(sourcePath));
-
-                    if (!Files.exists(sourcePath)) {
-                        // edit dynamic contents
-                        editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
-                        editedContent = editedContent.replace("{tanggal_hari_ini}", today);
-                        editedContent = editedContent.replace("{nama_bank_cabang}", dto.getNamaBankCabang());
-                        editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
-                        editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
-                        editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
-                        editedContent = editedContent.replace("{tenor}", dto.getMasaAsuransiTahun() + " Tahun " + (dto.getMasaAsuransiBulan() != null && dto.getMasaAsuransiBulan() > 0 ? dto.getMasaAsuransiBulan() + " Bulan" : ""));
-                        editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
-                        editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
-                        editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
-                        editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
-                        editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
-                        editedContent = editedContent.replace("{up}", currencyFormatID(dto.getUangPertanggungan()));
-                        editedContent = editedContent.replace("{tanggal_terakhir_pembayaran_premi}", tanggalCetakSertifikat == null ? "" : convertDateToJakartaTime(tanggalCetakSertifikat.plusDays(30)));
-
-                        // create string HTML to a JSoup Document to render XHTML
-                        Document document = Jsoup.parse(editedContent);
-                        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-
-                        try {
-                            File folder = new File(folderPath);
-                            File parentDirectory = folder.getParentFile();
-                            if (parentDirectory.canWrite()) {
-                                if (!folder.exists()) {
-                                    folder.mkdirs();
-                                }
-                            } else {
-                                throw new IOException("No write permissions in the parent directory: " + parentDirectory);
-                            }
-                        } catch (IOException e) {
-                            System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-
-                        try (OutputStream os = Files.newOutputStream(Paths.get(outputPdf))) {
-                            PdfRendererBuilder builder = new PdfRendererBuilder();
-                            builder.withUri(outputPdf);
-                            builder.toStream(os);
-                            builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
-                            builder.run();
-                        }
-
-                        // save into MasterUploadDokumen
-                        this.fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 15, outputPdf, 0);
-                    }else{
-                        System.out.println("Skipping PDF generation for Surat Konfirmasi Sertifikat akan Dibatalkan; file already exists for regSpaj: " + dto.getRegSpaj());
-                    }
-                } catch (Exception e) {
-                    System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
-                    e.printStackTrace();
+                if (dto.isSyariah()) {
+                    processSuratSertifikatAkanDibatalkan(dto, templateSyariah, today);
+                } else {
+                    processSuratSertifikatAkanDibatalkan(dto, templateKonven, today);
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void processSuratSertifikatAkanDibatalkan(SuratAutoCancelDTO dto, String content, String today) {
+
+        try{
+            String editedContent = content; // reset content to template state
+            // create the folder if it doesn't exist
+            String folderPath = STORAGE_PATH + dto.getRegSpaj();
+            String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_SERTIFIKAT_AKAN_DIBATALKAN.pdf";
+            Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
+            LocalDate tanggalCetakSertifikat = dto.getTanggalCetakSertifikat() == null ? null : dto.getTanggalCetakSertifikat().toInstant().atZone(ZoneId.of("Asia/Jakarta")).toLocalDate();
+            System.out.println("Checking file existence at path: " + outputPdf);
+            System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
+            System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
+            System.out.println("Exists path? " + Files.exists(sourcePath));
+
+            if (!Files.exists(sourcePath)) {
+                // edit dynamic contents
+                editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
+                editedContent = editedContent.replace("{tanggal_hari_ini}", today);
+                editedContent = editedContent.replace("{nama_bank_cabang}", dto.getNamaBankCabang());
+                editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
+                editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
+                editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
+                editedContent = editedContent.replace("{tenor}", dto.getMasaAsuransiTahun() + " Tahun " + (dto.getMasaAsuransiBulan() != null && dto.getMasaAsuransiBulan() > 0 ? dto.getMasaAsuransiBulan() + " Bulan" : ""));
+                editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
+                editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
+                editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
+                editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                editedContent = editedContent.replace("{up}", currencyFormatID(dto.getUangPertanggungan()));
+                editedContent = editedContent.replace("{tanggal_terakhir_pembayaran_premi}", tanggalCetakSertifikat == null ? "" : convertDateToJakartaTime(tanggalCetakSertifikat.plusDays(30)));
+
+                // create string HTML to a JSoup Document to render XHTML
+                Document document = Jsoup.parse(editedContent);
+                document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+
+                try {
+                    File folder = new File(folderPath);
+                    File parentDirectory = folder.getParentFile();
+                    if (parentDirectory.canWrite()) {
+                        if (!folder.exists()) {
+                            folder.mkdirs();
+                        }
+                    } else {
+                        throw new IOException("No write permissions in the parent directory: " + parentDirectory);
+                    }
+                } catch (IOException e) {
+                    System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+
+                try (OutputStream os = Files.newOutputStream(Paths.get(outputPdf))) {
+                    PdfRendererBuilder builder = new PdfRendererBuilder();
+                    builder.withUri(outputPdf);
+                    builder.toStream(os);
+                    builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
+                    builder.run();
+                }
+
+                // save into MasterUploadDokumen
+                this.fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 15, outputPdf, 0);
+            }else{
+                System.out.println("Skipping PDF generation for Surat Konfirmasi Sertifikat akan Dibatalkan; file already exists for regSpaj: " + dto.getRegSpaj());
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String getTemplatePath(boolean isSyariah) {
+        return isSyariah
+                ? "template/syariahTemplate/surat_konfirmasi_sertifikat_akan_dibatalkan_syariah_template.html"
+                : "template/surat_konfirmasi_sertifikat_akan_dibatalkan_template.html";
+    }
+
+    private String loadTemplate(String filePath) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+            if (inputStream == null) {
+                throw new RuntimeException("Template not found: " + filePath);
+            }
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append(System.lineSeparator());
+                }
+                return sb.toString();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String initTemplateResource(String content, String header, String footer1, String footer2) {
+        try {
+
+            String base64Font = fileProcessUtil.encodeFontToBase64(
+                    "template/fonts/Ubuntu/Ubuntu-Regular.ttf");
+            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+
+            content = content.replace("../../images/watermark_header.png",
+                    fileProcessUtil.getBase64Image(header));
+
+            content = content.replace("../../images/watermark.png",
+                    fileProcessUtil.getBase64Image("template/images/watermark.png"));
+
+            content = content.replace("../../images/watermark_footer1.png",
+                    fileProcessUtil.getBase64Image(footer1));
+
+            content = content.replace("../../images/watermark_footer2.png",
+                    fileProcessUtil.getBase64Image(footer2));
+
+            return content;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed init template resource", e);
         }
     }
 

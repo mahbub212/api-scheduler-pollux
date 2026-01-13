@@ -66,7 +66,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
                 String yesterday = convertDateToJakartaTime(LocalDate.now().minusDays(1));
 
-                String sourceFilePath = STORAGE_PATH + "/" + dto.getRegSpaj()  + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
+                String sourceFilePath = STORAGE_PATH + "/" + dto.getRegSpaj() + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
                 Path sourcePath = Paths.get(sourceFilePath).toAbsolutePath();
 
                 String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
@@ -166,48 +166,80 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
-        String filePath = "template/surat_konfirmasi_pembatalan_sertifikat.html";
-        String content;
 
+        String headerKonven = "template/images/watermark_header.png";
+        String footerKonven1 = "template/images/watermark_footer1.png";
+        String footerKonven2 = "template/images/watermark_footer2.png";
+        String headerSyariah = "template/images/watermark_header_syariah.png";
+        String footerSyariah1 = "template/images/watermark_footer1_syariah_2.png";
+        String footerSyariah2 = "template/images/watermark_footer1_syariah_3.png";
+
+        String templateSyariah = initTemplateResource(loadTemplate(getTemplatePath(true)), headerSyariah, footerSyariah1, footerSyariah2);
+        String templateKonven = initTemplateResource(loadTemplate(getTemplatePath(false)), headerKonven, footerKonven1, footerKonven2);
+
+        for (SuratAutoCancelDTO dto : pembatalanSertifikatDTOList) {
+            if (dto.isSyariah()) {
+                processSuratSertifikatDibatalkan(dto, templateSyariah, today);
+            } else {
+                processSuratSertifikatDibatalkan(dto, templateKonven, today);
+            }
+        }
+    }
+
+    private String getTemplatePath(boolean isSyariah) {
+        return isSyariah
+                ? "template/syariahTemplate/surat_konfirmasi_pembatalan_sertifikat_syariah.html"
+                : "template/surat_konfirmasi_pembatalan_sertifikat.html";
+    }
+
+    private String loadTemplate(String filePath) {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
-            assert inputStream != null;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                StringBuilder contentBuilder = new StringBuilder();
+            if (inputStream == null) {
+                throw new RuntimeException("Template not found: " + filePath);
+            }
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    contentBuilder.append(line).append(System.lineSeparator());
+                    sb.append(line).append(System.lineSeparator());
                 }
-                content = contentBuilder.toString();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                return sb.toString();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
-        // replace content resources
+    private String initTemplateResource(String content, String header, String footer1, String footer2) {
         try {
-            String base64Font = this.fileProcessUtil.encodeFontToBase64("template/fonts/Ubuntu/Ubuntu-Regular.ttf");
+
+            String base64Font = fileProcessUtil.encodeFontToBase64(
+                    "template/fonts/Ubuntu/Ubuntu-Regular.ttf");
             content = content.replace("[[MY_FONT_PATH]]", base64Font);
 
-            String imgPathWTHeader = this.fileProcessUtil.getBase64Image("template/images/watermark_header.png");
-            content = content.replace("../../images/watermark_header.png", imgPathWTHeader);
+            content = content.replace("../../images/watermark_header.png",
+                    fileProcessUtil.getBase64Image(header));
 
-            String imgPathWt = this.fileProcessUtil.getBase64Image("template/images/watermark.png");
-            content = content.replace("../../images/watermark.png", imgPathWt);
+            content = content.replace("../../images/watermark.png",
+                    fileProcessUtil.getBase64Image("template/images/watermark.png"));
 
-            String imgPathFileFooter1 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer1.png");
-            content = content.replace("../../images/watermark_footer1.png", imgPathFileFooter1);
+            content = content.replace("../../images/watermark_footer1.png",
+                    fileProcessUtil.getBase64Image(footer1));
 
-            String imgPathFileFooter2 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
-            content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
+            content = content.replace("../../images/watermark_footer2.png",
+                    fileProcessUtil.getBase64Image(footer2));
+
+            return content;
         } catch (Exception e) {
-            System.err.println("Failed to read content resources." + " | Error: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed init template resource", e);
         }
+    }
 
-        for (SuratAutoCancelDTO dto : pembatalanSertifikatDTOList) {
+    private void processSuratSertifikatDibatalkan(SuratAutoCancelDTO dto, String content, String today) {
+        try{
             String editedContent = content; // reset content to template state
 
             Date tanggalCetak = dto.getTanggalCetakSertifikat();
@@ -284,6 +316,9 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             } else {
                 System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
             }
+        } catch (Exception e) {
+            System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -312,44 +347,44 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
         // Content blocks
         emailContent.append("<div style=\"margin:0 0 12px 0;\">Kepada Yth.<br>")
-                    .append("<strong>")
-                    .append(namaCabang)
-                    .append("</strong>")
+                .append("<strong>")
+                .append(namaCabang)
+                .append("</strong>")
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                    .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
-                    .append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.")
+                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                .append("PT MSIG Life Insurance Indonesia Tbk. untuk memberikan perlindungan Asuransi Jiwa Kredit kepada Bapak/Ibu.")
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                    .append("Berikut kami sampaikan <strong>SURAT KONFIRMASI PEMBATALAN SERTIFIKAT</strong> ")
-                    .append("untuk sertifikat Asuransi Jiwa Kredit atas nama ")
-                    .append(namaTertanggung)
-                    .append(" dengan nomor sertifikat ")
-                    .append(noSertifikat)
-                    .append(" yang telah diterbitkan pada tanggal ")
-                    .append(tanggalTerbitSertifikat)
+                .append("Berikut kami sampaikan <strong>SURAT KONFIRMASI PEMBATALAN SERTIFIKAT</strong> ")
+                .append("untuk sertifikat Asuransi Jiwa Kredit atas nama ")
+                .append(namaTertanggung)
+                .append(" dengan nomor sertifikat ")
+                .append(noSertifikat)
+                .append(" yang telah diterbitkan pada tanggal ")
+                .append(tanggalTerbitSertifikat)
                 .append(".</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                    .append("Kami informasikan bahwa untuk pembayaran premi atas Sertifikat tersebut belum kami terima sampai dengan tanggal jatuh tempo pembayaran premi ditanggal ")
-                    .append(tanggalKemarin)
+                .append("Kami informasikan bahwa untuk pembayaran premi atas Sertifikat tersebut belum kami terima sampai dengan tanggal jatuh tempo pembayaran premi ditanggal ")
+                .append(tanggalKemarin)
                 .append(".</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                    .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
+                .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                    .append("Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
-                    .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#0066cc;\">collectionmri@msiglife.co.id</a>")
+                .append("Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
+                .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#0066cc;\">collectionmri@msiglife.co.id</a>")
                 .append("</div>");
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                    .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
+                .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
                 .append("</div>");
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");

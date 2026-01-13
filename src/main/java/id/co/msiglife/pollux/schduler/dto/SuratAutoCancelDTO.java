@@ -29,5 +29,6 @@ public class SuratAutoCancelDTO {
     private String regSpaj;
     private BigDecimal uangPertanggungan;
     private String emailTertanggung;
+    private boolean isSyariah;
 
 }
