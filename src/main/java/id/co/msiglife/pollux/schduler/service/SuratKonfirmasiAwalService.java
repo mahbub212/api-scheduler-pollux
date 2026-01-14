@@ -101,8 +101,15 @@ public class SuratKonfirmasiAwalService {
                     // set emailTo, subject, message, etc.
                     String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
 
-                    String subject = "Surat Konfirmasi Pembayaran Premi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                    String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                    String subject = "";
+                    String message = "";
+                    if(dto.isSyariah()){
+                        subject = "Surat Konfirmasi Pembayaran Kontribusi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                        message = templateSuratKonfirmasiEmailSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                    } else {
+                        subject = "Surat Konfirmasi Pembayaran Premi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                        message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                    }
 
                     MasterEmail emailEntity = new MasterEmail();
                     emailEntity.setId(generatedId);
@@ -375,6 +382,87 @@ public class SuratKonfirmasiAwalService {
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
                 .append("Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
+                .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#0066cc;\">collectionmri@msiglife.co.id</a>")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+
+        // Close tables
+        emailContent.append("            </td>");
+        emailContent.append("          </tr>");
+        emailContent.append("        </table>");
+        emailContent.append("      </td>");
+        emailContent.append("    </tr>");
+        emailContent.append("  </table>");
+
+        emailContent.append("</body>");
+        emailContent.append("</html>");
+
+        return emailContent.toString();
+    }
+
+    private String templateSuratKonfirmasiEmailSyariah(String namaCabang, String namaTertanggung, String noSertifikat, String tanggalTerbitSertifikat) {
+        StringBuilder emailContent = new StringBuilder();
+
+        emailContent.append("<!DOCTYPE html>");
+        emailContent.append("<html lang=\"id\">");
+        emailContent.append("<head>");
+        emailContent.append("  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">");
+        emailContent.append("  <meta charset=\"UTF-8\">");
+        emailContent.append("  <meta name=\"x-apple-disable-message-reformatting\">");
+        emailContent.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        emailContent.append("  <title>Surat Konfirmasi Pembayaran Kontribusi</title>");
+        emailContent.append("</head>");
+        emailContent.append("<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">");
+
+        // Wrapper table
+        emailContent.append("  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#ffffff;\">");
+        emailContent.append("    <tr>");
+        emailContent.append("      <td align=\"left\">");
+        emailContent.append("        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;\">");
+        emailContent.append("          <tr>");
+        emailContent.append("            <td style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#000000;padding:16px;\">");
+
+        // Content blocks
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">Kepada Yth.<br>")
+                .append("<strong>")
+                .append(namaCabang)
+                .append("</strong></div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Berikut kami sampaikan <strong>SURAT KONFIRMASI PEMBAYARAN KONTRIBUSI ASURANSI JIWA PEMBIAYAAN SYARIAH</strong> ")
+                .append("untuk sertifikat Asuransi Jiwa Pembiayaan Syariah atas nama ")
+                .append(namaTertanggung)
+                .append(" dengan nomor sertifikat ")
+                .append(noSertifikat)
+                .append(" yang telah diterbitkan pada tanggal ")
+                .append(tanggalTerbitSertifikat)
+                .append(".</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Sampai dengan hari ini, untuk pembayaran kontribusi atas sertifikat tersebut belum kami terima.<br>")
+                .append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran kontribusi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi peserta.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Apabila kontribusi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
                 .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#0066cc;\">collectionmri@msiglife.co.id</a>")
                 .append("</div>");
 

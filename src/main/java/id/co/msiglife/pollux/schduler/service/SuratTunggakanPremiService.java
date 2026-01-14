@@ -106,8 +106,16 @@ public class SuratTunggakanPremiService {
                         // set emailTo, subject, message, etc.
                         String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
 
-                        String subject = "Surat Tunggakan Premi Asuransi Jiwa Kredit a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                        String message = templateMessageTunggakanPremi(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                        String subject = "";
+                        String message = "";
+                        if(dto.isSyariah()){
+                            subject = "Surat Tunggakan Kontribusi Asuransi Jiwa Pembiayaan Syariah a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                            message = templateMessageTunggakanPremiSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                        } else {
+                            subject = "Surat Tunggakan Premi Asuransi Jiwa Kredit a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                            message = templateMessageTunggakanPremi(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                        }
+
 
                         MasterEmail emailEntity = new MasterEmail();
                         emailEntity.setId(generatedId);
@@ -386,6 +394,82 @@ public class SuratTunggakanPremiService {
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
                     .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("              <div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+        emailContent.append("              </td>");
+        emailContent.append("            </tr>");
+        emailContent.append("          </table>");
+        emailContent.append("        </td>");
+        emailContent.append("      </tr>");
+        emailContent.append("    </table>");
+        emailContent.append("</body>");
+        emailContent.append("</html>");
+
+        return emailContent.toString();
+    }
+
+    private String templateMessageTunggakanPremiSyariah(String namaBankCabang, String namaTertanggung, String nomorSertifikat, String tanggalTerbit) {
+        StringBuilder emailContent = new StringBuilder();
+
+        emailContent.append("<!DOCTYPE html>");
+        emailContent.append("<html lang=\"id\">");
+        emailContent.append("  <head>");
+        emailContent.append("    <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">");
+        emailContent.append("    <meta charset=\"utf-8\">");
+        emailContent.append("    <meta name=\"x-apple-disable-message-reformatting\">");
+        emailContent.append("    <title>Surat Tunggakan Kontribusi</title>");
+        emailContent.append("  </head>");
+        emailContent.append("<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">");
+        emailContent.append("    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#ffffff;\">");
+        emailContent.append("      <tr>");
+        emailContent.append("        <td align=\"left\">");
+        emailContent.append("          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;\">");
+        emailContent.append("            <tr>");
+        emailContent.append("              <td style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#000000;padding:16px;\">");
+        emailContent.append("               <div style=\"margin:0 0 12px 0;\">")
+                .append("Kepada Yth.")
+                .append("<br>")
+                .append("<strong>")
+                .append(namaBankCabang)
+                .append("</strong>")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Berikut kami sampaikan <strong>SURAT TUNGGAKAN PEMBAYARAN KONTRIBUSI ASURANSI JIWA PEMBIAYAAN SYARIAH</strong>")
+                .append(" untuk sertifikat Asuransi Jiwa Pembiayaan Syariah atas nama ")
+                .append(namaTertanggung)
+                .append(" dengan nomor sertifikat ")
+                .append(nomorSertifikat)
+                .append(" yang telah diterbitkan pada tanggal ")
+                .append(tanggalTerbit)
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Sampai dengan hari ini, untuk pembayaran kontribusi atas sertifikat tersebut belum kami terima.<br>")
+                .append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran kontribusi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi peserta.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Apabila kontribusi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
+                .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#1a73e8;text-decoration:underline;\">collectionmri@msiglife.co.id</a>.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
                 .append("</div>");
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
