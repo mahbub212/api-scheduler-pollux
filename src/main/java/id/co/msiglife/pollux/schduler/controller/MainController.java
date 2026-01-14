@@ -21,7 +21,6 @@ public class MainController {
 
     private final CancelPolisScheduler cancelPolisScheduler;
     private final SuratKonfirmasiPembatalanSertifikatScheduler suratKonfirmasiPembatalanSertifikatScheduler;
-    private final SuratKonfirmasiSertifikatAkanDibatalkanScheduler suratKonfirmasiSertifikatAkanDibatalkanScheduler;
     private final PreProcessingAutoCancelScheduler preProcessingAutoCancelScheduler;
     private final SuratKonfirmasiAwalScheduler suratKonfirmasiAwalScheduler;
     private final SuratTunggakanPremiScheduler suratTunggakanPremiScheduler;
@@ -49,11 +48,6 @@ public class MainController {
     @PostMapping("/api/test-pembatalan-sertifikat")
     public void suratPembatalanSertifikat(){
         suratKonfirmasiPembatalanSertifikatScheduler.sendEmailSuratPembatalanSertifikat();
-    }
-
-    @PostMapping("/api/test-sertifikat-akan-dibatalkan")
-    public void suratAkanPembatalanSertifikat(){
-        suratKonfirmasiSertifikatAkanDibatalkanScheduler.sendKonfirmasiSertifikatAkanDibatalkanEmail();
     }
 
     @PostMapping("/api/test-surat-konfirmasi-awal")
