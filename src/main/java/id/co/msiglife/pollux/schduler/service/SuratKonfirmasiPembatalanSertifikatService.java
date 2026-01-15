@@ -64,7 +64,11 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             try {
                 // Fetch the email ID from the SQL function using a native SQL query
                 Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
-                String yesterday = convertDateToJakartaTime(LocalDate.now().minusDays(1));
+                //String yesterday = convertDateToJakartaTime(LocalDate.now().minusDays(1));
+                LocalDate localDate = dto.getTanggalCetakSertifikat().toInstant()
+                        .atZone(ZoneId.of("Asia/Jakarta"))
+                        .toLocalDate();
+                String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
 
                 String sourceFilePath = STORAGE_PATH + "/" + dto.getRegSpaj() + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
                 Path sourcePath = Paths.get(sourceFilePath).toAbsolutePath();
@@ -105,10 +109,10 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                     String message = "";
                     if(dto.isSyariah()){
                         subject = "Surat Konfirmasi Pembatalan Sertifikat a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                        message = templateSuratKonfirmasiPembatalanSertifikatEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), yesterday);
+                        message = templateSuratKonfirmasiPembatalanSertifikatEmailSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), thirtyDaysLater);
                     } else {
                         subject = "Surat Konfirmasi Pembatalan Sertifikat a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                        message = templateSuratKonfirmasiPembatalanSertifikatEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), yesterday);
+                        message = templateSuratKonfirmasiPembatalanSertifikatEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), thirtyDaysLater);
                     }
 
                     MasterEmail emailEntity = new MasterEmail();
