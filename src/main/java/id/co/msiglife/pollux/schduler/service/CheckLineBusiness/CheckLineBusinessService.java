@@ -21,8 +21,13 @@ public class CheckLineBusinessService {
             String regSpaj = dto.getRegSpaj();
             String data = masterProductInsuredRepository.checkLiniBisnis(regSpaj);
             if (data != null) {
-                result.add(dto);
+                //konven
+                dto.setSyariah(false);
+            } else {
+                //syariah
+                dto.setSyariah(true);
             }
+            result.add(dto);
         }
         return result;
     }

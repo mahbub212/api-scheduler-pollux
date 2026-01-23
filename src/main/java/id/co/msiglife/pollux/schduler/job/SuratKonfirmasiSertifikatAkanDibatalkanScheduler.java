@@ -23,7 +23,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanScheduler {
     private CheckLineBusinessService checkLineBusinessService;
 
     @Scheduled(cron = "0 0 1 * * ?")
-    public void sendKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
+    public void sendKonfirmasiSertifikatAkanDibatalkanEmail() {
         System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
         List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = suratKonfirmasiSertifikatAkanDibatalkanService.getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
         //Checking line business
