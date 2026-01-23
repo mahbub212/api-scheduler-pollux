@@ -22,7 +22,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "insured.mste_age AS Usia_Tertanggung, " +
             "pol.mspo_ins_period AS Masa_Asuransi_Tahun, " +
             "pol.mspo_ins_bulan AS Masa_Asuransi_Bulan, " +
-            "uw.premium AS Premi, " +
+            "hitung.premi_dibayar_nasabah AS Premi, " +
             "pol.mspo_date_print AS Tanggal_Cetak_Sertifikat, " +
             "bankPks.mcl_first AS Nama_Bank_PKS, " +
             "pks.atas_nama AS Nama_Rekening_PKS, " +
@@ -33,7 +33,6 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "hitung.uang_pertanggungan AS Uang_Pertanggungan, " +
             "tertanggungPerson.mspe_email AS Email_Tertanggung " +
             "FROM eka.mst_policy pol " +
-            "JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
             "JOIN eka.mst_billing bill ON bill.reg_spaj = pol.reg_spaj " +
             "JOIN eka.mst_pks_cl pks ON pol.pks_id = pks.pks_id " +
             "JOIN eka.mst_insured insured ON pol.reg_spaj = insured.reg_spaj " +

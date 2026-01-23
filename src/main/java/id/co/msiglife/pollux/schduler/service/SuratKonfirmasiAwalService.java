@@ -101,8 +101,15 @@ public class SuratKonfirmasiAwalService {
                     // set emailTo, subject, message, etc.
                     String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
 
-                    String subject = "Surat Konfirmasi Pembayaran Premi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                    String message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                    String subject = "";
+                    String message = "";
+                    if(dto.isSyariah()){
+                        subject = "Surat Konfirmasi Pembayaran Kontribusi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                        message = templateSuratKonfirmasiEmailSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                    } else {
+                        subject = "Surat Konfirmasi Pembayaran Premi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                        message = templateSuratKonfirmasiEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                    }
 
                     MasterEmail emailEntity = new MasterEmail();
                     emailEntity.setId(generatedId);
@@ -112,7 +119,7 @@ public class SuratKonfirmasiAwalService {
                     emailEntity.setFrom("cosmos@msiglife.co.id");
                     emailEntity.setFromAlias("Notifikasi POLLUX");
                     emailEntity.setTo(emailTo);
-                    emailEntity.setCc("underwritingmriproses@msiglife.co.id");
+                    emailEntity.setCc("underwritingmriproses@msiglife.co.id;collectionmri@msiglife.co.id");
                     emailEntity.setBcc(null);
                     emailEntity.setSubject(subject);
                     emailEntity.setMessage(message);
@@ -165,50 +172,31 @@ public class SuratKonfirmasiAwalService {
 
         // read template file
         String today = convertDateToJakartaTime(LocalDate.now());
-        String filePath = "template/surat_konfirmasi_awal_template.html";
-        String content;
 
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
-            assert inputStream != null;
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                StringBuilder contentBuilder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    contentBuilder.append(line).append(System.lineSeparator());
-                }
-                content = contentBuilder.toString();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        String headerKonven = "template/images/watermark_header.png";
+        String footerKonven1 = "template/images/watermark_footer1.png";
+        String footerKonven2 = "template/images/watermark_footer2.png";
+        String headerSyariah = "template/images/watermark_header_syariah.png";
+        String footerSyariah1 = "template/images/watermark_footer1_syariah_2.png";
+        String footerSyariah2 = "template/images/watermark_footer1_syariah_3.png";
 
-        // replace content resources
-        try {
-            String base64Font = this.fileProcessUtil.encodeFontToBase64("template/fonts/Ubuntu/Ubuntu-Regular.ttf");
-            content = content.replace("[[MY_FONT_PATH]]", base64Font);
-
-            String imgPathWTHeader = this.fileProcessUtil.getBase64Image("template/images/watermark_header.png");
-            content = content.replace("../../images/watermark_header.png", imgPathWTHeader);
-
-            String imgPathWt = this.fileProcessUtil.getBase64Image("template/images/watermark.png");
-            content = content.replace("../../images/watermark.png", imgPathWt);
-
-            String imgPathFileFooter1 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer1.png");
-            content = content.replace("../../images/watermark_footer1.png", imgPathFileFooter1);
-
-            String imgPathFileFooter2 = this.fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
-            content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
-        } catch (Exception e) {
-            System.err.println("Failed to read content resources." + " | Error: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        String templateSyariah = initTemplateResource(loadTemplate(getTemplatePath(true)), headerSyariah, footerSyariah1, footerSyariah2);
+        String templateKonven = initTemplateResource(loadTemplate(getTemplatePath(false)), headerKonven, footerKonven1, footerKonven2);
 
         for (SuratAutoCancelDTO dto : konfirmasiAwalDTOList) {
-            String editedContent = content; // reset content to template state
 
+            if (dto.isSyariah()) {
+                processSuratKonfirmasiAwal(dto, templateSyariah, today);
+            } else {
+                processSuratKonfirmasiAwal(dto, templateKonven, today);
+            }
+        }
+    }
+
+    private void processSuratKonfirmasiAwal(SuratAutoCancelDTO dto, String content, String today) {
+
+        String editedContent = content; // reset content to template state
+        try {
             Date tanggalCetak = dto.getTanggalCetakSertifikat();
             LocalDate localDate = tanggalCetak.toInstant()
                     .atZone(ZoneId.of("Asia/Jakarta"))
@@ -283,6 +271,60 @@ public class SuratKonfirmasiAwalService {
             } else {
                 System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getTemplatePath(boolean isSyariah) {
+        return isSyariah
+                ? "template/syariahTemplate/surat_konfirmasi_awal_syariah_template.html"
+                : "template/surat_konfirmasi_awal_template.html";
+    }
+
+    private String loadTemplate(String filePath) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+            if (inputStream == null) {
+                throw new RuntimeException("Template not found: " + filePath);
+            }
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append(System.lineSeparator());
+                }
+                return sb.toString();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String initTemplateResource(String content, String header, String footer1, String footer2) {
+        try {
+
+            String base64Font = fileProcessUtil.encodeFontToBase64(
+                    "template/fonts/Ubuntu/Ubuntu-Regular.ttf");
+            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+
+            content = content.replace("../../images/watermark_header.png",
+                    fileProcessUtil.getBase64Image(header));
+
+            content = content.replace("../../images/watermark.png",
+                    fileProcessUtil.getBase64Image("template/images/watermark.png"));
+
+            content = content.replace("../../images/watermark_footer1.png",
+                    fileProcessUtil.getBase64Image(footer1));
+
+            content = content.replace("../../images/watermark_footer2.png",
+                    fileProcessUtil.getBase64Image(footer2));
+
+            return content;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed init template resource", e);
         }
     }
 
@@ -340,6 +382,87 @@ public class SuratKonfirmasiAwalService {
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
                 .append("Apabila premi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
+                .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#0066cc;\">collectionmri@msiglife.co.id</a>")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+
+        // Close tables
+        emailContent.append("            </td>");
+        emailContent.append("          </tr>");
+        emailContent.append("        </table>");
+        emailContent.append("      </td>");
+        emailContent.append("    </tr>");
+        emailContent.append("  </table>");
+
+        emailContent.append("</body>");
+        emailContent.append("</html>");
+
+        return emailContent.toString();
+    }
+
+    private String templateSuratKonfirmasiEmailSyariah(String namaCabang, String namaTertanggung, String noSertifikat, String tanggalTerbitSertifikat) {
+        StringBuilder emailContent = new StringBuilder();
+
+        emailContent.append("<!DOCTYPE html>");
+        emailContent.append("<html lang=\"id\">");
+        emailContent.append("<head>");
+        emailContent.append("  <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">");
+        emailContent.append("  <meta charset=\"UTF-8\">");
+        emailContent.append("  <meta name=\"x-apple-disable-message-reformatting\">");
+        emailContent.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+        emailContent.append("  <title>Surat Konfirmasi Pembayaran Kontribusi</title>");
+        emailContent.append("</head>");
+        emailContent.append("<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">");
+
+        // Wrapper table
+        emailContent.append("  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#ffffff;\">");
+        emailContent.append("    <tr>");
+        emailContent.append("      <td align=\"left\">");
+        emailContent.append("        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;\">");
+        emailContent.append("          <tr>");
+        emailContent.append("            <td style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#000000;padding:16px;\">");
+
+        // Content blocks
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">Kepada Yth.<br>")
+                .append("<strong>")
+                .append(namaCabang)
+                .append("</strong></div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Berikut kami sampaikan <strong>SURAT KONFIRMASI PEMBAYARAN KONTRIBUSI ASURANSI JIWA PEMBIAYAAN SYARIAH</strong> ")
+                .append("untuk sertifikat Asuransi Jiwa Pembiayaan Syariah atas nama ")
+                .append(namaTertanggung)
+                .append(" dengan nomor sertifikat ")
+                .append(noSertifikat)
+                .append(" yang telah diterbitkan pada tanggal ")
+                .append(tanggalTerbitSertifikat)
+                .append(".</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Sampai dengan hari ini, untuk pembayaran kontribusi atas sertifikat tersebut belum kami terima.<br>")
+                .append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran kontribusi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi peserta.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Apabila kontribusi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
                 .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#0066cc;\">collectionmri@msiglife.co.id</a>")
                 .append("</div>");
 

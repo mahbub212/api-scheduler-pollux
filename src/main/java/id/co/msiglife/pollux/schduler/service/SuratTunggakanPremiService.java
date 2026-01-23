@@ -106,8 +106,16 @@ public class SuratTunggakanPremiService {
                         // set emailTo, subject, message, etc.
                         String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
 
-                        String subject = "Surat Tunggakan Premi Asuransi Jiwa Kredit a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                        String message = templateMessageTunggakanPremi(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                        String subject = "";
+                        String message = "";
+                        if(dto.isSyariah()){
+                            subject = "Surat Tunggakan Kontribusi Asuransi Jiwa Pembiayaan Syariah a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                            message = templateMessageTunggakanPremiSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                        } else {
+                            subject = "Surat Tunggakan Premi Asuransi Jiwa Kredit a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                            message = templateMessageTunggakanPremi(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                        }
+
 
                         MasterEmail emailEntity = new MasterEmail();
                         emailEntity.setId(generatedId);
@@ -117,7 +125,7 @@ public class SuratTunggakanPremiService {
                         emailEntity.setFrom("cosmos@msiglife.co.id");
                         emailEntity.setFromAlias("Notifikasi POLLUX");
                         emailEntity.setTo(emailTo);
-                        emailEntity.setCc("underwritingmriproses@msiglife.co.id");
+                        emailEntity.setCc("underwritingmriproses@msiglife.co.id;collectionmri@msiglife.co.id");
                         emailEntity.setBcc(null);
                         emailEntity.setSubject(subject);
                         emailEntity.setMessage(message);
@@ -172,119 +180,100 @@ public class SuratTunggakanPremiService {
 
     public void generatePdfTunggakanPremi(List<SuratAutoCancelDTO> suratAutoCancelDTOList){
 
-        try {
+        String today = convertDateToJakartaTime(LocalDate.now());
 
-            String today = convertDateToJakartaTime(LocalDate.now());
+        String headerKonven = "template/images/watermark_header.png";
+        String footerKonven1 = "template/images/watermark_footer1.png";
+        String footerKonven2 = "template/images/watermark_footer2.png";
+        String headerSyariah = "template/images/watermark_header_syariah.png";
+        String footerSyariah1 = "template/images/watermark_footer1_syariah_2.png";
+        String footerSyariah2 = "template/images/watermark_footer1_syariah_3.png";
 
-            // read template file
-            String filePath = "template/surat_tunggakan_premi_template.html";
-            String content;
+        String templateSyariah = initTemplateResource(loadTemplate(getTemplatePath(true)), headerSyariah, footerSyariah1, footerSyariah2);
+        String templateKonven = initTemplateResource(loadTemplate(getTemplatePath(false)), headerKonven, footerKonven1, footerKonven2);
 
-            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
-                assert inputStream != null;
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-                    StringBuilder contentBuilder = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        contentBuilder.append(line).append(System.lineSeparator());
-                    }
-                    content = contentBuilder.toString();
-                }
+        for (SuratAutoCancelDTO dto : suratAutoCancelDTOList) {
+
+            if (dto.isSyariah()) {
+                processSuratTunggakanPremi(dto, templateSyariah, today);
+            } else {
+                processSuratTunggakanPremi(dto, templateKonven, today);
             }
 
-            String base64Font = fileProcessUtil.encodeFontToBase64("template/fonts/Ubuntu/Ubuntu-Regular.ttf");
-            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+        }
+    }
 
-            String imgPathWTHeader = fileProcessUtil.getBase64Image("template/images/watermark_header.png");
-            content = content.replace("../../images/watermark_header.png", imgPathWTHeader);
+    private void processSuratTunggakanPremi(SuratAutoCancelDTO dto, String content, String today) {
 
-            String imgPathWt = fileProcessUtil.getBase64Image("template/images/watermark.png");
-            content = content.replace("../../images/watermark.png", imgPathWt);
+        String editedContent = content; // reset content to template state
 
-            String imgPathFileFooter1 = fileProcessUtil.getBase64Image("template/images/watermark_footer1.png");
-            content = content.replace("../../images/watermark_footer1.png", imgPathFileFooter1);
+        try {
+            Date tanggalCetak = dto.getTanggalCetakSertifikat();
+            LocalDate localDate = tanggalCetak.toInstant()
+                    .atZone(ZoneId.of("Asia/Jakarta"))
+                    .toLocalDate();
 
-            String imgPathFileFooter2 = fileProcessUtil.getBase64Image("template/images/watermark_footer2.png");
-            content = content.replace("../../images/watermark_footer2.png", imgPathFileFooter2);
+            String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
 
-            for (SuratAutoCancelDTO dto : suratAutoCancelDTOList ){
+            // create the folder if it doesn't exist
+            String folderPath = STORAGE_PATH + dto.getRegSpaj();
+
+            // PdfRendererBuilder will take this XHTML document and create a PDF as the output file
+            String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_TUNGGAKAN_PREMI.pdf";
+            Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
+            System.out.println("Checking file existence at path: " + outputPdf);
+            System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
+            System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
+            System.out.println("Exists path? " + Files.exists(sourcePath));
+
+            if (!Files.exists(sourcePath)) {
+
+                editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
+                editedContent = editedContent.replace("{tanggal_terbit_tunggakan}", today);
+                editedContent = editedContent.replace("{nama_cabang_bank}", dto.getNamaBankCabang());
+                editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
+                editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
+                editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
+                editedContent = editedContent.replace("{uang_pertanggungan}", currencyFormatID(dto.getUangPertanggungan()));
+                editedContent = editedContent.replace("{tenor_tahun}", dto.getMasaAsuransiTahun().toString());
+                editedContent = editedContent.replace("{tenor_bulan}", dto.getMasaAsuransiBulan().toString());
+                editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
+                editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
+                editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
+                editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
+                editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
+                editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
+
+                // create string HTML to a JSoup Document to render XHTML
+                Document document = Jsoup.parse(editedContent);
+                document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+
                 try {
-                    String editedContent = content;
-
-                    Date tanggalCetak = dto.getTanggalCetakSertifikat();
-                    LocalDate localDate = tanggalCetak.toInstant()
-                            .atZone(ZoneId.of("Asia/Jakarta"))
-                            .toLocalDate();
-
-                    String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
-
-                    // create the folder if it doesn't exist
-                    String folderPath = STORAGE_PATH + dto.getRegSpaj();
-
-                    // PdfRendererBuilder will take this XHTML document and create a PDF as the output file
-                    String outputPdf = folderPath + "/" + dto.getRegSpaj() + "_SURAT_TUNGGAKAN_PREMI.pdf";
-                    Path sourcePath = Paths.get(outputPdf).toAbsolutePath();
-                    System.out.println("Checking file existence at path: " + outputPdf);
-                    System.out.println("Absolute path: " + Paths.get(outputPdf).toAbsolutePath());
-                    System.out.println("Exists? " + Files.exists(Paths.get(outputPdf)));
-                    System.out.println("Exists path? " + Files.exists(sourcePath));
-
-                    if (!Files.exists(sourcePath)) {
-
-                        editedContent = editedContent.replace("{nomor_sertifikat}", dto.getNomorSertifikat());
-                        editedContent = editedContent.replace("{tanggal_terbit_tunggakan}", today);
-                        editedContent = editedContent.replace("{nama_cabang_bank}", dto.getNamaBankCabang());
-                        editedContent = editedContent.replace("{nama_tertanggung}", dto.getNamaTertanggung());
-                        editedContent = editedContent.replace("{tanggal_lahir_tertanggung}", convertDateToJakartaTime(dto.getTanggalLahirTertanggung()));
-                        editedContent = editedContent.replace("{usia_tertanggung}", dto.getUsiaTertanggung().toString());
-                        editedContent = editedContent.replace("{uang_pertanggungan}", currencyFormatID(dto.getUangPertanggungan()));
-                        editedContent = editedContent.replace("{tenor_tahun}", dto.getMasaAsuransiTahun().toString());
-                        editedContent = editedContent.replace("{tenor_bulan}", dto.getMasaAsuransiBulan().toString());
-                        editedContent = editedContent.replace("{premi_asuransi}", currencyFormatID(dto.getPremi()));
-                        editedContent = editedContent.replace("{tanggal_cetak_sertifikat}", convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
-                        editedContent = editedContent.replace("{nama_bank_pks}", dto.getNamaBankPks());
-                        editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
-                        editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
-                        editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
-
-                        // create string HTML to a JSoup Document to render XHTML
-                        Document document = Jsoup.parse(editedContent);
-                        document.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-
-                        try {
-                            File folder = new File(folderPath);
-                            File parentDirectory = folder.getParentFile();
-                            if (parentDirectory.canWrite()) {
-                                if (!folder.exists()) {
-                                    folder.mkdirs();
-                                }
-                            } else {
-                                throw new IOException("No write permissions in the parent directory: " + parentDirectory);
-                            }
-                        } catch (IOException e) {
-                            System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
-                            e.printStackTrace();
+                    File folder = new File(folderPath);
+                    File parentDirectory = folder.getParentFile();
+                    if (parentDirectory.canWrite()) {
+                        if (!folder.exists()) {
+                            folder.mkdirs();
                         }
-
-                        try (OutputStream os = Files.newOutputStream(sourcePath)) {
-                            PdfRendererBuilder builder = new PdfRendererBuilder();
-                            builder.withUri(sourcePath.toString());
-                            builder.toStream(os);
-                            builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
-                            builder.run();
-                        }
-
-                        fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 17, outputPdf, 0);
                     } else {
-                        System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
+                        throw new IOException("No write permissions in the parent directory: " + parentDirectory);
                     }
-                }catch (IOException e){
-                    System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
-                    e.printStackTrace();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
                     e.printStackTrace();
                 }
+
+                try (OutputStream os = Files.newOutputStream(sourcePath)) {
+                    PdfRendererBuilder builder = new PdfRendererBuilder();
+                    builder.withUri(sourcePath.toString());
+                    builder.toStream(os);
+                    builder.withW3cDocument(new W3CDom().fromJsoup(document), folderPath + "/");
+                    builder.run();
+                }
+
+                fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 17, outputPdf, 0);
+            } else {
+                System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
             }
         }catch (IOException e){
             throw new RuntimeException(e);
@@ -294,6 +283,57 @@ public class SuratTunggakanPremiService {
 
     }
 
+    private String getTemplatePath(boolean isSyariah) {
+        return isSyariah
+                ? "template/syariahTemplate/surat_tunggakan_premi_syariah_template.html"
+                : "template/surat_tunggakan_premi_template.html";
+    }
+
+    private String loadTemplate(String filePath) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+            if (inputStream == null) {
+                throw new RuntimeException("Template not found: " + filePath);
+            }
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append(System.lineSeparator());
+                }
+                return sb.toString();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String initTemplateResource(String content, String header, String footer1, String footer2) {
+        try {
+
+            String base64Font = fileProcessUtil.encodeFontToBase64(
+                    "template/fonts/Ubuntu/Ubuntu-Regular.ttf");
+            content = content.replace("[[MY_FONT_PATH]]", base64Font);
+
+            content = content.replace("../../images/watermark_header.png",
+                    fileProcessUtil.getBase64Image(header));
+
+            content = content.replace("../../images/watermark.png",
+                    fileProcessUtil.getBase64Image("template/images/watermark.png"));
+
+            content = content.replace("../../images/watermark_footer1.png",
+                    fileProcessUtil.getBase64Image(footer1));
+
+            content = content.replace("../../images/watermark_footer2.png",
+                    fileProcessUtil.getBase64Image(footer2));
+
+            return content;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed init template resource", e);
+        }
+    }
 
     private String templateMessageTunggakanPremi(String namaBankCabang, String namaTertanggung, String nomorSertifikat, String tanggalTerbit) {
         StringBuilder emailContent = new StringBuilder();
@@ -354,6 +394,82 @@ public class SuratTunggakanPremiService {
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
                     .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("              <div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+        emailContent.append("              </td>");
+        emailContent.append("            </tr>");
+        emailContent.append("          </table>");
+        emailContent.append("        </td>");
+        emailContent.append("      </tr>");
+        emailContent.append("    </table>");
+        emailContent.append("</body>");
+        emailContent.append("</html>");
+
+        return emailContent.toString();
+    }
+
+    private String templateMessageTunggakanPremiSyariah(String namaBankCabang, String namaTertanggung, String nomorSertifikat, String tanggalTerbit) {
+        StringBuilder emailContent = new StringBuilder();
+
+        emailContent.append("<!DOCTYPE html>");
+        emailContent.append("<html lang=\"id\">");
+        emailContent.append("  <head>");
+        emailContent.append("    <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">");
+        emailContent.append("    <meta charset=\"utf-8\">");
+        emailContent.append("    <meta name=\"x-apple-disable-message-reformatting\">");
+        emailContent.append("    <title>Surat Tunggakan Kontribusi</title>");
+        emailContent.append("  </head>");
+        emailContent.append("<body style=\"font-family: Arial, sans-serif; font-size: 14px; color: #000000;\">");
+        emailContent.append("    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#ffffff;\">");
+        emailContent.append("      <tr>");
+        emailContent.append("        <td align=\"left\">");
+        emailContent.append("          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;\">");
+        emailContent.append("            <tr>");
+        emailContent.append("              <td style=\"font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#000000;padding:16px;\">");
+        emailContent.append("               <div style=\"margin:0 0 12px 0;\">")
+                .append("Kepada Yth.")
+                .append("<br>")
+                .append("<strong>")
+                .append(namaBankCabang)
+                .append("</strong>")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
+                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Berikut kami sampaikan <strong>SURAT TUNGGAKAN PEMBAYARAN KONTRIBUSI ASURANSI JIWA PEMBIAYAAN SYARIAH</strong>")
+                .append(" untuk sertifikat Asuransi Jiwa Pembiayaan Syariah atas nama ")
+                .append(namaTertanggung)
+                .append(" dengan nomor sertifikat ")
+                .append(nomorSertifikat)
+                .append(" yang telah diterbitkan pada tanggal ")
+                .append(tanggalTerbit)
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Sampai dengan hari ini, untuk pembayaran kontribusi atas sertifikat tersebut belum kami terima.<br>")
+                .append("Sehubungan dengan hal tersebut, kami mohon agar pembayaran kontribusi dapat segera diproses guna menjamin keberlangsungan manfaat perlindungan asuransi bagi peserta.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Informasi lebih lanjut terkait detail pembayaran terlampir pada surat yang kami kirimkan bersama email ini.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Apabila kontribusi telah dibayarkan, mohon kesediaannya untuk mengirimkan bukti pembayaran ke email ")
+                .append("<a href=\"mailto:collectionmri@msiglife.co.id\" style=\"color:#1a73e8;text-decoration:underline;\">collectionmri@msiglife.co.id</a>.")
+                .append("</div>");
+
+        emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
+
+        emailContent.append("<div style=\"margin:0 0 12px 0;\">")
+                .append("Demikian kami sampaikan. Atas perhatian dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.")
                 .append("</div>");
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
