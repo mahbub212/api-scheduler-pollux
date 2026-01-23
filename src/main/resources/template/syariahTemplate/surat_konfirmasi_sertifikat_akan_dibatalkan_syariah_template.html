@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+    <title>KPS Standard Direct to Bank</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @font-face {
+            font-family: 'ubuntu';
+            src: url('[[MY_FONT_PATH]]') format('truetype');
+        }
+
+        .container {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .container-body {
+            padding-left: 30px;
+            padding-right: 30px;
+            padding-top: 15px;
+            padding-bottom: 10px;
+        }
+
+        .left {
+            float: left;
+            width: 50%;
+            text-align: left; /* Align text to the left */
+        }
+
+        .right {
+            float: right;
+            width: 50%;
+            text-align: right; /* Align text to the right */
+        }
+
+        .img-head {
+            padding: 0;
+            width: 17%; /* Lebar penuh */
+            height: 47%; /* Sekitar 12% dari tinggi dokumen */
+            object-fit: cover; /* Menyesuaikan gambar tanpa distorsi */
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background-image: url('../../images/watermark.png');
+            background-size: contain;
+            background-repeat: repeat-y;
+            background-position: top;
+            font-family: 'ubuntu', sans-serif;
+            font-size: 10pt;
+            display: flex;
+        }
+
+        .fade-text {
+            color: gray;
+            opacity: 0.8; /* 60% transparan */
+            font-style: italic; /* Opsional, agar terlihat lebih soft */
+            text-align: center; /* bikin rata tengah */
+            width: 280px;
+        }
+
+        .footer {
+            margin-left: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .footer img {
+            width: auto;
+            height: auto; /* Agar proporsi gambar tetap */
+            max-height: 58px;
+        }
+
+        .footer img:nth-child(2) {
+            margin-left: 85px;
+            height: 20px;
+            width: 200px;
+            object-fit: contain;
+        }
+
+        .image-container {
+            float: left;
+            width: 67%; /* Ensure the image scales properly */
+            height: 30%; /* Maintain the aspect ratio */
+            padding-left: 30px;
+        }
+
+        .image-container-small {
+            float: right;
+            width: 17%; /* Lebar penuh */
+            height: 47%;
+            padding-right: 20px;
+        }
+
+        .horizontal-line {
+            /*border-top: 1px solid black; !* Border on top *!*/
+            /*width: 10px; !* Set the width of the border *!*/
+            /*margin: 20px auto; !* Center the line *!*/
+            /*width: 50%; !* Set the width of the line *!*/
+            /*height: 2px;*/
+            /*background-color: red; !* Set the color of the line *!*/
+            /*margin: 0 auto; !* Center the line *!*/
+            display: block;
+            margin: 0 auto; /* Center the line */
+        }
+
+        .transparent-msig-spc {color: black;}
+        .transparent-bank-spc {color: black;}
+        .transparent-bank {color: black;}
+        .transparent-msig {color: black;}
+    </style>
+</head>
+<body>
+<header>
+    <img class="img-head" src="../../images/watermark_header.png" alt="Header Image"></img>
+</header>
+<div class="container-body">
+    <div class="container">
+        <div class="left">No. {nomor_sertifikat}</div>
+        <div class="right">Jakarta, {tanggal_hari_ini}</div>
+    </div>
+    <span style="display: block; height: 10px"></span>
+    <div>Kepada Yth,</div>
+    <div>{nama_bank_cabang}</div>
+    <div>Up. Admin Kredit</div>
+    <h4 style="text-align: center"><b>Perihal : <u>SURAT KONFIRMASI SERTIFIKAT AKAN DIBATALKAN</u></b></h4>
+    <div>Dengan Hormat,</div>
+    <div style="text-align: justify">Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.
+    </div>
+    <span style="display: block; height: 15px"></span>
+    <div style="text-align: justify">Bersama dengan surat ini kami sampaikan bahwa untuk Sertifikat Asuransi Jiwa Pembiayaan Syariah dengan detail sebagai berikut:</div>
+    <table style="width: 95%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 45%;">No e-Sertifikat</td>
+            <td>:</td>
+            <td style="width: 55%;">{nomor_sertifikat}</td>
+        </tr>
+        <tr>
+            <td style="width: 45%;">Nama Peserta</td>
+            <td>:</td>
+            <td style="width: 55%;">{nama_tertanggung}</td>
+        </tr>
+        <tr>
+            <td style="width: 45%;">Tanggal Lahir</td>
+            <td>:</td>
+            <td style="width: 55%;">{tanggal_lahir_tertanggung}</td>
+        </tr>
+        <tr>
+            <td style="width: 45%;">Usia</td>
+            <td>:</td>
+            <td style="width: 55%;">{usia_tertanggung} Tahun</td>
+        </tr>
+        <tr>
+            <td style="width: 45%;">Manfaat Asuransi Syariah</td>
+            <td>:</td>
+            <td style="width: 55%;">{up}</td>
+        </tr>
+        <tr>
+            <td style="width: 45%;">Masa Asuransi</td>
+            <td>:</td>
+            <td style="width: 55%;">{tenor}</td>
+        </tr>
+        <tr>
+            <td style="width: 45%;">Kontribusi Asuransi</td>
+            <td>:</td>
+            <td style="width: 55%;">{premi_asuransi}</td>
+        </tr>
+        <tr>
+            <td style="width: 45%;">Tanggal penerbitan e-Sertifikat</td>
+            <td>:</td>
+            <td style="width: 55%;">{tanggal_cetak_sertifikat}</td>
+        </tr>
+    </table>
+    <span style="display: block; height: 15px"></span>
+    <div style="text-align: justify">Kami informasikan bahwa untuk pembayaran kontribusi atas Sertifikat tersebut belum kami terima hingga saat ini.
+        Apabila sudah melebihi dari 30 hari kalender sejak tanggal penerbitan sertifikat kontribusi belum dibayarkan, maka
+        untuk sertifikat tersebut akan di lakukan pembatalan. Oleh karena itu untuk menghindari penolakan pembayaran
+        klaim atas peserta diatas dimohon agar pembayaran kontribusi tersebut dapat kami terima selambatnya pada tanggal {tanggal_terakhir_pembayaran_premi}</div>
+    <span style="display: block; height: 15px"></span>
+    <div>Adapun pembayaran kontribusi dapat ditransfer ke nomor rekening berikut:</div>
+    <table style="width: 95%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 20%;">Nama Bank</td>
+            <td>:</td>
+            <td style="width: 80%;">{nama_bank_pks}</td>
+        </tr>
+        <tr>
+            <td style="width: 20%;">Atas Nama</td>
+            <td>:</td>
+            <td style="width: 80%;">{atas_nama_pks}</td>
+        </tr>
+        <tr>
+            <td style="width: 20%;">No. Rekening</td>
+            <td>:</td>
+            <td style="width: 80%;">{rekening_pks}</td>
+        </tr>
+    </table>
+    <span style="display: block; height: 15px"></span>
+    <div style="text-align: justify">Apabila pada saat menerima surat ini Bapak/Ibu telah telah melakukan pembayaran kontribusi, maka dimohon agar
+        menghubungi kami melalui alamat email: <a href="mailto:collectionmri@msiglife.co.id">collectionmri@msiglife.co.id</a>.</div>
+    <span style="display: block; height: 15px"></span>
+    <div style="text-align: justify"><b>Sehubungan dengan tunggakan kontribusi, perlu kami sampaikan apabila sampai dengan tanggal {tanggal_terakhir_pembayaran_premi}
+        kontribusi belum dibayarkan maka sertifikat tersebut akan
+        dilakukan pembatalan dan jika terjadi klaim atas sertifikat tersebut, maka sesuai dengan ketentuan dalam
+        polis, PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah tidak berkewajiban membayar klaim tersebut</b></div>
+    <span style="display: block; height: 15px"></span>
+    <div>Demikian kami sampaikan, atas perhatian dan kerjasamanya kami ucapkan terima kasih.</div>
+    <span style="display: block; height: 15px"></span>
+    <div>Hormat kami,</div>
+    <div>PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah</div>
+    <span style="display: block; height: 15px"></span>
+    <table style="width: 35%; border-collapse: collapse; font-size: 9pt">
+        <tr>
+            <td class="fade-text" style="text-align: center;">(surat ini di cetak secara komputerisasi,</td>
+        </tr>
+        <tr>
+            <td class="fade-text" style="text-align: center;">tidak membutuhkan tanda tangan)</td>
+        </tr>
+    </table>
+    <span style="display: block; height: 15px"></span>
+    <table style="width: 35%; border-collapse: collapse;font-size: 9pt">
+        <tr>
+            <td style="border-bottom: 1px solid black; text-align: center"><b>Bianka Margareth Simatupang</b></td>
+        </tr>
+        <tr>
+            <td style="text-align: center">Division Head of Group Operations</td>
+        </tr>
+    </table>
+</div>
+<div class="footer">
+    <img src="../../images/watermark_footer1.png" alt="First Footer">
+    <img src="../../images/watermark_footer2.png" alt="Second Footer">
+</div>
+</body>
+</html>
