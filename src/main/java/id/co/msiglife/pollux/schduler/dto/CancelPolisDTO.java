@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CancelPolisDTO {
     private String regSpaj;
+    private boolean isSyariah;
 }
