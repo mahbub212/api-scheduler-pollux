@@ -1,11 +1,8 @@
 package id.co.msiglife.pollux.schduler.service;
 
 import id.co.msiglife.pollux.schduler.dto.CancelPolisDTO;
-import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
-import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcTm;
 import id.co.msiglife.pollux.schduler.entity.*;
 import id.co.msiglife.pollux.schduler.entity.polis.*;
-import id.co.msiglife.pollux.schduler.exception.NotBalancedException;
 import id.co.msiglife.pollux.schduler.exception.WfConfigNotFoundException;
 import id.co.msiglife.pollux.schduler.projection.CancelJmProjection;
 import id.co.msiglife.pollux.schduler.repository.*;
@@ -16,7 +13,6 @@ import id.co.msiglife.pollux.schduler.util.StaticValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -28,7 +24,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CancelPolisService {
@@ -100,7 +95,11 @@ public class CancelPolisService {
         for (CancelPolisDTO dto : cancelPolisDTOList) {
             try {
                 System.out.println("In Progress canceled polis : " + dto.getRegSpaj());
-                processSingleCancelPolis(dto);
+                if (dto.isSyariah()) {
+                    processSingleCancelPolis(dto);
+                } else {
+                    //processSingleCancelPolis(dto);
+                }
             } catch (WfConfigNotFoundException e) {
                 masterAutoCancelEmailLogRepository.updatePolisFailed(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
                 System.out.println("WF Config Not Found for RegSpaj: " + dto.getRegSpaj() + " -> " + e.getMessage());
@@ -297,7 +296,7 @@ public class CancelPolisService {
         return masterProduction;
     }
 
-    private MasterDetProduction makeMasterDetProduction(MasterPolicy masterPolicy, Date dateNow, MasterProductInsured masterProductInsured, MasterProductSetup masterProductSetup, String regSpaj){
+    private MasterDetProduction makeMasterDetProduction(MasterPolicy masterPolicy, Date dateNow, MasterProductInsured masterProductInsured, MasterProductSetup masterProductSetup, String regSpaj) {
         MasterDetProduction masterDetProduction = new MasterDetProduction();
         masterDetProduction.setLstbId(masterPolicy.getLstbId());
         masterDetProduction.setRegSpaj(regSpaj);
@@ -316,7 +315,6 @@ public class CancelPolisService {
         masterDetProduction.setMsdprUrut(masterProductInsured.getUrut());
         return masterDetProduction;
     }
-
 
 
     public List<CancelPolisDTO> getCancelPolisList() {
