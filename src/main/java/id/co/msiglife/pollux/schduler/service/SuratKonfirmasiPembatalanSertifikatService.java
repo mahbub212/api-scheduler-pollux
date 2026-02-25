@@ -447,8 +447,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
-                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("Kami mengucapkan terima kasih atas kepercayaan yang Bapak/Ibu berikan kepada PT MSIG Sharia Life Insurance Indonesia untuk mengelola dana kontribusi peserta, sesuai prinsip Syariah, guna saling menolong dan melindungi Anda serta keluarga.")
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
@@ -483,7 +482,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
 
-        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection<br>PT MSIG Sharia Life Insurance Indonesia</div>");
 
         // Close inner table
         emailContent.append("            </td>");
