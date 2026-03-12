@@ -113,7 +113,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:oracle:thin:@128.21.22.31:1530:ajsdb
+    url: jdbc:oracle:thin:@ajsdb.msiglife.co.id:1530:ajsdb
     username: dev
     password: ENC(c1Hxqs/EVX7QSV9a6z2j0g==)
     driver-class-name: oracle.jdbc.driver.OracleDriver
