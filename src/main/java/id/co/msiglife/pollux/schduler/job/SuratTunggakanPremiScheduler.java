@@ -21,7 +21,7 @@ public class SuratTunggakanPremiScheduler {
 
     @Scheduled(cron = "0 20 1 * * ?")
     public void sendEmailTunggakanPremi(){
-        List<SuratAutoCancelDTO> tunggakanPremiDTOList = suratTunggakanPremiService.getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> tunggakanPremiDTOList = suratTunggakanPremiService.getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(tunggakanPremiDTOList);
 
@@ -35,7 +35,7 @@ public class SuratTunggakanPremiScheduler {
 
     @Scheduled(cron = "0 20 5 * * ?")
     public void sendEmailTunggakanPremiRetry(){
-        List<SuratAutoCancelDTO> tunggakanPremiDTOList = suratTunggakanPremiService.getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> tunggakanPremiDTOList = suratTunggakanPremiService.getTunggakanPremi(StaticValue.TUNGGAKAN_PREMI_REMINDER_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(tunggakanPremiDTOList);
 

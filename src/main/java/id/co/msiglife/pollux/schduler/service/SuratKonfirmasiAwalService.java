@@ -15,7 +15,6 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -141,10 +140,11 @@ public class SuratKonfirmasiAwalService {
                     masterEmailRepository.save(emailEntity);
 
                     String savedId = emailEntity.getId();
-                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(dto.getRegSpaj(), StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
+                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderType(dto.getRegSpaj(), StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_TYPE);
 
                     if (masterAutoCancelEmailLog == null) {
                         masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                        masterAutoCancelEmailLog.setReminderDays(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
                     }
 
                     masterAutoCancelEmailLog.setMeId(savedId);
@@ -153,7 +153,7 @@ public class SuratKonfirmasiAwalService {
                     masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                     masterAutoCancelEmailLog.setFlagDone(1);
                     masterAutoCancelEmailLog.setFlagPolisCanceled(0);
-                    masterAutoCancelEmailLog.setReminderDays(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
+                    masterAutoCancelEmailLog.setReminderType(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_TYPE);
 
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
 
@@ -490,8 +490,8 @@ public class SuratKonfirmasiAwalService {
         return emailContent.toString();
     }
 
-    public List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer days) {
-        List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
+    public List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer reminderType) {
+        List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(reminderType);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
         for (Object[] row : listData) {

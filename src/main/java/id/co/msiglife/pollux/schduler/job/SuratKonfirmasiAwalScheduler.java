@@ -21,7 +21,7 @@ public class SuratKonfirmasiAwalScheduler {
 
     @Scheduled(cron = "0 20 0 * * ?")
     public void sendEmailSuratKonfirmasiAwal(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = suratKonfirmasiAwalService.getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = suratKonfirmasiAwalService.getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(konfirmasiAwalDTOList);
 
@@ -35,7 +35,7 @@ public class SuratKonfirmasiAwalScheduler {
 
     @Scheduled(cron = "0 20 4 * * ?")
     public void sendEmailSuratKonfirmasiAwalRetry(){
-        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = suratKonfirmasiAwalService.getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> konfirmasiAwalDTOList = suratKonfirmasiAwalService.getListSuratKonfirmasiAwal(StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(konfirmasiAwalDTOList);
 

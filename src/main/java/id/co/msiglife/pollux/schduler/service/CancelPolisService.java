@@ -202,7 +202,7 @@ public class CancelPolisService {
         masterBillingRepository.save(masterBilling);
 
         masterPolicyRepository.updatePolisCanceledSingle(dto.getRegSpaj());
-        masterAutoCancelEmailLogRepository.updatePolisCanceled(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+        masterAutoCancelEmailLogRepository.updatePolisCanceled(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
 
         System.out.println("Successfully canceled polis: " + dto.getRegSpaj());
     }
@@ -318,7 +318,7 @@ public class CancelPolisService {
 
 
     public List<CancelPolisDTO> getCancelPolisList() {
-        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
         List<CancelPolisDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {
             CancelPolisDTO dto = new CancelPolisDTO();
