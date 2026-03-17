@@ -15,7 +15,6 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -147,10 +146,11 @@ public class SuratTunggakanPremiService {
                         masterEmailRepository.save(emailEntity);
 
                         String savedId = emailEntity.getId();
-                        MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(dto.getRegSpaj(), StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+                        MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderType(dto.getRegSpaj(), StaticValue.TUNGGAKAN_PREMI_REMINDER_TYPE);
 
                         if (masterAutoCancelEmailLog == null) {
                             masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                            masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
                         }
 
                         masterAutoCancelEmailLog.setMeId(savedId);
@@ -159,7 +159,7 @@ public class SuratTunggakanPremiService {
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
                         masterAutoCancelEmailLog.setFlagPolisCanceled(0);
-                        masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+                        masterAutoCancelEmailLog.setReminderType(StaticValue.TUNGGAKAN_PREMI_REMINDER_TYPE);
 
                         masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
 

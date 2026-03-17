@@ -11,6 +11,8 @@ import java.util.List;
 public interface MasterAutoCancelEmailLogRepository  extends JpaRepository<MasterAutoCancelEmailLog, String> {
     MasterAutoCancelEmailLog findByRegSpajAndReminderDays(String regSpaj, Integer reminderDays);
 
+    MasterAutoCancelEmailLog findByRegSpajAndReminderType(String regSpaj, Integer reminderType);
+
     @Modifying(clearAutomatically = true)
     @Query(value = "UPDATE EKA.MST_AUTO_CANCEL_EMAIL_LOG  " +
             "      SET FLAG_POLIS_CANCELED = 1, UPDATED_AT = SYSDATE   " +
