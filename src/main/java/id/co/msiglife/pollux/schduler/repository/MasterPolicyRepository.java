@@ -43,6 +43,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "JOIN eka.mst_client bankPks ON pks.mcl_id = bankPks.mcl_id " +
             "JOIN eka.mst_perhitungan_premi_plx hitung ON pol.reg_spaj = hitung.reg_spaj AND hitung.rate_premi_next = 0 " +
             "JOIN eka.lst_policy_status lps on lps.lssp_id = pol.lssp_id " +
+            "JOIN eka.mst_pks_reminder_days r ON pol.pks_id = r.pks_id " +
             "LEFT JOIN ( " +
             "    SELECT " +
             "      mdw.MSWF_DOC_NUMBER as reg_spaj, " +
@@ -63,19 +64,20 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "  ) uw ON uw.reg_spaj = pol.reg_spaj " +
             "WHERE EXISTS (SELECT 1 FROM eka.mst_billing bill WHERE bill.reg_spaj = pol.reg_spaj) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
-            "AND EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reg_spaj = pol.reg_spaj AND reminder_days = :days and flag_done = 0) " +
-            "AND (lower(lps.lssp_status) LIKE 'inforce' OR lower(uw.status_uw) LIKE 'inforce' OR lower(sts.status_name) LIKE 'inforce') " +
+            "AND EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reg_spaj = pol.reg_spaj AND reminder_days = r.reminder_days and flag_done = 0 and reminder_type = :reminderType) " +
+            "AND (lower(lps.lssp_status) = 'inforce' OR lower(uw.status_uw) = 'inforce' OR lower(sts.status_name) = 'inforce') " +
             "AND (pol.lssp_id != 8) " +
             "AND LOWER(lps.lssp_status) NOT LIKE '%cancel%' " +
             "AND (pol.lssp_id != 12 AND pol.lspd_id != 999) " +
             "ORDER BY pol.mspo_date_print DESC",
             nativeQuery = true)
-    List<Object[]> findAutoCancelByDays(@Param("days") Integer days);
+    List<Object[]> findAutoCancelByDays(@Param("reminderType") Integer reminderType);
 
-    @Query(value = "SELECT pol.reg_spaj AS reg_spaj, :days as reminderDays " +
+    @Query(value = "SELECT pol.reg_spaj AS reg_spaj, r.reminder_days as reminderDays, r.reminder_type as reminderType " +
             "FROM eka.mst_policy pol " +
             "JOIN eka.mst_billing bill ON bill.reg_spaj = pol.reg_spaj " +
             "JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
+            "JOIN eka.mst_pks_reminder_days r ON pol.pks_id = r.pks_id " +
             "LEFT JOIN ( " +
             "   SELECT mdw.MSWF_DOC_NUMBER as reg_spaj, lws.LSWF_STATUS_NAME as status_name " +
             "   FROM EKA.MST_WF_DOCUMENT mdw " +
@@ -89,26 +91,28 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "   JOIN EKA.LST_UW_STATUS_PLX lusp ON lusp.uw_status_id = mup.status " +
             ") uw ON uw.reg_spaj = pol.reg_spaj " +
             "LEFT JOIN eka.lst_policy_status lps ON lps.lssp_id = pol.lssp_id " +
-            "WHERE TRUNC(SYSDATE) = TRUNC(pol.mspo_date_print + :days) " +
+            "WHERE r.reminder_type != 5 " +
+            "AND TRUNC(SYSDATE) = TRUNC(pol.mspo_date_print + r.reminder_days) " +
             "AND EXISTS (SELECT 1 FROM eka.mst_billing b2 WHERE b2.reg_spaj = pol.reg_spaj) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG log " +
             "                WHERE log.reg_spaj = pol.reg_spaj " +
-            "                AND log.reminder_days = :days) " +
-            "AND (LOWER(lps.lssp_status) LIKE 'inforce' " +
-            "     OR LOWER(uw.status_uw) LIKE 'inforce' " +
-            "     OR LOWER(sts.status_name) LIKE 'inforce') " +
+            "                AND log.reminder_days = r.reminder_days) " +
+            "AND (LOWER(lps.lssp_status) = 'inforce' " +
+            "     OR LOWER(uw.status_uw) = 'inforce' " +
+            "     OR LOWER(sts.status_name) = 'inforce') " +
             "AND (pol.lssp_id != 8) " +
             "AND LOWER(lps.lssp_status) NOT LIKE '%cancel%' " +
             "AND (pol.lssp_id != 12 AND pol.lspd_id != 999) " +
             "ORDER BY pol.mspo_date_print DESC",
             nativeQuery = true)
-    List<Object[]> findAllSuratAutoCancel(@Param("days") Integer days);
+    List<Object[]> findAllSuratAutoCancel();
 
-    @Query(value = "SELECT pol.REG_SPAJ " +
+    @Query(value = "SELECT pol.reg_spaj AS reg_spaj, r.reminder_days as reminderDays, r.reminder_type as reminderType " +
             "FROM " +
             "EKA.MST_POLICY pol " +
             "JOIN EKA.MST_POLICY_SIGNDATE sign ON pol.REG_SPAJ = sign.REG_SPAJ " +
+            "JOIN eka.mst_pks_reminder_days r ON pol.pks_id = r.pks_id " +
             "LEFT JOIN eka.lst_policy_status lps ON lps.lssp_id = pol.lssp_id " +
             "LEFT JOIN (" +
             "    SELECT " +
@@ -128,8 +132,8 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "  FROM EKA.MST_UNDERWRITING_PLX mup " +
             "  JOIN EKA.LST_UW_STATUS_PLX lusp ON lusp.uw_status_id = mup.status " +
             "  ) uw ON uw.reg_spaj = pol.reg_spaj " +
-            "WHERE " +
-            "TRUNC(SYSDATE) = TRUNC(sign.MSSD_SIGNDATE + 61) AND " +
+            "WHERE r.reminder_type = 5 AND " +
+            "TRUNC(SYSDATE) = TRUNC(sign.MSSD_SIGNDATE + r.reminder_days) AND " +
             "(pol.LSSP_ID != 1 OR pol.MSPO_POLICY_NO IS NOT NULL) AND " +
             "(pol.lssp_id != 8) AND " +
             "LOWER(lps.lssp_status) NOT LIKE '%cancel%' AND " +
@@ -137,11 +141,12 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "(pol.LSSP_ID != 25 AND pol.LSSP_ID != 27) " +
             "AND NOT EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG log " +
             "    WHERE log.reg_spaj = pol.reg_spaj " +
-            "    AND log.reminder_days = 61) " +
+            "    AND log.reminder_days = r.reminder_days " +
+            "    AND log.reminder_type = 5) " +
             "AND NOT \n" +
-            "(LOWER(lps.lssp_status) LIKE 'inforce' \n" +
-            "   OR LOWER(uw.status_uw) LIKE 'inforce' \n" +
-            "   OR LOWER(sts.status_name) LIKE 'inforce') " +
+            "(LOWER(lps.lssp_status) = 'inforce' \n" +
+            "   OR LOWER(uw.status_uw) = 'inforce' \n" +
+            "   OR LOWER(sts.status_name) = 'inforce') " +
             "AND NOT \n" +
             "(LOWER(lps.lssp_status) LIKE 'decline%'\n" +
             "    OR LOWER(uw.status_uw) LIKE 'decline%'\n" +
@@ -154,11 +159,11 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "AND LOWER(uw.keputusan) NOT LIKE 'postpone%'", nativeQuery = true)
     List<Object[]> findAllPolicyTobeCancelled();
 
-    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = 61 AND flag_done = 0", nativeQuery = true)
+    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type = 5 AND flag_done = 0", nativeQuery = true)
     List<Object[]> findSpajkTobeCancelled();
 
-    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_days = :daysPolicyCanceled AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
-    List<Object[]> findPolicyTobeCancelled(@Param("daysPolicyCanceled") Integer days);
+    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type = :reminderType AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
+    List<Object[]> findPolicyTobeCancelled(@Param("reminderType") Integer reminderType);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "UPDATE EKA.MST_POLICY  " +

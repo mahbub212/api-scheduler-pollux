@@ -229,7 +229,7 @@ public class CancelPolisService {
         // 10) updatePolisCanceled
         masterAutoCancelEmailLogRepository.updatePolisCanceled(cancelPolisProceed.stream()
                 .map(CancelPolisDTO::getRegSpaj)
-                .collect(Collectors.toList()), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS
+                .collect(Collectors.toList()), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE
         );
     }
 
@@ -361,7 +361,7 @@ public class CancelPolisService {
 
 
     public List<CancelPolisDTO> getCancelPolisList() {
-        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
         List<CancelPolisDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {
             CancelPolisDTO dto = new CancelPolisDTO();
