@@ -470,8 +470,8 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
         return emailContent.toString();
     }
 
-    public List<SuratAutoCancelDTO> getTunggakanPremi(Integer days) {
-        List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
+    public List<SuratAutoCancelDTO> getTunggakanPremi(Integer reminderType) {
+        List<Object[]> listData = masterPolicyRepository.findAutoCancelByReminderType(reminderType);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
         for (Object[] row : listData) {

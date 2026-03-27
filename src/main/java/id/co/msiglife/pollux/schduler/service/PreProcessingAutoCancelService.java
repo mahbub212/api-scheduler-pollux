@@ -5,6 +5,7 @@ import id.co.msiglife.pollux.schduler.entity.MasterAutoCancelEmailLog;
 import id.co.msiglife.pollux.schduler.repository.MasterAutoCancelEmailLogRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
+import id.co.msiglife.pollux.schduler.util.StaticValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,14 @@ public class PreProcessingAutoCancelService {
                 masterAutoCancelEmailLog.setPathAttach(null);
                 masterAutoCancelEmailLog.setReminderDays(dto.getReminderDays());
                 masterAutoCancelEmailLog.setReminderType(dto.getReminderType());
-                masterAutoCancelEmailLog.setFlagDone(0);
+
+                // skip email and notification
+                if (StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_WITHOUT_EMAIL_PDF_TYPE.equals(dto.getReminderType())) {
+                    masterAutoCancelEmailLog.setFlagDone(1);
+                    masterAutoCancelEmailLog.setFlagPolisCanceled(0);
+                } else {
+                    masterAutoCancelEmailLog.setFlagDone(0);
+                }
                 masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
             }
         } catch (Exception e) {
