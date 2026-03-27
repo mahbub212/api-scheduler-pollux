@@ -498,8 +498,8 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         return emailContent.toString();
     }
 
-    public List<SuratAutoCancelDTO> getListSuratPembatalanSertifikat(Integer days) {
-        List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
+    public List<SuratAutoCancelDTO> getListSuratPembatalanSertifikat(Integer reminderType) {
+        List<Object[]> listData = masterPolicyRepository.findAutoCancelByReminderType(reminderType);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
         for (Object[] row : listData) {
