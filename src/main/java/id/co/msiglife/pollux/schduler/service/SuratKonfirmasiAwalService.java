@@ -491,7 +491,7 @@ public class SuratKonfirmasiAwalService {
     }
 
     public List<SuratAutoCancelDTO> getListSuratKonfirmasiAwal(Integer reminderType) {
-        List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(reminderType);
+        List<Object[]> listData = masterPolicyRepository.findAutoCancelByReminderType(reminderType);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
         for (Object[] row : listData) {

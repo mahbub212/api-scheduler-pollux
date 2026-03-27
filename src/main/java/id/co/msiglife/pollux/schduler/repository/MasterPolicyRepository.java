@@ -71,7 +71,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "AND (pol.lssp_id != 12 AND pol.lspd_id != 999) " +
             "ORDER BY pol.mspo_date_print DESC",
             nativeQuery = true)
-    List<Object[]> findAutoCancelByDays(@Param("reminderType") Integer reminderType);
+    List<Object[]> findAutoCancelByReminderType(@Param("reminderType") Integer reminderType);
 
     @Query(value = "SELECT pol.reg_spaj AS reg_spaj, r.reminder_days as reminderDays, r.reminder_type as reminderType " +
             "FROM eka.mst_policy pol " +
@@ -162,8 +162,8 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type = 5 AND flag_done = 0", nativeQuery = true)
     List<Object[]> findSpajkTobeCancelled();
 
-    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type = :reminderType AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
-    List<Object[]> findPolicyTobeCancelled(@Param("reminderType") Integer reminderType);
+    @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type IN (:reminderTypes) AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
+    List<Object[]> findPolicyTobeCancelled(@Param("reminderTypes") List<Integer> reminderTypes);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "UPDATE EKA.MST_POLICY  " +

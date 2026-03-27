@@ -25,10 +25,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -361,7 +358,9 @@ public class CancelPolisService {
 
 
     public List<CancelPolisDTO> getCancelPolisList() {
-        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
+        List<Integer> reminderTypes = Arrays.asList(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE, StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_WITHOUT_EMAIL_PDF_TYPE);
+
+        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(reminderTypes);
         List<CancelPolisDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {
             CancelPolisDTO dto = new CancelPolisDTO();
