@@ -99,7 +99,7 @@ public class CancelPolisService {
                 if (dto.isSyariah()) {
                     processSingleCancelPolis(dto);
                 } else {
-                    //processSingleCancelPolis(dto);
+                    processSingleCancelPolis(dto);
                 }
             } catch (WfConfigNotFoundException e) {
                 masterAutoCancelEmailLogRepository.updatePolisFailed(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
