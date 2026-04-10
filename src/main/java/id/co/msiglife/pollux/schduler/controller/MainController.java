@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.co.msiglife.pollux.schduler.dto.ApiResponseDTO;
 import id.co.msiglife.pollux.schduler.job.*;
+import id.co.msiglife.pollux.schduler.service.CancelSpajkService;
 import id.co.msiglife.pollux.schduler.service.SuratKonfirmasiAwalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,12 @@ import java.util.Map;
 public class MainController {
 
     private final CancelPolisScheduler cancelPolisScheduler;
+    private final CancelSpajkScheduler cancelSpajkScheduler;
     private final SuratKonfirmasiPembatalanSertifikatScheduler suratKonfirmasiPembatalanSertifikatScheduler;
     private final PreProcessingAutoCancelScheduler preProcessingAutoCancelScheduler;
     private final SuratKonfirmasiAwalScheduler suratKonfirmasiAwalScheduler;
     private final SuratTunggakanPremiScheduler suratTunggakanPremiScheduler;
+    private final SuratKonfirmasiSertifikatAkanDibatalkanScheduler suratKonfirmasiAkanDibatalkanScheduler;
 
     @GetMapping("/api")
     public ResponseEntity<?> helloWorld() {
@@ -40,6 +43,11 @@ public class MainController {
         cancelPolisScheduler.cancelPolisScheduler();
     }
 
+    @PostMapping("/api/test-cancel-spajk")
+    public void cancelSpajk(){
+        cancelSpajkScheduler.cancelSpajkScheduler();
+    }
+
     @PostMapping("/api/test-pre-prosessing")
     public void preprosesingSuratKonfirmas(){
         preProcessingAutoCancelScheduler.preparationGenerateSuratKonfirmasi();
@@ -48,6 +56,11 @@ public class MainController {
     @PostMapping("/api/test-pembatalan-sertifikat")
     public void suratPembatalanSertifikat(){
         suratKonfirmasiPembatalanSertifikatScheduler.sendEmailSuratPembatalanSertifikat();
+    }
+
+    @PostMapping("/api/test-surat-konfirmasi-sertifikat-akan-dibatalkan")
+    public void suratKonfirmasiSertifikatAkanDibatalkan(){
+        suratKonfirmasiAkanDibatalkanScheduler.sendKonfirmasiSertifikatAkanDibatalkanEmail();
     }
 
     @PostMapping("/api/test-surat-konfirmasi-awal")

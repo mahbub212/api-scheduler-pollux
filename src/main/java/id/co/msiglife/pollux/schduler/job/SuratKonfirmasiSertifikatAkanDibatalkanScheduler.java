@@ -25,7 +25,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanScheduler {
     @Scheduled(cron = "0 0 1 * * ?")
     public void sendKonfirmasiSertifikatAkanDibatalkanEmail() {
         System.out.println("Running Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
-        List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = suratKonfirmasiSertifikatAkanDibatalkanService.getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = suratKonfirmasiSertifikatAkanDibatalkanService.getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(sertifikatAkanDibatalkanDTOList);
 
@@ -40,7 +40,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanScheduler {
     @Scheduled(cron = "0 0 5 * * ?")
     public void retrySendingKonfirmasiSertifikatAkanDibatalkanEmail() throws Exception {
         System.out.println("Retrying Scheduler for Surat Konfirmasi Sertifikat akan Dibatalkan at " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", new Locale("id", "ID"))));
-        List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = suratKonfirmasiSertifikatAkanDibatalkanService.getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS);
+        List<SuratAutoCancelDTO> sertifikatAkanDibatalkanDTOList = suratKonfirmasiSertifikatAkanDibatalkanService.getTunggakanPremi(StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(sertifikatAkanDibatalkanDTOList);
 
