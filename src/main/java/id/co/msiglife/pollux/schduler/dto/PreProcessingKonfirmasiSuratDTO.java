@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class PreProcessingKonfirmasiSuratDTO {
     private String regSpaj;
     private Integer reminderDays;
+    private Integer reminderType;
 }

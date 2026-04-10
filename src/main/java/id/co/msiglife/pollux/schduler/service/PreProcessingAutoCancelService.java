@@ -5,6 +5,7 @@ import id.co.msiglife.pollux.schduler.entity.MasterAutoCancelEmailLog;
 import id.co.msiglife.pollux.schduler.repository.MasterAutoCancelEmailLogRepository;
 import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
+import id.co.msiglife.pollux.schduler.util.StaticValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,15 @@ public class PreProcessingAutoCancelService {
                 masterAutoCancelEmailLog.setCreatedAt(new Date());
                 masterAutoCancelEmailLog.setPathAttach(null);
                 masterAutoCancelEmailLog.setReminderDays(dto.getReminderDays());
-                masterAutoCancelEmailLog.setFlagDone(0);
+                masterAutoCancelEmailLog.setReminderType(dto.getReminderType());
+
+                // skip email and notification
+                if (StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_WITHOUT_EMAIL_PDF_TYPE.equals(dto.getReminderType())) {
+                    masterAutoCancelEmailLog.setFlagDone(1);
+                    masterAutoCancelEmailLog.setFlagPolisCanceled(0);
+                } else {
+                    masterAutoCancelEmailLog.setFlagDone(0);
+                }
                 masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
             }
         } catch (Exception e) {
@@ -48,6 +57,7 @@ public class PreProcessingAutoCancelService {
                 masterAutoCancelEmailLog.setCreatedAt(new Date());
                 masterAutoCancelEmailLog.setPathAttach(null);
                 masterAutoCancelEmailLog.setReminderDays(dto.getReminderDays());
+                masterAutoCancelEmailLog.setReminderType(dto.getReminderType());
                 masterAutoCancelEmailLog.setFlagDone(0);
                 masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
             }
@@ -57,13 +67,11 @@ public class PreProcessingAutoCancelService {
         }
     }
 
-    public List<PreProcessingKonfirmasiSuratDTO> generatePreProcessingSurat(List<Integer> days) {
+    public List<PreProcessingKonfirmasiSuratDTO> generatePreProcessingSurat() {
         List<Object[]> raw = new ArrayList<>();
-        for (Integer reminderDays : days) {
-            List<Object[]> temp = masterPolicyRepository.findAllSuratAutoCancel(reminderDays);
-            if (temp != null && !temp.isEmpty()) {
-                raw.addAll(temp);
-            }
+        List<Object[]> temp = masterPolicyRepository.findAllSuratAutoCancel();
+        if (temp != null && !temp.isEmpty()) {
+            raw.addAll(temp);
         }
 
         if (raw.isEmpty()) {
@@ -76,6 +84,7 @@ public class PreProcessingAutoCancelService {
             PreProcessingKonfirmasiSuratDTO dto = new PreProcessingKonfirmasiSuratDTO();
             dto.setRegSpaj(ConvertUtil.safeString(row[0]));
             dto.setReminderDays(ConvertUtil.safeInt(row[1]));
+            dto.setReminderType(ConvertUtil.safeInt(row[2]));
             result.add(dto);
         }
 
@@ -92,7 +101,8 @@ public class PreProcessingAutoCancelService {
         for (Object[] row : temp) {
             PreProcessingKonfirmasiSuratDTO dto = new PreProcessingKonfirmasiSuratDTO();
             dto.setRegSpaj(ConvertUtil.safeString(row[0]));
-            dto.setReminderDays(ConvertUtil.safeInt(61));
+            dto.setReminderDays(ConvertUtil.safeInt(row[1]));
+            dto.setReminderType(ConvertUtil.safeInt(row[2]));
             result.add(dto);
         }
 

@@ -21,7 +21,7 @@ public class SuratKonfirmasiPembatalanSertifikatScheduler {
 
     @Scheduled(cron = "0 40 0 * * ?")
     public void sendEmailSuratPembatalanSertifikat(){
-        List<SuratAutoCancelDTO> pembatalanSertifikatDTOList = suratKonfirmasiPembatalanSertifikatService.getListSuratPembatalanSertifikat(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+        List<SuratAutoCancelDTO> pembatalanSertifikatDTOList = suratKonfirmasiPembatalanSertifikatService.getListSuratPembatalanSertifikat(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(pembatalanSertifikatDTOList);
 
@@ -35,7 +35,7 @@ public class SuratKonfirmasiPembatalanSertifikatScheduler {
 
     @Scheduled(cron = "0 40 4 * * ?")
     public void sendEmailSuratPembatalanSertifikatRetry(){
-        List<SuratAutoCancelDTO> pembatalanSertifikatDTOList = suratKonfirmasiPembatalanSertifikatService.getListSuratPembatalanSertifikat(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+        List<SuratAutoCancelDTO> pembatalanSertifikatDTOList = suratKonfirmasiPembatalanSertifikatService.getListSuratPembatalanSertifikat(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
         //Checking line business
         List<SuratAutoCancelDTO> konfirmasiAwalDTOListAfterChecking = checkLineBusinessService.checkLineBusiness(pembatalanSertifikatDTOList);
 
