@@ -25,12 +25,16 @@ public class SftpBCAService {
             connection = (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
+            connection.setConnectTimeout(50000);
+            connection.setReadTimeout(50000);
 
             // Optional headers
             connection.setRequestProperty("Accept", "application/json");
 
+            // 🔑 This triggers the request
+            int status = connection.getResponseCode();
+
+            System.out.println("GET /send-sftp called, status: " + status);
             System.out.println("Done Send SFTP BCA");
         } catch (Exception e) {
             e.printStackTrace();
