@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @CrossOrigin
 @RequiredArgsConstructor
@@ -16,12 +17,12 @@ public class MainController {
     private final TakeoutPostponedDeclineService takeoutPostponedDeclineService;
 
     private final CancelPolisScheduler cancelPolisScheduler;
+    private final CancelSpajkScheduler cancelSpajkScheduler;
     private final SuratKonfirmasiPembatalanSertifikatScheduler suratKonfirmasiPembatalanSertifikatScheduler;
     private final PreProcessingAutoCancelScheduler preProcessingAutoCancelScheduler;
-    private final SuratKonfirmasiSertifikatAkanDibatalkanScheduler suratKonfirmasiSertifikatAkanDibatalkanScheduler;
-    private final SuratTunggakanPremiScheduler suratTunggakanPremiScheduler;
-    private final CancelSpajkScheduler cancelSpajkScheduler;
     private final SuratKonfirmasiAwalScheduler suratKonfirmasiAwalScheduler;
+    private final SuratTunggakanPremiScheduler suratTunggakanPremiScheduler;
+    private final SuratKonfirmasiSertifikatAkanDibatalkanScheduler suratKonfirmasiAkanDibatalkanScheduler;
 
     @GetMapping("/api")
     public ResponseEntity<?> helloWorld() {
@@ -42,6 +43,11 @@ public class MainController {
         cancelPolisScheduler.cancelPolisScheduler();
     }
 
+    @PostMapping("/api/test-cancel-spajk")
+    public void cancelSpajk(){
+        cancelSpajkScheduler.cancelSpajkScheduler();
+    }
+
     @PostMapping("/api/test-pre-prosessing")
     public void preprosesingSuratKonfirmas(){
         preProcessingAutoCancelScheduler.preparationGenerateSuratKonfirmasi();
@@ -52,14 +58,9 @@ public class MainController {
         suratKonfirmasiPembatalanSertifikatScheduler.sendEmailSuratPembatalanSertifikat();
     }
 
-    @PostMapping("/api/test-sertifikat-akan-dibatalkan")
-    public void suratPembatalanAkanSertifikat() throws Exception {
-        suratKonfirmasiSertifikatAkanDibatalkanScheduler.sendKonfirmasiSertifikatAkanDibatalkanEmail();
-    }
-
-    @PostMapping("/api/test-surat-tunggakan-premi")
-    public void suratTunggakanPremi(){
-        suratTunggakanPremiScheduler.sendEmailTunggakanPremi();
+    @PostMapping("/api/test-surat-konfirmasi-sertifikat-akan-dibatalkan")
+    public void suratKonfirmasiSertifikatAkanDibatalkan(){
+        suratKonfirmasiAkanDibatalkanScheduler.sendKonfirmasiSertifikatAkanDibatalkanEmail();
     }
 
     @PostMapping("/api/test-surat-konfirmasi-awal")
@@ -67,9 +68,9 @@ public class MainController {
         suratKonfirmasiAwalScheduler.sendEmailSuratKonfirmasiAwal();
     }
 
-    @PostMapping("/api/test-cancel-spajk")
-    public void cancelSpajk(){
-        cancelSpajkScheduler.cancelSpajkScheduler();
+    @PostMapping("/api/test-surat-tunggakan-premi")
+    public void suratTunggakanPremi(){
+        suratTunggakanPremiScheduler.sendEmailTunggakanPremi();
     }
 
 }
