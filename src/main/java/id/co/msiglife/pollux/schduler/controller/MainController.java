@@ -23,6 +23,7 @@ public class MainController {
     private final SuratKonfirmasiAwalScheduler suratKonfirmasiAwalScheduler;
     private final SuratTunggakanPremiScheduler suratTunggakanPremiScheduler;
     private final SuratKonfirmasiSertifikatAkanDibatalkanScheduler suratKonfirmasiAkanDibatalkanScheduler;
+    private final BcaRiplayScheduler bcaRiplayScheduler;
 
     @GetMapping("/api")
     public ResponseEntity<?> helloWorld() {
@@ -51,6 +52,12 @@ public class MainController {
     @PostMapping("/api/test-pre-prosessing")
     public void preprosesingSuratKonfirmas(){
         preProcessingAutoCancelScheduler.preparationGenerateSuratKonfirmasi();
+    }
+
+    @GetMapping("/api/run-bca-riplay")
+    public String run() throws Exception {
+        bcaRiplayScheduler.bcaRiplayScheduler();
+        return "OK";
     }
 
     @PostMapping("/api/test-pembatalan-sertifikat")

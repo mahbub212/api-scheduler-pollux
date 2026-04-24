@@ -174,6 +174,93 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     void updatePolisCanceledSingle(@Param("regSpaj") String regSpaj);
 
     @Modifying(clearAutomatically = true)
+    @Query(value = "SELECT  " +
+            "    mp.reg_spaj,  " +
+            "    mp.MSPO_POLICY_NO AS policyNo, " +
+            "    mp.MSPO_INPUT_DATE AS inputDate,  " +
+            "    mudp.UPLOAD_CREATED_DATE AS generateRiplayDate,  " +
+            "    mup.INSURED_NAME AS namaTertanggung,  " +
+            "    mup.DOB AS DOB, " +
+            "    wf.LSWF_CONFIG_ACTION, " +
+            "    mper.MSPE_EMAIL, " +
+            "    mc.MCL_FIRST, " +
+            "    mudp.PATH_FILE AS pathFile " +
+            "FROM eka.mst_policy mp " +
+            "JOIN eka.MST_UNDERWRITING_PLX mup  " +
+            "    ON mup.reg_spaj = mp.reg_spaj " +
+            "LEFT JOIN ( " +
+            "    SELECT * " +
+            "    FROM ( " +
+            "        SELECT moa.*, " +
+            "               ROW_NUMBER() OVER (PARTITION BY moa.REG_SPAJ ORDER BY moa.NO_URUT DESC) rn " +
+            "        FROM eka.MST_ORDERCL_API moa " +
+            "    ) " +
+            "    WHERE rn = 1 " +
+            ") moa ON moa.REG_SPAJ = mp.REG_SPAJ " +
+            "LEFT JOIN ( " +
+            "SELECT * FROM ( " +
+            "  SELECT mudp.*, ROW_NUMBER() OVER (PARTITION BY mudp.REG_SPAJ ORDER BY mudp.UPLOAD_CREATED_DATE DESC) rn " +
+            "  FROM eka.MST_UPLOAD_DOKUMEN_PLX mudp " +
+            "  WHERE mudp.jns_dokumen_id = 13   " +
+            " ) " +
+            " WHERE rn = 1 " +
+            ") mudp ON mudp.reg_spaj = mp.reg_spaj " +
+            "LEFT JOIN ( " +
+            "    SELECT  " +
+            "        mwdh.LSWF_CONFIG_ACTION, " +
+            "        mwdh.MSWF_DOC_NUMBER " +
+            "    FROM EKA.MST_WF_DOCUMENT_HISTORY mwdh " +
+            "    WHERE mwdh.MSWF_DOC_HIST_ID = ( " +
+            "        SELECT MAX(mwdh2.MSWF_DOC_HIST_ID)  " +
+            "        FROM EKA.MST_WF_DOCUMENT_HISTORY mwdh2 " +
+            "        WHERE mwdh.LSWF_TYPE_ID = mwdh2.LSWF_TYPE_ID " +
+            "        AND mwdh.MSWF_DOC_NUMBER = mwdh2.MSWF_DOC_NUMBER " +
+            "    ) " +
+            "    AND mwdh.LSWF_TYPE_ID = 78 " +
+            ") wf ON wf.MSWF_DOC_NUMBER = mp.reg_spaj " +
+            "LEFT JOIN ( " +
+            "    SELECT " +
+            "        mdw.MSWF_DOC_NUMBER as reg_spaj, " +
+            "        lws.LSWF_STATUS_NAME as status_name " +
+            "    FROM  " +
+            "        EKA.MST_WF_DOCUMENT mdw  " +
+            "        INNER JOIN EKA.LST_WF_STATUS lws ON lws.LSWF_STATUS_ID = mdw.LSWF_STATUS_ID  " +
+            "        AND lws.lswf_type_id = mdw.LSWF_TYPE_ID " +
+            ") sts ON sts.reg_spaj = mp.reg_spaj " +
+            "LEFT JOIN ( " +
+            "  SELECT  " +
+            "    mup.reg_spaj,  " +
+            "    mup.status AS status_uw,  " +
+            "    mup.final_decision AS keputusan, " +
+            "    lusp.code AS status_code " +
+            "  FROM EKA.MST_UNDERWRITING_PLX mup " +
+            "  JOIN EKA.LST_UW_STATUS_PLX lusp ON lusp.uw_status_id = mup.status " +
+            ") uw ON uw.reg_spaj = mp.reg_spaj " +
+            "JOIN eka.lst_policy_status lps on lps.lssp_id = mp.lssp_id " +
+            "JOIN eka.mst_insured mi ON mi.REG_SPAJ = mp.REG_SPAJ AND MSTE_INSURED_NO = 1 " +
+            "JOIN eka.mst_person mper ON mper.MCL_ID = mi.MSTE_INSURED " +
+            "JOIN eka.mst_client mc ON mc.mcl_id = mp.MSPO_CUSTOMER " +
+            "WHERE 1=1 " +
+            "AND mp.MSPO_INPUT_DATE BETWEEN TO_DATE('2024-12-13', 'YYYY-MM-DD') AND TO_DATE('2026-04-12', 'YYYY-MM-DD') " +
+            "AND mp.PKS_ID = '2024PKS000107' " + //AND mp.reg_spaj = '37202662456' -- ubah ke '2024PKS000033' di prod
+            "AND NOT EXISTS ( " +
+            "    SELECT 1  " +
+            "    FROM eka.mst_email mee " +
+            "    WHERE mee.ME_SUBJECT LIKE '%[PENTING] Ringkasan Informasi Produk dan Layanan Personal Asuransi Jiwa Kredit - MSIG Life x Bank BCA%' " +
+            "    AND mee.ME_REG_SPAJ = mp.reg_spaj " +
+            ") " +
+            "AND mp.LSSP_ID != 8 " +
+            "AND (lower(lps.lssp_status) = 'inforce' OR lower(uw.status_uw) = 'inforce' OR lower(sts.status_name) = 'inforce') " +
+            "AND LOWER(lps.lssp_status) NOT LIKE '%cancel%'  " +
+            "AND (mp.lssp_id != 12 AND mp.lspd_id != 999) " +
+            "AND ( " +
+            "    (mp.lssp_id != 5 OR LOWER(lps.lssp_status) NOT LIKE '%surrender%') " +
+            "AND NOT EXISTS (SELECT 1 FROM EKA.MST_SURRENDER s WHERE s.reg_spaj = mp.reg_spaj) " +
+            ") " +
+            "ORDER BY mp.MSPO_INPUT_DATE DESC", nativeQuery = true)
+    List<Object[]> findSendAllRiplayBca();
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = "UPDATE EKA.MST_POLICY  " +
             "      SET LSSP_ID = 8   " +
             "      WHERE ( EKA.MST_POLICY.REG_SPAJ IN (:regSpaj) ) AND  " +
