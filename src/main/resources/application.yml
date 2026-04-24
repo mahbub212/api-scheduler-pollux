@@ -95,10 +95,14 @@ spring:
     job:
       enabled: false
   custom:
+    api-new-business-process-url: "http://128.21.37.62:8687/api-pollux-new-business/api/document/bca-mri"
+    #api-new-business-process-url: "http://localhost:9093/api/document/bca-mri"
     mailpool-attachment:
       path: "/mnt/storage/mailpools/attachments/group/"
     storage:
        path: "/mnt/storage/pollux/dev/"
+    storage-mri:
+       path: '\\storage\uat\pdfmri\kps\'
 #      path: "//storage-uat.sinarmasmsiglife.co.id/pdfmri/"
 #      path: "//PENTAHO/Dev/00.IT_USE/UAT_MRI/"
 #      path: "C:/Works/Pollux/Source/api-pollux-productsetup/storage/"
@@ -140,10 +144,13 @@ spring:
     job:
       enabled: false
   custom:
+    api-new-business-process-url: "https://api-pollux.msiglife.co.id/api-pollux-new-business/api/document/bca-mri"
     mailpool-attachment:
       path: "/mnt/mailpoolattach/"
     storage:
       path: "/mnt/storage/pollux/prod/"
+    storage-mri:
+      path: '\\storage\pdfmri\kps\'
     spica:
       lspc-form-id: 8
       auth-key: ENGINE_SPICA
