@@ -118,13 +118,13 @@ public class CancelPolisService {
         Date dateNow = ptcJmRepository.getTruncatedSysdate();
         BigDecimal kurs = new BigDecimal(1);
 
-                MasterPolicy masterPolicy = masterPolicyRepository.findByRegSpaj(dto.getRegSpaj());
-                MasterBilling masterBilling = masterBillingRepository.findByRegSpaj(dto.getRegSpaj());
-                MasterInsured masterInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(dto.getRegSpaj(), 1);
-                MasterProductInsured masterProductInsured = masterProductInsuredRepository.findMainProduct(dto.getRegSpaj(), 0, 1).get(0);
-                MasterProductSetup masterProductSetup = masterProductSetupRepository.findByProductSetupId(masterPolicy.getProductId());
-                MasterProduction masterProduction = masterProductionRepository.findByRegSpajAndMsproProdKe(dto.getRegSpaj(), 1);
-                MasterWFDocument masterWFDocument = masterWFDocumentRepository.findMasterWFDocumentByDocNumberAndLswfTypeId(dto.getRegSpaj(), 78);
+        MasterPolicy masterPolicy = masterPolicyRepository.findByRegSpaj(dto.getRegSpaj());
+        MasterBilling masterBilling = masterBillingRepository.findByRegSpaj(dto.getRegSpaj());
+        MasterInsured masterInsured = masterInsuredRepository.findByRegSpajAndInsuredNo(dto.getRegSpaj(), 1);
+        MasterProductInsured masterProductInsured = masterProductInsuredRepository.findMainProduct(dto.getRegSpaj(), 0, 1).get(0);
+        MasterProductSetup masterProductSetup = masterProductSetupRepository.findByProductSetupId(masterPolicy.getProductId());
+        MasterProduction masterProduction = masterProductionRepository.findByRegSpajAndMsproProdKe(dto.getRegSpaj(), 1);
+        MasterWFDocument masterWFDocument = masterWFDocumentRepository.findMasterWFDocumentByDocNumberAndLswfTypeId(dto.getRegSpaj(), 78);
 
         // WF Config update
         ListWFConfig wfConfig = listWFConfigRepository.findListWFConfigByTypeIdAndStateIdFromAndStateIdTo(
@@ -134,19 +134,19 @@ public class CancelPolisService {
             throw new WfConfigNotFoundException("WF Config Not Found");
         }
 
-                String noJm = ptcJmRepository.getNoJm();
+        String noJm = ptcJmRepository.getNoJm();
         System.out.println("No Jm : " + noJm);
-                String noEndors = masterPolicyRepository.getNoEndors();
+        String noEndors = masterPolicyRepository.getNoEndors();
 
         // Handle currency conversion
         if (!masterPolicy.getLkuId().equals("01")) {
-                    SimpleDateFormat years = new SimpleDateFormat("yyyy");
-                    SimpleDateFormat months = new SimpleDateFormat("MM");
-                    String yearNow = years.format(dateNow);
-                    String monthNow = months.format(dateNow);
+            SimpleDateFormat years = new SimpleDateFormat("yyyy");
+            SimpleDateFormat months = new SimpleDateFormat("MM");
+            String yearNow = years.format(dateNow);
+            String monthNow = months.format(dateNow);
 
-                    kurs = ptcJmRepository.getKursLkuId02(yearNow, monthNow);
-                }
+            kurs = ptcJmRepository.getKursLkuId02(yearNow, monthNow);
+        }
 
         // Create entities
         MasterEndors masterEndors = makeMasterEndors(dto, noEndors, dateNow);
@@ -154,7 +154,7 @@ public class CancelPolisService {
 
         MasterProduction masterProductionCancel = makeMasterProduction(masterPolicy, dateNow, kurs, masterBilling,
                 dto.getRegSpaj(), masterProduction.getMsproPolicyCost());
-                masterProductionCancel.setNoJm(noJm);
+        masterProductionCancel.setNoJm(noJm);
 
         MasterDetProduction masterDetProduction = makeMasterDetProduction(
                 masterPolicy, dateNow, masterProductInsured, masterProductSetup, dto.getRegSpaj()
@@ -163,30 +163,30 @@ public class CancelPolisService {
         MasterPositionSPAJ masterPositionSPAJ = makeMasterPositionSpaj(dto, masterEndors, masterInsured);
 
         // Build JM rows
-                List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
-                        noJm, masterProduction.getNoJm(), dto.getRegSpaj()
-                );
+        List<CancelJmProjection> rows = ptcJmRepository.buildCancelJmRows(
+                noJm, masterProduction.getNoJm(), dto.getRegSpaj()
+        );
 
         journalService.insertMstTmJm(rows, masterProduction, dateNow, noJm);
 
-                masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
-                masterWFDocument.setLswfStatusId(11);
+        masterWFDocument.setLswfStateId(wfConfig.getStateIdTo());
+        masterWFDocument.setLswfStatusId(11);
 
         MasterWFDocumentHistory makeMasterWFDocumentHistory = makeMasterWFDocumentHistory(
-                        masterWFDocument.getDocId(),
-                        masterWFDocument.getLswfTypeId(),
-                        masterWFDocument.getParentDocId(),
-                        wfConfig.getStateIdFrom(),
-                        wfConfig.getConfigAction(),
-                        0,
-                        wfConfig.getStateIdTo(),
-                        new Date(),
-                        null,
-                        null,
-                        null,
-                        masterWFDocument.getDocNumber(),
-                        wfConfig.getStatusId()
-                );
+                masterWFDocument.getDocId(),
+                masterWFDocument.getLswfTypeId(),
+                masterWFDocument.getParentDocId(),
+                wfConfig.getStateIdFrom(),
+                wfConfig.getConfigAction(),
+                0,
+                wfConfig.getStateIdTo(),
+                new Date(),
+                null,
+                null,
+                null,
+                masterWFDocument.getDocNumber(),
+                wfConfig.getStatusId()
+        );
 
         masterWFDocumentHistoryRepository.save(makeMasterWFDocumentHistory);
         masterEndorsRepository.save(masterEndors);
@@ -196,10 +196,10 @@ public class CancelPolisService {
         masterPositionSPAJRepository.save(masterPositionSPAJ);
 
         // Update billing
-                masterBilling.setMsbiNoJmBtl(noJm);
-                masterBilling.setMsbiTglBatal(masterEndors.getMsenInputDate());
-                masterBilling.setLspdId(ConvertUtil.safeLong(25));
-                masterBilling.setMsbiActive(0);
+        masterBilling.setMsbiNoJmBtl(noJm);
+        masterBilling.setMsbiTglBatal(masterEndors.getMsenInputDate());
+        masterBilling.setLspdId(ConvertUtil.safeLong(25));
+        masterBilling.setMsbiActive(0);
         masterBillingRepository.save(masterBilling);
 
         masterPolicyRepository.updatePolisCanceledSingle(dto.getRegSpaj());
