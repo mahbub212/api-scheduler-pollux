@@ -203,7 +203,7 @@ public class CancelPolisService {
         masterBillingRepository.save(masterBilling);
 
         masterPolicyRepository.updatePolisCanceledSingle(dto.getRegSpaj());
-        masterAutoCancelEmailLogRepository.updatePolisCanceled(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+        masterAutoCancelEmailLogRepository.updatePolisCanceled(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
 
         System.out.println("Successfully canceled polis: " + dto.getRegSpaj());
     }
