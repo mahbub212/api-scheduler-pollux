@@ -16,7 +16,7 @@ public class BatchingBcaRiplayService {
 
     public void processInBatch(List<BcaRiplayDTO> list) throws Exception {
         int batchSize = 100;
-        /*
+
         for (int i = 0; i < list.size(); i += batchSize) {
             int end = Math.min(i + batchSize, list.size());
             List<BcaRiplayDTO> batch = list.subList(i, end);
@@ -24,7 +24,9 @@ public class BatchingBcaRiplayService {
             System.out.println("Batch ke-" + ((i / batchSize) + 1));
             batchService.processBcaRiplayList(batch); // transactional per batch
         }
-        */
+
+        //for testing only
+        /*
         List<BcaRiplayDTO> batch = new ArrayList<>();
         BcaRiplayDTO dto = new BcaRiplayDTO();
         dto.setRegSpaj(ConvertUtil.safeString("09251446269"));
@@ -39,5 +41,6 @@ public class BatchingBcaRiplayService {
         dto.setPathFile(ConvertUtil.safeString(null));
         batch.add(dto);
         batchService.processBcaRiplayList(batch);
+         */
     }
 }

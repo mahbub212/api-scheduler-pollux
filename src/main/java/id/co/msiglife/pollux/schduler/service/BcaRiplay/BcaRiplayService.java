@@ -257,6 +257,8 @@ private String templateKpsRiplayEmailBca(String namaTertanggung) throws Exceptio
     sb.append("Demikian kami sampaikan. Semoga perlindungan asuransi ini dapat memberikan ");
     sb.append("rasa aman dan manfaat terbaik bagi Bapak/Ibu.\n\n");
 
+    sb.append("Sebagai informasi tambahan bahwa dokumen yang kami kirimkan ini tidak membutuhkan tanda tangan Bapak/Ibu sebagai bentuk persetujuan.\n\n");
+
     sb.append("Hormat kami,\n");
     sb.append("PT MSIG Life Insurance Indonesia Tbk");
 
