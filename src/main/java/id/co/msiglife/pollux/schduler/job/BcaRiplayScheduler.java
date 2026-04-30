@@ -25,7 +25,7 @@ public class BcaRiplayScheduler {
     //@Scheduled(cron = "0 20 2 * * ?")
     public void bcaRiplayScheduler() throws Exception {
         System.out.println("=================== START FETCHING TASK: RIPLAY BCA ===================");
-        List<BcaRiplayDTO> bcaRiplayList = new ArrayList<>();//bcaRiplayService.getBcaRiplayList();
+        List<BcaRiplayDTO> bcaRiplayList = bcaRiplayService.getBcaRiplayList(); //new ArrayList<>();
         System.out.println("=================== FINISHED FETCHING TASK: RIPLAY BCA ===================");
         System.out.println("=================== START EXECUTING TASK: RIPLAY BCA (" + bcaRiplayList.size() + ") Data ===================");
         batchingBcaRiplayService.processInBatch(bcaRiplayList);
