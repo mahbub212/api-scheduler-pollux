@@ -109,6 +109,7 @@ spring:
     spica:
       lspc-form-id: 323
       auth-key: ENGINE_SPICA
+    api-sftp-bca-url: "http://apint.msiglife.co.id:12000/insurance/send-sftp"
 
 # Konfigurasi untuk profil prod
 ---
