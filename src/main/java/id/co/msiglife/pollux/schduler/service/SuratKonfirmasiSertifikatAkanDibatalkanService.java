@@ -53,6 +53,15 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
 
+    @Value("${spring.custom.syariah-document.signer-name}")
+    private String SYARIAH_SIGNER_NAME;
+
+    @Value("${spring.custom.syariah-document.signer-position}")
+    private String SYARIAH_SIGNER_POSITION;
+
+    @Value("${spring.custom.syariah-document.signature-image}")
+    private String SYARIAH_SIGNATURE_IMAGE;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -220,6 +229,12 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
                 editedContent = editedContent.replace("{up}", currencyFormatID(dto.getUangPertanggungan()));
                 editedContent = editedContent.replace("{tanggal_terakhir_pembayaran_premi}", tanggalCetakSertifikat == null ? "" : convertDateToJakartaTime(tanggalCetakSertifikat.plusDays(30)));
+
+                // signature
+                if (dto.isSyariah()) {
+                    editedContent = editedContent.replace("{signer_name}", SYARIAH_SIGNER_NAME);
+                    editedContent = editedContent.replace("{signer_position}", SYARIAH_SIGNER_POSITION);
+                }
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
