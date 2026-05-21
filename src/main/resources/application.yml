@@ -110,6 +110,10 @@ spring:
       lspc-form-id: 323
       auth-key: ENGINE_SPICA
     api-sftp-bca-url: "http://apint.msiglife.co.id:12000/insurance/send-sftp"
+    syariah-document:
+      signer-name: "Renova Siregar"
+      signer-position: "President Director"
+      signature-image: "template/images/renova_signature.png"
 
 # Konfigurasi untuk profil prod
 ---
@@ -156,3 +160,7 @@ spring:
       lspc-form-id: 8
       auth-key: ENGINE_SPICA
     api-sftp-bca-url: "http://apint.msiglife.co.id:9880/insurance/send-sftp"
+    syariah-document:
+      signer-name: "Renova Siregar"
+      signer-position: "President Director"
+      signature-image: "template/images/renova_signature.png"

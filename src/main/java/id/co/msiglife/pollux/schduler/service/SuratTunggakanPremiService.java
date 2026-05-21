@@ -44,6 +44,12 @@ public class SuratTunggakanPremiService {
     @Value("${spring.custom.mailpool-attachment.path}")
     private String ATTACHMENT_PATH;
 
+    @Value("${spring.custom.syariah-document.signer-name}")
+    private String SYARIAH_SIGNER_NAME;
+
+    @Value("${spring.custom.syariah-document.signer-position}")
+    private String SYARIAH_SIGNER_POSITION;
+
     @Autowired
     MasterPolicyRepository masterPolicyRepository;
 
@@ -243,6 +249,12 @@ public class SuratTunggakanPremiService {
                 editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
                 editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
+
+                // signature
+                if (dto.isSyariah()) {
+                    editedContent = editedContent.replace("{signer_name}", SYARIAH_SIGNER_NAME);
+                    editedContent = editedContent.replace("{signer_position}", SYARIAH_SIGNER_POSITION);
+                }
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
