@@ -52,6 +52,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "      EKA.MST_WF_DOCUMENT mdw  " +
             "      INNER JOIN EKA.LST_WF_STATUS lws ON lws.LSWF_STATUS_ID = mdw.LSWF_STATUS_ID  " +
             "      AND lws.lswf_type_id = mdw.LSWF_TYPE_ID " +
+            "    WHERE mdw.LSWF_TYPE_ID = 78 " +
             "  ) sts ON sts.reg_spaj = pol.reg_spaj " +
             "LEFT JOIN ( " +
             "  SELECT  " +
@@ -84,6 +85,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "   INNER JOIN EKA.LST_WF_STATUS lws " +
             "     ON lws.LSWF_STATUS_ID = mdw.LSWF_STATUS_ID " +
             "    AND lws.lswf_type_id = mdw.LSWF_TYPE_ID " +
+            "WHERE mdw.LSWF_TYPE_ID = 78 " +
             ") sts ON sts.reg_spaj = pol.reg_spaj " +
             "LEFT JOIN ( " +
             "   SELECT mup.reg_spaj, mup.status AS status_uw, mup.final_decision AS keputusan, lusp.code AS status_code " +
@@ -122,6 +124,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "      EKA.MST_WF_DOCUMENT mdw  " +
             "      INNER JOIN EKA.LST_WF_STATUS lws ON lws.LSWF_STATUS_ID = mdw.LSWF_STATUS_ID  " +
             "      AND lws.lswf_type_id = mdw.LSWF_TYPE_ID " +
+            "    WHERE mdw.LSWF_TYPE_ID = 78 " +
             "  ) sts ON sts.reg_spaj = pol.reg_spaj " +
             "LEFT JOIN ( " +
             "  SELECT  " +
