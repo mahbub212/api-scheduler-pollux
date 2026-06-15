@@ -131,10 +131,10 @@ public class OrderBcaService {
                 email.setSystem("POLLUX");
                 email.setShowSystem(0);
                 email.setShowFooter(0);
-                email.setFrom("info@msiglife.co.id");
+                email.setFrom("cosmos@msiglife.co.id");
                 email.setFromAlias("Notifikasi POLLUX");
                 email.setTo("juvita.anggreiny@msiglife.co.id");
-                email.setCc(null);
+                email.setCc("underwritingmriproses@msiglife.co.id");
                 email.setBcc(null);
                 email.setSubject(subject);
                 email.setMessage(message);
