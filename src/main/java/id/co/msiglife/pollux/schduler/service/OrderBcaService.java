@@ -123,8 +123,12 @@ public class OrderBcaService {
 
                 System.out.println("File copied successfully to: " + destinationFilePath);
 
-                String subject =  (bcaData.getTipeTrans() == 1 ? "Order" : "Revision") + "BCA " + bcaData.getOrderId();
-                String message = "Berikut " + (bcaData.getTipeTrans() == 1 ? "Order " : "Revision ") + bcaData.getOrderId() + " yang disematkan pada email ini.\n\nThis email genereated by system";
+                String subject = "BCA - " + (bcaData.getTipeTrans() == 1 ? "Order" : "Revision") + " Baru an " + bcaData.getNamaLengkapTertanggung();
+                String message =
+                        "Dear All,\n\n" +
+                        (bcaData.getTipeTrans() == 1 ? "Order" : "Revision") + " baru " + bcaData.getReferenceNo() + " atas nama " +
+                        bcaData.getNamaLengkapTertanggung() + " dari " + bcaData.getKodeCabangPengirimOrder() + " - " + bcaData.getNamaCabang() +
+                        " sudah dikirimkan. Mohon untuk segera diproses.\n\nRegards,\nBCA";
 
                 MasterEmail email = new MasterEmail();
                 email.setId(generatedId);
