@@ -66,6 +66,29 @@ public class OrderBcaService {
 
             // iterate each order
             for (BcaData bcaData : bcaDataList) {
+
+                String subject = "BCA - " + (bcaData.getTipeTrans() == 1 ? "Order" : "Revision") + " Baru an " + bcaData.getNamaLengkapTertanggung();
+                String kodeCabang = bcaData.getKodeCabangPengirimOrder();
+                String namaCabangPengirim = bcaData.getCabangPengirimOrder();
+
+                // if revision
+                if (bcaData.getTipeTrans() == 2) {
+                    Optional<BcaData> tempBcaData = mappingBcaRepository.findByRegSpajAndTipeTrans(bcaData.getRegSpaj(), 1);
+                    if (tempBcaData.isPresent()) {
+                        kodeCabang = tempBcaData.get().getKodeCabangPengirimOrder();
+                        namaCabangPengirim = tempBcaData.get().getCabangPengirimOrder();
+                    } else {
+                        System.out.println("Order Bca with reg spaj: " + bcaData.getRegSpaj() + " not found");
+                        return;
+                    }
+                }
+
+                String message =
+                        "Dear All,\n\n" +
+                        (bcaData.getTipeTrans() == 1 ? "Order" : "Revision") + " baru " + bcaData.getReferenceNo() + " atas nama " +
+                        bcaData.getNamaLengkapTertanggung() + " dari " + kodeCabang + " - " + namaCabangPengirim +
+                        " sudah dikirimkan. Mohon untuk segera diproses.\n\nRegards,\nBCA";
+
                 // step 2: generate pdf
                 String outputPdfPath = "";
                 ApiResponseDTO<Map<String, Object>> generatePdfBcaResponse = generatePdfBca(bcaData);
@@ -122,13 +145,6 @@ public class OrderBcaService {
                 }
 
                 System.out.println("File copied successfully to: " + destinationFilePath);
-
-                String subject = "BCA - " + (bcaData.getTipeTrans() == 1 ? "Order" : "Revision") + " Baru an " + bcaData.getNamaLengkapTertanggung();
-                String message =
-                        "Dear All,\n\n" +
-                        (bcaData.getTipeTrans() == 1 ? "Order" : "Revision") + " baru " + bcaData.getReferenceNo() + " atas nama " +
-                        bcaData.getNamaLengkapTertanggung() + " dari " + bcaData.getKodeCabangPengirimOrder() + " - " + bcaData.getNamaCabang() +
-                        " sudah dikirimkan. Mohon untuk segera diproses.\n\nRegards,\nBCA";
 
                 MasterEmail email = new MasterEmail();
                 email.setId(generatedId);
