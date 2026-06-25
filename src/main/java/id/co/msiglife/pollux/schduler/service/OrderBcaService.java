@@ -154,7 +154,7 @@ public class OrderBcaService {
                 email.setFrom("cosmos@msiglife.co.id");
                 email.setFromAlias("Notifikasi POLLUX");
                 email.setTo("MRI.bcajkt@msiglife.co.id;mrisurabaya@msiglife.co.id;");
-                email.setCc("underwritingmriproses@msiglife.co.id");
+                email.setCc(null);
                 email.setBcc(null);
                 email.setSubject(subject);
                 email.setMessage(message);
