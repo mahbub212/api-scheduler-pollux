@@ -11,6 +11,8 @@ import org.springframework.util.StreamUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 
 @Component
@@ -73,6 +75,16 @@ public class FileProcessUtil {
         try (InputStream imgInputStream = imgFile.getInputStream()) {
             byte[] imageBytes = StreamUtils.copyToByteArray(imgInputStream);
             return "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
+        }
+    }
+
+    public void deleteSingleFile(Path path) {
+        if (path != null) {
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException ex) {
+                System.err.println("Failed to delete file: " + path + " | Error: " + ex.getMessage());
+            }
         }
     }
 }
