@@ -59,4 +59,11 @@ public interface MappingBcaRepository extends JpaRepository<BcaData, String> {
             @Param("orderStatusTo") Integer orderStatusTo
     );
 
+    @Query(value = "SELECT * FROM eka.mst_ordercl_api " +
+            "WHERE send_email_to_ao = 0 " +
+            "AND tipe_trans != 3"
+            , nativeQuery = true
+    )
+    List<BcaData> findUnsentOrdersToAo();
+
 }

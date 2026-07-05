@@ -176,4 +176,16 @@ public class BcaData {
 
     @Column(name = "NAMA_GADIS_IBU_KANDUNG")
     private String namaGadisIbuKandung;
+
+    @Column(name = "PERSEN_PROGRAM_DISKON_BCA")
+    private Double persenProgramDiskonBca;
+
+    @Column(name = "PERSEN_DISKON_BCA")
+    private Double persenDiskonBca;
+
+    @Column(name = "PERSEN_DISKON_MASKAPAI")
+    private Double persenDiskonMaskapai;
+
+    @Column(name = "SEND_EMAIL_TO_AO")
+    private Integer sendEmailToAo;
 }
