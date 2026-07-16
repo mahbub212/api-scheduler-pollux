@@ -99,6 +99,9 @@ public class SuratKonfirmasiAwalService {
 
                     // set emailTo, subject, message, etc.
                     String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
+                    if (!stringBlank(dto.getEmailPic())) {
+                        emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                    }
 
                     String subject = "";
                     String message = "";
@@ -513,6 +516,7 @@ public class SuratKonfirmasiAwalService {
             dto.setRegSpaj(ConvertUtil.safeString(row[14]));
             dto.setUangPertanggungan(ConvertUtil.safeBigDecimal(row[15]));
             dto.setEmailTertanggung(ConvertUtil.safeString(row[16]));
+            dto.setEmailPic(ConvertUtil.safeString(row[17]));
             result.add(dto);
         }
 
