@@ -30,5 +30,6 @@ public class SuratAutoCancelDTO {
     private BigDecimal uangPertanggungan;
     private String emailTertanggung;
     private boolean isSyariah;
+    private String emailPic;
 
 }
