@@ -114,6 +114,8 @@ spring:
       signer-name: "Renova Siregar"
       signer-position: "President Director"
       signature-image: "template/images/renova_signature.png"
+    url:
+      login-pollux: "http://128.21.37.61/auth/login"
 
 # Konfigurasi untuk profil prod
 ---
@@ -164,3 +166,5 @@ spring:
       signer-name: "Renova Siregar"
       signer-position: "President Director"
       signature-image: "template/images/renova_signature.png"
+    url:
+      login-pollux: "https://pollux.msiglife.co.id/auth/login"

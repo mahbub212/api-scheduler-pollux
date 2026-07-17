@@ -206,7 +206,7 @@ public class SuratTunggakanPremiService {
             if (dto.isSyariah()) {
                 processSuratTunggakanPremi(dto, templateSyariah, today);
             } else {
-                //processSuratTunggakanPremi(dto, templateKonven, today);
+                processSuratTunggakanPremi(dto, templateKonven, today);
             }
 
         }
