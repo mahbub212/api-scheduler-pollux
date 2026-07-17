@@ -56,7 +56,7 @@ public class EmailApprovalSurrenderService {
         for (EmailApprovalSurrenderDTO dto : cancelSpajkDTOList) {
             try {
                 int result = sendRequestApprovalSurrender(dto);
-                int updated = masterAutoCancelEmailLogRepository.updateEmailLogDone(dto.getRegSpaj(), StaticValue.EMAIL_APPROVAL_SURRENDER_TYPE, dto.getLastApprove());
+                int updated = masterAutoCancelEmailLogRepository.updateEmailLogDone(dto.getRegSpaj(), StaticValue.EMAIL_APPROVAL_SURRENDER_TYPE);
                 if (updated == 1) {
                     System.out.println("Sending approval surrender for SPAJ Successfully");
                 } else {
