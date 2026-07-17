@@ -1,6 +1,9 @@
 package id.co.msiglife.pollux.schduler.util;
 
+import java.io.Reader;
+import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.sql.Clob;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -84,6 +87,12 @@ public class ConvertUtil {
         return null;
     }
 
+    public static String formattedOutputCurrency(BigDecimal n) {
+        Locale locale = new Locale("in", "ID");
+        NumberFormat format = NumberFormat.getCurrencyInstance(locale);
+        return format.format(n).replace("Rp", "Rp. ");
+    }
+
     public static Integer safeInt(Object obj) {
         if (obj == null) return null;
 
@@ -98,6 +107,24 @@ public class ConvertUtil {
                 return null; // kalau bukan angka
             }
         }
+    }
+
+    public static String clobToString(Object clob) {
+        if (clob instanceof Clob) {
+            try (Reader reader = ((Clob) clob).getCharacterStream();
+                 StringWriter writer = new StringWriter()) {
+                char[] buffer = new char[1024];
+                int bytesRead;
+                while ((bytesRead = reader.read(buffer)) != -1) {
+                    writer.write(buffer, 0, bytesRead);
+                }
+                return writer.toString();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return clob != null ? clob.toString() : null;
     }
 
     public static boolean bigDecimalGTZero(BigDecimal value) {
