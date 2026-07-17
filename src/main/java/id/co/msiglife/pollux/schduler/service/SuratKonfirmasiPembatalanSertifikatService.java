@@ -195,7 +195,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             if (dto.isSyariah()) {
                 processSuratSertifikatDibatalkan(dto, templateSyariah, today);
             } else {
-                //processSuratSertifikatDibatalkan(dto, templateKonven, today);
+                processSuratSertifikatDibatalkan(dto, templateKonven, today);
             }
         }
     }
