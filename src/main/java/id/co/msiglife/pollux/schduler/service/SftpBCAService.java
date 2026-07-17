@@ -14,7 +14,7 @@ public class SftpBCAService {
     @Value("${spring.custom.api-sftp-bca-url}")
     private String API_SEND_SFTP_BCA;
 
-    @Scheduled(cron = "0 */1 * * * ?")
+    //@Scheduled(cron = "0 */1 * * * ?")
     public void hitSFTPBCA() {
         HttpURLConnection connection = null;
 
