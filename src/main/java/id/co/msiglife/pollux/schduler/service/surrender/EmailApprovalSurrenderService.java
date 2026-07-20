@@ -55,8 +55,8 @@ public class EmailApprovalSurrenderService {
     public void executeTask(List<EmailApprovalSurrenderDTO> cancelSpajkDTOList) {
         for (EmailApprovalSurrenderDTO dto : cancelSpajkDTOList) {
             try {
-                int result = sendRequestApprovalSurrender(dto);
-                int updated = masterAutoCancelEmailLogRepository.updateEmailLogDone(dto.getRegSpaj(), StaticValue.EMAIL_APPROVAL_SURRENDER_TYPE);
+                String meId = sendRequestApprovalSurrender(dto);
+                int updated = masterAutoCancelEmailLogRepository.updateEmailLogDone(dto.getRegSpaj(), StaticValue.EMAIL_APPROVAL_SURRENDER_TYPE, meId);
                 if (updated == 1) {
                     System.out.println("Sending approval surrender for SPAJ Successfully");
                 } else {
@@ -76,8 +76,7 @@ public class EmailApprovalSurrenderService {
     }
 
     @Transactional
-    public int sendRequestApprovalSurrender(EmailApprovalSurrenderDTO emailApprovalSurrenderDTO) {
-        int result = 0;
+    public String sendRequestApprovalSurrender(EmailApprovalSurrenderDTO emailApprovalSurrenderDTO) {
 
         // Fetch the email ID from the SQL function using a native SQL query
         String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
@@ -196,8 +195,7 @@ public class EmailApprovalSurrenderService {
         masterEmailRepository.save(emailEntity);
         System.out.println("Update Data Approval Refund Sent Successfully...");
 
-        result = 1;
-        return result;
+        return generatedId;
     }
 
     private String templateApprovalSurrenderEmail(EmailApprovalSurrenderDTO emailApprovalSurrenderDTO, String nameTo) {
