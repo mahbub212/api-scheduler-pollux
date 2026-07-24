@@ -105,6 +105,9 @@ spring:
     spica:
       lspc-form-id: 323
       auth-key: ENGINE_SPICA
+    api-sftp-bca-url: ""
+    url:
+      login-pollux: "http://128.21.37.61/auth/login"
 
 # Konfigurasi untuk profil prod
 ---
@@ -148,3 +151,5 @@ spring:
       lspc-form-id: 8
       auth-key: ENGINE_SPICA
     api-sftp-bca-url: "http://apint.msiglife.co.id:9880/insurance/send-sftp"
+    url:
+      login-pollux: "https://pollux.msiglife.co.id/auth/login"
