@@ -191,7 +191,7 @@ public class SuratKonfirmasiAwalService {
             if (dto.isSyariah()) {
                 processSuratKonfirmasiAwal(dto, templateSyariah, today);
             } else {
-                processSuratKonfirmasiAwal(dto, templateKonven, today);
+                //processSuratKonfirmasiAwal(dto, templateKonven, today);
             }
         }
     }
