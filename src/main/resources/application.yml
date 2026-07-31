@@ -105,9 +105,13 @@ spring:
     spica:
       lspc-form-id: 323
       auth-key: ENGINE_SPICA
-    api-sftp-bca-url: ""
     url:
       login-pollux: "http://128.21.37.61/auth/login"
+    api-sftp-bca-url: "http://apint.msiglife.co.id:12000/insurance/send-sftp"
+    syariah-document:
+      signer-name: "Renova Siregar"
+      signer-position: "President Director"
+      signature-image: "template/images/renova_signature.png"
 
 # Konfigurasi untuk profil prod
 ---
@@ -153,3 +157,7 @@ spring:
     api-sftp-bca-url: "http://apint.msiglife.co.id:9880/insurance/send-sftp"
     url:
       login-pollux: "https://pollux.msiglife.co.id/auth/login"
+    syariah-document:
+      signer-name: "Renova Siregar"
+      signer-position: "President Director"
+      signature-image: "template/images/renova_signature.png"
