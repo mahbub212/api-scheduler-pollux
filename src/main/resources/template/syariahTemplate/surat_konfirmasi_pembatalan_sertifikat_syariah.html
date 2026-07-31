@@ -67,7 +67,8 @@
         }
 
         .footer {
-            margin-left: 10px;
+            padding-left: 20px;
+            padding-right: 20px;
             margin-bottom: 10px;
             text-align: left;
             position: fixed;
@@ -82,7 +83,9 @@
         }
 
         .footer img:nth-child(2) {
-            margin-left: 85px;
+            float: right;
+            margin-right: 40px;
+
             height: 20px;
             width: 200px;
             object-fit: contain;
@@ -123,7 +126,7 @@
     <div>Up. Admin Kredit</div>
     <h4 style="text-align: center"><b>Perihal : <u>SURAT KONFIRMASI PEMBATALAN SERTIFIKAT</u></b></h4>
     <div>Dengan Hormat,</div>
-    <div style="text-align: justify">Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.
+    <div style="text-align: justify">Kami mengucapkan terima kasih atas kepercayaan yang Bapak/Ibu berikan kepada PT MSIG Sharia Life Insurance Indonesia untuk mengelola dana kontribusi peserta, sesuai prinsip Syariah, guna saling menolong dan melindungi Anda serta keluarga.
     </div>
     <span style="display: block; height: 15px"></span>
     <div style="text-align: justify">Bersama dengan surat ini kami sampaikan bahwa untuk Sertifikat Asuransi Jiwa Pembiayaan Syariah dengan detail sebagai berikut:</div>
@@ -173,11 +176,11 @@
     <div style="text-align: justify">Kami informasikan bahwa untuk pembayaran kontribusi atas Sertifikat tersebut belum kami terima sampai dengan
         tanggal jatuh tempo pembayaran kontribusi ditanggal {tanggal_jatuh_tempo_pembayaran_premi}</div>
     <span style="display: block; height: 15px"></span>
-    <div style="text-align: justify">Sesuai dengan Syarat Syarat Umum Polis pasal 7 mengenai kontribusi, ayat c tercantum “Apabila Kontribusi belum dibayar
+    <div style="text-align: justify">Sesuai dengan Syarat Syarat Umum Polis pasal 7 mengenai kontribusi, ayat d tercantum “Apabila Kontribusi belum dibayar
         setelah melewati Tanggal Jatuh Tempo, maka otomatis Sertifikat dinyatakan batal sejak awal.”.</div>
     <span style="display: block; height: 15px"></span>
     <div style="text-align: justify">Sehubungan dengan hal tersebut, perlu kami sampaikan bahwa untuk sertifikat ini kami batalkan dan jika terjadi
-        klaim atas sertifikat tersebut, maka sesuai dengan ketentuan dalam polis, PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah
+        klaim atas sertifikat tersebut, maka sesuai dengan ketentuan dalam polis, PT MSIG Sharia Life Insurance Indonesia
         tidak berkewajiban membayar klaim tersebut.</div>
     <span style="display: block; height: 15px"></span>
 
@@ -188,7 +191,7 @@
     <span style="display: block; height: 15px"></span>
     <div>Jakarta, {tanggal_hari_ini}</div>
     <div>Hormat kami,</div>
-    <div>PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah</div>
+    <div>PT MSIG Sharia Life Insurance Indonesia.</div>
     <span style="display: block; height: 15px"></span>
     <table style="width: 35%; border-collapse: collapse; font-size: 9pt">
         <tr>
@@ -201,10 +204,10 @@
     <span style="display: block; height: 15px"></span>
     <table style="width: 35%; border-collapse: collapse;font-size: 9pt">
         <tr>
-            <td style="border-bottom: 1px solid black; text-align: center"><b>Bianka Margareth Simatupang</b></td>
+            <td style="border-bottom: 1px solid black; text-align: center"><b>{signer_name}</b></td>
         </tr>
         <tr>
-            <td style="text-align: center">Division Head of Group Operations</td>
+            <td style="text-align: center">{signer_position}</td>
         </tr>
     </table>
 </div>
