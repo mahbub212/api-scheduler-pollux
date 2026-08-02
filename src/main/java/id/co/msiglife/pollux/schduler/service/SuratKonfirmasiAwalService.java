@@ -42,6 +42,12 @@ public class SuratKonfirmasiAwalService {
     @Value("${spring.custom.mailpool-attachment.path}")
     private String ATTACHMENT_PATH;
 
+    @Value("${spring.custom.syariah-document.signer-name}")
+    private String SYARIAH_SIGNER_NAME;
+
+    @Value("${spring.custom.syariah-document.signer-position}")
+    private String SYARIAH_SIGNER_POSITION;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -99,6 +105,9 @@ public class SuratKonfirmasiAwalService {
 
                     // set emailTo, subject, message, etc.
                     String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
+                    if (!stringBlank(dto.getEmailPic())) {
+                        emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                    }
 
                     String subject = "";
                     String message = "";
@@ -230,6 +239,12 @@ public class SuratKonfirmasiAwalService {
                 editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
                 editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
+
+                // signature
+                if (dto.isSyariah()) {
+                    editedContent = editedContent.replace("{signer_name}", SYARIAH_SIGNER_NAME);
+                    editedContent = editedContent.replace("{signer_position}", SYARIAH_SIGNER_POSITION);
+                }
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
@@ -438,8 +453,7 @@ public class SuratKonfirmasiAwalService {
                 .append("</strong></div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
-                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("Kami mengucapkan terima kasih atas kepercayaan yang Bapak/Ibu berikan kepada PT MSIG Sharia Life Insurance Indonesia untuk mengelola dana kontribusi peserta, sesuai prinsip Syariah, guna saling menolong dan melindungi Anda serta keluarga.")
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
@@ -474,7 +488,8 @@ public class SuratKonfirmasiAwalService {
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
 
-        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection<br>" +
+                "PT MSIG Sharia Life Insurance Indonesia</div>");
 
         // Close tables
         emailContent.append("            </td>");
@@ -513,6 +528,7 @@ public class SuratKonfirmasiAwalService {
             dto.setRegSpaj(ConvertUtil.safeString(row[14]));
             dto.setUangPertanggungan(ConvertUtil.safeBigDecimal(row[15]));
             dto.setEmailTertanggung(ConvertUtil.safeString(row[16]));
+            dto.setEmailPic(ConvertUtil.safeString(row[17]));
             result.add(dto);
         }
 
