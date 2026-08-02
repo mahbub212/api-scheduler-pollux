@@ -2,6 +2,9 @@ package id.co.msiglife.pollux.schduler.util;
 
 public class StaticValue {
 
+	public final static String TIMEZONE_APP = "Asia/Jakarta";
+	public final static String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+
 	public final static String SECRET_KEY_LOGIN_TOKEN = "rdwPjGQK1IiCEd2QinzcwZJNTne3DbtN";
 	public final static String EXP_TIME_LOGIN_TOKEN = "86400000"; // 1 day in millisecond
 	public final static String BY_VIEWER = "POLLUX Viewer";
@@ -28,4 +31,7 @@ public class StaticValue {
 	public final static Integer SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE = 4;
 	public final static Integer SERTIFIKAT_DIBATALKAN_TYPE = 5;
 	public final static Integer SERTIFIKAT_DIBATALKAN_NOTIFICATION_WITHOUT_EMAIL_PDF_TYPE = 6;
+	public final static Integer EMAIL_APPROVAL_SURRENDER_TYPE = 7;
+
+	public final static String namingFileNT = "NT_{{noPolis}}";
 }

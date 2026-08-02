@@ -166,6 +166,43 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type = 5 AND flag_done = 0", nativeQuery = true)
     List<Object[]> findSpajkTobeCancelled();
 
+    @Query(value = "" +
+            "WITH latest_approve AS ( " +
+            "    SELECT " +
+            "        x.REG_SPAJ, " +
+            "        NVL(x.FLOW_TYPE_ID, 0) AS FLOW_TYPE_ID, " +
+            "        x.role_id, " +
+            "        x.CREATED_DATE " +
+            "    FROM ( " +
+            "        SELECT muhap.*, " +
+            "               ROW_NUMBER() OVER ( " +
+            "                   PARTITION BY muhap.REG_SPAJ " +
+            "                   ORDER BY muhap.UW_APPROVAL_HIST_ID DESC " +
+            "               ) rn " +
+            "        FROM eka.MST_UW_HISTORY_APPROVAL_PLX muhap " +
+            "        WHERE muhap.IS_APPROVED = 1 AND muhap.flow_type_id = 115 " +
+            "    ) x " +
+            "    WHERE x.rn = 1 " +
+            ") " +
+            "SELECT mac.reg_spaj, mac.path_attach, mac.me_id, mp.MSPO_POLICY_NO, 115, mup.insured_name, " +
+            "CASE " +
+            "   WHEN mpp.reg_spaj IS NULL THEN 0 " +
+            "ELSE 1 " +
+            "   END AS IS_CALCULATED_PREMI," +
+            "NVL(mpi.MSPR_PREMIUM, mpp.premi_dasar) AS premi, " +
+            "NVL(mpi.MSPR_EXTRA, mpp.premi_extra) AS premiExtra, " +
+            "NVL(ms.MSSUR_JML_NT, 0) AS nilai_nt, " +
+            "mac.reminder_days AS last_approve " +
+            "FROM eka.MST_AUTO_CANCEL_EMAIL_LOG mac " +
+            "JOIN eka.mst_policy mp ON mp.reg_spaj = mac.REG_SPAJ " +
+            "JOIN eka.MST_UNDERWRITING_PLX mup ON mup.REG_SPAJ = mac.REG_SPAJ " +
+            "JOIN eka.mst_product_insured mpi ON mpi.reg_spaj = mp.reg_spaj " +
+            "JOIN latest_approve approve ON approve.reg_spaj = mp.reg_spaj AND approve.ROLE_ID = mac.REMINDER_DAYS " +
+            "JOIN eka.MST_SURRENDER ms ON ms.REG_SPAJ = mp.REG_SPAJ " +
+            "LEFT JOIN eka.mst_perhitungan_premi_plx mpp ON mpp.reg_spaj = mp.reg_spaj " +
+            "WHERE REMINDER_TYPE = 7 AND FLAG_DONE = 0", nativeQuery = true)
+    List<Object[]> findSpajkWillBeSendingApproval();
+
     @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type IN (:reminderTypes) AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
     List<Object[]> findPolicyTobeCancelled(@Param("reminderTypes") List<Integer> reminderTypes);
 
@@ -181,6 +218,44 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "SELECT eka.pac_counter.Get_no_endors_seq() FROM DUAL",
             nativeQuery = true)
     String getNoEndors();
+
+    @Query(value = "SELECT LUS_EMAIL, LUS_FULL_NAME " +
+            "FROM EKA.LST_USER " +
+            "WHERE LUS_ID IN " +
+            "(SELECT LUS_ID " +
+            "FROM EKA.LST_USER_ROLE " +
+            "WHERE FLAG_AKTIF = 1 AND ROLE_ID = " +
+            "(SELECT ROLE_ID " +
+            "FROM EKA.MST_UW_HISTORY_APPROVAL_PLX " +
+            "WHERE REG_SPAJ = :regSpaj " +
+            "AND IS_APPROVED = 0 " +
+            "AND (FLOW_TYPE_ID = :flowTypeId OR (:flowTypeId = 78 AND FLOW_TYPE_ID IS NULL)) " +
+            "ORDER BY UW_APPROVAL_HIST_ID ASC " +
+            "FETCH FIRST 1 ROWS ONLY))", nativeQuery = true)
+    List<Object[]> findEmailAndFullName(@Param("regSpaj") String regSpaj, @Param("flowTypeId") Integer flowTypeId);
+
+    @Query(value = "select history.uw_approval_hist_id, history.reg_spaj, history.msuw_id, history.role_id, history.is_approved, " +
+            "history.decision, history.lus_id, history.remark, history.created_date, history.approved_date, \n" +
+            "(SELECT ur.lus_full_name FROM eka.lst_user ur WHERE history.lus_id = ur.lus_id) as user_name, \n" +
+            "(SELECT rl.name FROM eka.lst_role rl WHERE history.role_id = rl.role_id) as role_name, \n" +
+            "(SELECT mcl_first FROM EKA.MST_CLIENT pemegangPolis WHERE policy.mspo_policy_holder = pemegangPolis.mcl_id) as PEMEGANG, " +
+            "uw.INSURED_NAME, uw.PRODUCT, \n" +
+            "uw.SUM_ASSURED, uw.final_decision, uw.final_remark, mbp.amount_ibank, '' as reasonOfRefund, policy.mspo_policy_no, ms.MSSUR_ALASAN \n" +
+            "FROM \n" +
+            "    eka.mst_uw_history_approval_plx history \n" +
+            "LEFT JOIN eka.mst_underwriting_plx uw ON history.MSUW_ID = uw.UW_ID OR history.reg_spaj = uw.reg_spaj " +
+            "left join EKA.MST_POLICY policy on history.REG_SPAJ = policy.REG_SPAJ " +
+            "LEFT JOIN EKA.MST_BASKET_PLX mbp on mbp.reg_spaj = policy.reg_spaj " +
+            "LEFT JOIN EKA.MST_SURRENDER ms on ms.reg_spaj = mbp.reg_spaj " +
+            "where history.reg_spaj = :regSpaj \n" +
+            "AND (:isApproved IS NULL OR history.is_approved = :isApproved)\n" +
+            "AND ( " +
+            "    (history.flow_type_id = :flowTypeId) " +
+            "    OR (:flowTypeId = 78 AND history.flow_type_id IS NULL) " +
+            ") " +
+            "order by history.uw_approval_hist_id",
+            nativeQuery = true)
+    List<Object[]> findByRegSpaj(String regSpaj, Boolean isApproved, Integer flowTypeId);
 
 
 }
