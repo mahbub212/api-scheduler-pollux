@@ -222,7 +222,12 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     @Query(value = "SELECT LUS_EMAIL, LUS_FULL_NAME " +
             "FROM EKA.LST_USER " +
             "WHERE LUS_ID IN " +
-            "(SELECT LUS_ID " +
+            //"(SELECT LUS_ID " +
+            "(SELECT " +
+            "   CASE " + // Temp solution for double COO (elly & renova) after sharia deployment
+            "       WHEN ROLE_ID = 19 THEN 8357 " + // if role COO then hard code email bu elly only
+            "       ELSE LUS_ID " +
+            "   END " +
             "FROM EKA.LST_USER_ROLE " +
             "WHERE FLAG_AKTIF = 1 AND ROLE_ID = " +
             "(SELECT ROLE_ID " +
