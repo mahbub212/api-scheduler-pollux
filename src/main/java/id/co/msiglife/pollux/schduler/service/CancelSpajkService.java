@@ -13,7 +13,6 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
@@ -249,16 +248,17 @@ public class CancelSpajkService {
 
                     }
 
-                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(cancelDto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_DAYS);
+                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderType(cancelDto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_TYPE);
 
                     if (masterAutoCancelEmailLog == null) {
                         masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                        masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_DAYS);
                     }
 
                     masterAutoCancelEmailLog.setRegSpaj(cancelDto.getRegSpaj());
                     masterAutoCancelEmailLog.setUpdatedAt(existingInsured.getTglBatal());
                     masterAutoCancelEmailLog.setFlagDone(1);
-                    masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_DAYS);
+                    masterAutoCancelEmailLog.setReminderType(StaticValue.SERTIFIKAT_DIBATALKAN_TYPE);
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
 
                     wfLog.setDocNumber(cancelDto.getRegSpaj());

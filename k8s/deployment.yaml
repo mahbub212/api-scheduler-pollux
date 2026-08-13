@@ -26,8 +26,6 @@ spec:
           volumeMounts:
             - name: flexvol-mount
               mountPath: /mnt/storage
-            - name: flexvol-mount-eb
-              mountPath: /mnt/ebserver
             - name: flexvol-mount-mailpoolattach
               mountPath: /mnt/mailpoolattach
           ports:
@@ -58,9 +56,6 @@ spec:
         - name: flexvol-mount
           hostPath:
             path: /mnt/storage
-        - name: flexvol-mount-eb
-          hostPath:
-            path: /mnt/ebserver
         - name: flexvol-mount-mailpoolattach
           hostPath:
             path: /mnt/mailpoolattach

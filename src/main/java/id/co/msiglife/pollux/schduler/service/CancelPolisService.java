@@ -21,9 +21,8 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CancelPolisService {
@@ -204,7 +203,11 @@ public class CancelPolisService {
         masterPolicyRepository.updatePolisCanceledSingle(dto.getRegSpaj());
         masterAutoCancelEmailLogRepository.updatePolisCanceled(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
 
-        System.out.println("Successfully canceled polis: " + dto.getRegSpaj());
+        // 10) updatePolisCanceled
+        masterAutoCancelEmailLogRepository.updatePolisCanceled(cancelPolisProceed.stream()
+                .map(CancelPolisDTO::getRegSpaj)
+                .collect(Collectors.toList()), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE
+        );
     }
 
     private MasterPositionSPAJ makeMasterPositionSpaj(CancelPolisDTO CancelPolisDTO, MasterEndors masterEndors, MasterInsured masterInsured) {
@@ -318,7 +321,9 @@ public class CancelPolisService {
 
 
     public List<CancelPolisDTO> getCancelPolisList() {
-        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+        List<Integer> reminderTypes = Arrays.asList(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE, StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_WITHOUT_EMAIL_PDF_TYPE);
+
+        List<Object[]> resultList = masterPolicyRepository.findPolicyTobeCancelled(reminderTypes);
         List<CancelPolisDTO> policyToBeCancelledList = new ArrayList<>();
         for (Object[] row : resultList) {
             CancelPolisDTO dto = new CancelPolisDTO();

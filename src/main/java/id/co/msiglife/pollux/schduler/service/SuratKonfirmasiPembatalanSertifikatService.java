@@ -15,7 +15,6 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -54,6 +53,15 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
     @Value("${spring.custom.storage.path}")
     private String STORAGE_PATH;
+
+    @Value("${spring.custom.syariah-document.signer-name}")
+    private String SYARIAH_SIGNER_NAME;
+
+    @Value("${spring.custom.syariah-document.signer-position}")
+    private String SYARIAH_SIGNER_POSITION;
+
+    @Value("${spring.custom.syariah-document.signature-image}")
+    private String SYARIAH_SIGNATURE_IMAGE;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -104,6 +112,9 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
                     // set emailTo, subject, message, etc.
                     String emailTo = (stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";") + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang() + ";") + (stringBlank(dto.getEmailTertanggung()) ? "" : dto.getEmailTertanggung());
+                    if (!stringBlank(dto.getEmailPic())) {
+                        emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                    }
 
                     String subject = "";
                     String message = "";
@@ -145,10 +156,11 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                     masterEmailRepository.save(emailEntity);
 
                     String savedId = emailEntity.getId();
-                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderType(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
 
                     if (masterAutoCancelEmailLog == null) {
                         masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                        masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
                     }
 
                     masterAutoCancelEmailLog.setMeId(savedId);
@@ -157,7 +169,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                     masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                     masterAutoCancelEmailLog.setFlagDone(1);
                     masterAutoCancelEmailLog.setFlagPolisCanceled(0);
-                    masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
+                    masterAutoCancelEmailLog.setReminderType(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
 
 
                     masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
@@ -192,7 +204,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             if (dto.isSyariah()) {
                 processSuratSertifikatDibatalkan(dto, templateSyariah, today);
             } else {
-                processSuratSertifikatDibatalkan(dto, templateKonven, today);
+                //processSuratSertifikatDibatalkan(dto, templateKonven, today);
             }
         }
     }
@@ -286,6 +298,12 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
                 editedContent = editedContent.replace("{up}", currencyFormatID(dto.getUangPertanggungan()));
                 editedContent = editedContent.replace("{tanggal_jatuh_tempo_pembayaran_premi}", thirtyDaysLater);
+
+                // signature
+                if (dto.isSyariah()) {
+                    editedContent = editedContent.replace("{signer_name}", SYARIAH_SIGNER_NAME);
+                    editedContent = editedContent.replace("{signer_position}", SYARIAH_SIGNER_POSITION);
+                }
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
@@ -447,8 +465,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
-                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("Kami mengucapkan terima kasih atas kepercayaan yang Bapak/Ibu berikan kepada PT MSIG Sharia Life Insurance Indonesia untuk mengelola dana kontribusi peserta, sesuai prinsip Syariah, guna saling menolong dan melindungi Anda serta keluarga.")
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
@@ -483,7 +500,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
 
-        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+        emailContent.append("<div style=\"margin:0;\">Credit Life Billing and Collection<br>PT MSIG Sharia Life Insurance Indonesia</div>");
 
         // Close inner table
         emailContent.append("            </td>");
@@ -499,8 +516,8 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         return emailContent.toString();
     }
 
-    public List<SuratAutoCancelDTO> getListSuratPembatalanSertifikat(Integer days) {
-        List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
+    public List<SuratAutoCancelDTO> getListSuratPembatalanSertifikat(Integer reminderType) {
+        List<Object[]> listData = masterPolicyRepository.findAutoCancelByReminderType(reminderType);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
         for (Object[] row : listData) {
@@ -522,6 +539,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             dto.setRegSpaj(ConvertUtil.safeString(row[14]));
             dto.setUangPertanggungan(ConvertUtil.safeBigDecimal(row[15]));
             dto.setEmailTertanggung(ConvertUtil.safeString(row[16]));
+            dto.setEmailPic(ConvertUtil.safeString(row[17]));
             result.add(dto);
         }
 

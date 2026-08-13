@@ -21,4 +21,11 @@ public class StaticValue {
 	public final static Integer STATUS_WORKSHEET_DECLINED = 6;
 	public final static Integer STATUS_WORKSHEET_POSTPONED = 7;
 	public final static Integer STATUS_WORKSHEET_APPROVED = 11;
+
+	public final static Integer SURAT_KONFIRMASI_AWAL_REMINDER_TYPE = 1;
+	public final static Integer TUNGGAKAN_PREMI_REMINDER_TYPE = 2;
+	public final static Integer SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_TYPE = 3;
+	public final static Integer SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE = 4;
+	public final static Integer SERTIFIKAT_DIBATALKAN_TYPE = 5;
+	public final static Integer SERTIFIKAT_DIBATALKAN_NOTIFICATION_WITHOUT_EMAIL_PDF_TYPE = 6;
 }

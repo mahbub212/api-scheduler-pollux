@@ -105,6 +105,13 @@ spring:
     spica:
       lspc-form-id: 323
       auth-key: ENGINE_SPICA
+    url:
+      login-pollux: "http://128.21.37.61/auth/login"
+    api-sftp-bca-url: "http://apint.msiglife.co.id:12000/insurance/send-sftp"
+    syariah-document:
+      signer-name: "Renova Siregar"
+      signer-position: "President Director"
+      signature-image: "template/images/renova_signature.png"
 
 # Konfigurasi untuk profil prod
 ---
@@ -113,7 +120,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:oracle:thin:@128.21.22.31:1530:ajsdb
+    url: jdbc:oracle:thin:@ajsdb.msiglife.co.id:1530:ajsdb
     username: dev
     password: ENC(c1Hxqs/EVX7QSV9a6z2j0g==)
     driver-class-name: oracle.jdbc.driver.OracleDriver
@@ -147,3 +154,10 @@ spring:
     spica:
       lspc-form-id: 8
       auth-key: ENGINE_SPICA
+    api-sftp-bca-url: "http://apint.msiglife.co.id:9880/insurance/send-sftp"
+    url:
+      login-pollux: "https://pollux.msiglife.co.id/auth/login"
+    syariah-document:
+      signer-name: "Renova Siregar"
+      signer-position: "President Director"
+      signature-image: "template/images/renova_signature.png"

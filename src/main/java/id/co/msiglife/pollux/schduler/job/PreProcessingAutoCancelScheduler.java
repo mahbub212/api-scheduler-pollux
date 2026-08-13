@@ -19,13 +19,8 @@ public class PreProcessingAutoCancelScheduler {
 
     @Scheduled(cron = "0 1 0 * * ?")
     public void preparationGenerateSuratKonfirmasi(){
-        List<Integer> reminderDays = Arrays.asList(
-                StaticValue.SURAT_KONFIRMASI_AWAL_REMINDER_DAYS,
-                StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS,
-                StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS,
-                StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
 
-        List<PreProcessingKonfirmasiSuratDTO> preProcessingDTOList = preProcessingAutoCancelService.generatePreProcessingSurat(reminderDays);
+        List<PreProcessingKonfirmasiSuratDTO> preProcessingDTOList = preProcessingAutoCancelService.generatePreProcessingSurat();
         System.out.println("=================== START INSERT PRE PROCESSING DATA (" + preProcessingDTOList.size() + ") Data ===================");
         preProcessingAutoCancelService.saveToLoggerAutoCancel(preProcessingDTOList);
         System.out.println("=================== END GENERATED PRE PROCESSING DATA ===================");

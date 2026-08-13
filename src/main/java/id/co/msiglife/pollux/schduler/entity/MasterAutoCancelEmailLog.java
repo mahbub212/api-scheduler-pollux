@@ -37,6 +37,9 @@ public class MasterAutoCancelEmailLog {
         @Column(name = "REMINDER_DAYS", nullable = false, length = 3)
         private Integer reminderDays;
 
+        @Column(name = "REMINDER_TYPE", nullable = false, length = 2)
+        private Integer reminderType;
+
         @Column(name = "FLAG_DONE", nullable = false, length = 3)
         private Integer flagDone;
 

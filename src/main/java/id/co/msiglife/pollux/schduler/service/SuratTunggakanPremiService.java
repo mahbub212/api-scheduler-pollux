@@ -15,7 +15,6 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -44,6 +43,12 @@ public class SuratTunggakanPremiService {
 
     @Value("${spring.custom.mailpool-attachment.path}")
     private String ATTACHMENT_PATH;
+
+    @Value("${spring.custom.syariah-document.signer-name}")
+    private String SYARIAH_SIGNER_NAME;
+
+    @Value("${spring.custom.syariah-document.signer-position}")
+    private String SYARIAH_SIGNER_POSITION;
 
     @Autowired
     MasterPolicyRepository masterPolicyRepository;
@@ -105,11 +110,14 @@ public class SuratTunggakanPremiService {
 
                         // set emailTo, subject, message, etc.
                         String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
+                        if (!stringBlank(dto.getEmailPic())) {
+                            emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                        }
 
                         String subject = "";
                         String message = "";
                         if(dto.isSyariah()){
-                            subject = "Surat Tunggakan Kontribusi Asuransi Jiwa Pembiayaan Syariah a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+                            subject = "Surat Tunggakan Pembayaran Kontribusi a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
                             message = templateMessageTunggakanPremiSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
                         } else {
                             subject = "Surat Tunggakan Premi Asuransi Jiwa Kredit a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
@@ -147,10 +155,11 @@ public class SuratTunggakanPremiService {
                         masterEmailRepository.save(emailEntity);
 
                         String savedId = emailEntity.getId();
-                        MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderDays(dto.getRegSpaj(), StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+                        MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderType(dto.getRegSpaj(), StaticValue.TUNGGAKAN_PREMI_REMINDER_TYPE);
 
                         if (masterAutoCancelEmailLog == null) {
                             masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+                            masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
                         }
 
                         masterAutoCancelEmailLog.setMeId(savedId);
@@ -159,7 +168,7 @@ public class SuratTunggakanPremiService {
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
                         masterAutoCancelEmailLog.setFlagPolisCanceled(0);
-                        masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
+                        masterAutoCancelEmailLog.setReminderType(StaticValue.TUNGGAKAN_PREMI_REMINDER_TYPE);
 
                         masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
 
@@ -197,7 +206,7 @@ public class SuratTunggakanPremiService {
             if (dto.isSyariah()) {
                 processSuratTunggakanPremi(dto, templateSyariah, today);
             } else {
-                processSuratTunggakanPremi(dto, templateKonven, today);
+                //processSuratTunggakanPremi(dto, templateKonven, today);
             }
 
         }
@@ -243,6 +252,12 @@ public class SuratTunggakanPremiService {
                 editedContent = editedContent.replace("{atas_nama_pks}", dto.getNamaRekeningPks());
                 editedContent = editedContent.replace("{rekening_pks}", dto.getNomorRekeningPks());
                 editedContent = editedContent.replace("{tanggal_akhir_pembayaran_premi}", thirtyDaysLater);
+
+                // signature
+                if (dto.isSyariah()) {
+                    editedContent = editedContent.replace("{signer_name}", SYARIAH_SIGNER_NAME);
+                    editedContent = editedContent.replace("{signer_position}", SYARIAH_SIGNER_POSITION);
+                }
 
                 // create string HTML to a JSoup Document to render XHTML
                 Document document = Jsoup.parse(editedContent);
@@ -438,8 +453,7 @@ public class SuratTunggakanPremiService {
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
-                .append("Kami mengucapkan terima kasih kepada Bapak/Ibu yang telah mempercayakan kami, ")
-                .append("PT MSIG Life Insurance Indonesia Tbk. Unit Usaha Syariah untuk memberikan perlindungan Asuransi Jiwa Pembiayaan Syariah kepada Bapak/Ibu.")
+                .append("Kami mengucapkan terima kasih atas kepercayaan yang Bapak/Ibu berikan kepada PT MSIG Sharia Life Insurance Indonesia untuk mengelola dana kontribusi peserta, sesuai prinsip Syariah, guna saling menolong dan melindungi Anda serta keluarga.")
                 .append("</div>");
 
         emailContent.append("<div style=\"margin:0 0 12px 0;\">")
@@ -474,7 +488,7 @@ public class SuratTunggakanPremiService {
 
         emailContent.append("<div style=\"height:16px;line-height:16px;mso-line-height-rule:exactly;font-size:0;\">&nbsp;</div>");
 
-        emailContent.append("              <div style=\"margin:0;\">Credit Life Billing and Collection</div>");
+        emailContent.append("              <div style=\"margin:0;\">Credit Life Billing and Collection<br>PT MSIG Sharia Life Insurance</div>");
         emailContent.append("              </td>");
         emailContent.append("            </tr>");
         emailContent.append("          </table>");
@@ -487,8 +501,8 @@ public class SuratTunggakanPremiService {
         return emailContent.toString();
     }
 
-    public List<SuratAutoCancelDTO> getTunggakanPremi(Integer days) {
-        List<Object[]> listData = masterPolicyRepository.findAutoCancelByDays(days);
+    public List<SuratAutoCancelDTO> getTunggakanPremi(Integer reminderType) {
+        List<Object[]> listData = masterPolicyRepository.findAutoCancelByReminderType(reminderType);
         List<SuratAutoCancelDTO> result = new ArrayList<>();
 
         for (Object[] row : listData) {
@@ -510,6 +524,7 @@ public class SuratTunggakanPremiService {
             dto.setRegSpaj(ConvertUtil.safeString(row[14]));
             dto.setUangPertanggungan(ConvertUtil.safeBigDecimal(row[15]));
             dto.setEmailTertanggung(ConvertUtil.safeString(row[16]));
+            dto.setEmailPic(ConvertUtil.safeString(row[17]));
             result.add(dto);
         }
 
