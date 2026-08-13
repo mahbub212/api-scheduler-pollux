@@ -16,9 +16,9 @@ import java.util.List;
 public class EmailApprovalSurrenderScheduler {
 
     private final EmailApprovalSurrenderService emailApprovalSurrenderService;
-
-    @Scheduled(cron = "0 */3 * * * ?")
-    public void cancelSpajkScheduler(){
+    //run every 4.40 P.M
+    @Scheduled(cron = "0 40 16 * * ?")
+    public void surrenderApprovalScheduler(){
         List<EmailApprovalSurrenderDTO> spajkSendingEmailList = emailApprovalSurrenderService.getSpajkWillBeSendingApproval();
         System.out.println("=================== START EXECUTING TASK: CANCEL SPAJK (" + spajkSendingEmailList.size() + ") Data ===================");
         emailApprovalSurrenderService.executeTask(spajkSendingEmailList);
