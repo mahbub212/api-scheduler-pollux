@@ -1,21 +1,16 @@
 package id.co.msiglife.pollux.schduler.service.JournalService;
 
-import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcJm;
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcTm;
 import id.co.msiglife.pollux.schduler.entity.polis.MasterProduction;
-import id.co.msiglife.pollux.schduler.exception.NotBalancedException;
 import id.co.msiglife.pollux.schduler.projection.CancelJmProjection;
 import id.co.msiglife.pollux.schduler.repository.polis.PtcJmRepository;
 import id.co.msiglife.pollux.schduler.repository.polis.PtcTmRepository;
-import id.co.msiglife.pollux.schduler.service.CancelPolisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
