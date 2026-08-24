@@ -15,7 +15,10 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,6 +32,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
@@ -44,6 +48,10 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
+
+    @Autowired
+    @Lazy
+    private SuratKonfirmasiPembatalanSertifikatService self;
 
     @Autowired
     private FileProcessUtil fileProcessUtil;
@@ -67,122 +75,112 @@ public class SuratKonfirmasiPembatalanSertifikatService {
     private EntityManager entityManager;
 
     public void generateEmailSuratPembatalanSertifikat(List<SuratAutoCancelDTO> pembatalanSertifikatDTOList) {
+        if (pembatalanSertifikatDTOList == null || pembatalanSertifikatDTOList.isEmpty()) return;
 
         for (SuratAutoCancelDTO dto : pembatalanSertifikatDTOList) {
             try {
-                // Fetch the email ID from the SQL function using a native SQL query
-                Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
-                //String yesterday = convertDateToJakartaTime(LocalDate.now().minusDays(1));
-                LocalDate localDate = dto.getTanggalCetakSertifikat().toInstant()
-                        .atZone(ZoneId.of("Asia/Jakarta"))
-                        .toLocalDate();
-                String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
+                // Dipanggil via 'self' proxy agar @Transactional(REQUIRES_NEW) AKTIF
+                self.processSingleEmailPembatalan(dto);
 
-                String sourceFilePath = STORAGE_PATH + "/" + dto.getRegSpaj() + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
-                Path sourcePath = Paths.get(sourceFilePath).toAbsolutePath();
+            } catch (Exception e) {
+                System.err.println("Gagal memproses email regSpaj " + dto.getRegSpaj() + ", skip ke data berikutnya. Error: " + e.getMessage());
+            }
+        }
+    }
 
-                String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
-                String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
+    // rollbackFor = Exception.class memastikan semua jenis Exception memicu Rollback
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public void processSingleEmailPembatalan(SuratAutoCancelDTO dto) throws Exception {
 
-                File folder = new File(attachmentFolderPath);
-                if (!folder.exists()) {
-                    if (!folder.mkdirs()) {
-                        throw new IOException("Failed to create directory: " + attachmentFolderPath);
-                    }
-                }
+        Date sysDate = (Date) entityManager.createNativeQuery("SELECT SYSDATE FROM DUAL").getSingleResult();
 
-                // Validasi keberadaan file
-                if (Files.exists(sourcePath) && Files.isReadable(sourcePath)) {
+        LocalDate localDate = dto.getTanggalCetakSertifikat().toInstant()
+                .atZone(ZoneId.of("Asia/Jakarta"))
+                .toLocalDate();
+        String thirtyDaysLater = convertDateToJakartaTime(localDate.plusDays(30));
 
-                    // destination file path
-                    String destinationFilePath = attachmentFolderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
-                    Path destinationPath = Paths.get(destinationFilePath).toAbsolutePath();
+        String sourceFilePath = STORAGE_PATH + "/" + dto.getRegSpaj() + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
+        Path sourcePath = Paths.get(sourceFilePath).toAbsolutePath();
 
-                    // copy the file
-                    Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+        if (!Files.exists(sourcePath) || !Files.isReadable(sourcePath)) {
+            throw new FileNotFoundException("File Attachment tidak ditemukan/readable: " + sourceFilePath);
+        }
 
-                    // check if the copies of both files are readable
-                    if (!Files.isReadable(destinationPath)) {
-                        try {
-                            throw new IOException("The copied Surat Konfirmasi Pembatalan Sertifikat file is not readable: " + destinationFilePath);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+        String generatedId = entityManager.createNativeQuery("SELECT EKA.PAC_COUNTER.GET_EMAIL_ID FROM DUAL").getSingleResult().toString();
+        String attachmentFolderPath = ATTACHMENT_PATH + generatedId.substring(0, 4) + "/" + generatedId.substring(4, 6) + "/" + generatedId;
 
-                    // set emailTo, subject, message, etc.
-                    String emailTo = (stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";") + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang() + ";") + (stringBlank(dto.getEmailTertanggung()) ? "" : dto.getEmailTertanggung());
-                    if (!stringBlank(dto.getEmailPic())) {
-                        emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
-                    }
+        File folder = new File(attachmentFolderPath);
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw new IOException("Failed to create directory: " + attachmentFolderPath);
+        }
 
-                    String subject = "";
-                    String message = "";
-                    if(dto.isSyariah()){
-                        subject = "Surat Konfirmasi Pembatalan Sertifikat a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                        message = templateSuratKonfirmasiPembatalanSertifikatEmailSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), thirtyDaysLater);
-                    } else {
-                        subject = "Surat Konfirmasi Pembatalan Sertifikat a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
-                        message = templateSuratKonfirmasiPembatalanSertifikatEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), thirtyDaysLater);
-                    }
+        String destinationFilePath = attachmentFolderPath + "/" + dto.getRegSpaj() + "_SURAT_KONFIRMASI_PEMBATALAN_SERTIFIKAT.pdf";
+        Path destinationPath = Paths.get(destinationFilePath).toAbsolutePath();
 
-                    MasterEmail emailEntity = new MasterEmail();
-                    emailEntity.setId(generatedId);
-                    emailEntity.setSystem("POLLUX");
-                    emailEntity.setShowSystem(0);
-                    emailEntity.setShowFooter(0);
-                    emailEntity.setFrom("cosmos@msiglife.co.id");
-                    emailEntity.setFromAlias("Notifikasi POLLUX");
-                    emailEntity.setTo(emailTo);
-                    emailEntity.setCc("underwritingmriproses@msiglife.co.id;collectionmri@msiglife.co.id");
+        Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+
+        if (!Files.isReadable(destinationPath)) {
+            throw new IOException("The copied file is not readable: " + destinationFilePath);
+        }
+
+        String emailTo = (stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";") +
+                (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang() + ";") +
+                (stringBlank(dto.getEmailTertanggung()) ? "" : dto.getEmailTertanggung());
+        if (!stringBlank(dto.getEmailPic())) {
+            emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+        }
+
+        String subject = "Surat Konfirmasi Pembatalan Sertifikat a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
+        String message = dto.isSyariah()
+                ? templateSuratKonfirmasiPembatalanSertifikatEmailSyariah(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), thirtyDaysLater)
+                : templateSuratKonfirmasiPembatalanSertifikatEmail(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()), thirtyDaysLater);
+
+        MasterEmail emailEntity = new MasterEmail();
+        emailEntity.setId(generatedId);
+        emailEntity.setSystem("POLLUX");
+        emailEntity.setShowSystem(0);
+        emailEntity.setShowFooter(0);
+        emailEntity.setFrom("cosmos@msiglife.co.id");
+        emailEntity.setFromAlias("Notifikasi POLLUX");
+        emailEntity.setTo(emailTo);
+        emailEntity.setCc("underwritingmriproses@msiglife.co.id;collectionmri@msiglife.co.id");
                     emailEntity.setBcc(null);
-                    emailEntity.setSubject(subject);
-                    emailEntity.setMessage(message);
+        emailEntity.setSubject(subject);
+        emailEntity.setMessage(message);
                     emailEntity.setMecId(0);
-                    emailEntity.setHtml(1);
-                    emailEntity.setStatus(0);
+        emailEntity.setHtml(1);
+        emailEntity.setStatus(0);
                     emailEntity.setStatusMessage(null);
                     emailEntity.setCount(0);
                     emailEntity.setUserId(0);  // Set the appropriate user ID
-                    emailEntity.setInputDate(sysDate);
+        emailEntity.setInputDate(sysDate);
                     emailEntity.setSentDate(null); // Leave it as null or set to a specific date if scheduling
                     emailEntity.setSchedulerDate(sysDate); // Set the specific date for scheduling or leave it as sysdate for immediate sending
-                    emailEntity.setPriority(50);
-                    emailEntity.setJenisId(50);
-                    emailEntity.setFlagNew(0);
-                    emailEntity.setRegSpaj(dto.getRegSpaj());
-                    emailEntity.setPathAttach(destinationPath.toString());
+        emailEntity.setPriority(50);
+        emailEntity.setJenisId(50);
+        emailEntity.setFlagNew(0);
+        emailEntity.setRegSpaj(dto.getRegSpaj());
+        emailEntity.setPathAttach(destinationPath.toString());
 
-                    masterEmailRepository.save(emailEntity);
+        masterEmailRepository.save(emailEntity);
 
-                    String savedId = emailEntity.getId();
-                    MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository.findByRegSpajAndReminderType(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
+        MasterAutoCancelEmailLog masterAutoCancelEmailLog = masterAutoCancelEmailLogRepository
+                .findByRegSpajAndReminderType(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
 
-                    if (masterAutoCancelEmailLog == null) {
-                        masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
-                        masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
-                    }
-
-                    masterAutoCancelEmailLog.setMeId(savedId);
-                    masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
-                    masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
-                    masterAutoCancelEmailLog.setUpdatedAt(sysDate);
-                    masterAutoCancelEmailLog.setFlagDone(1);
-                    masterAutoCancelEmailLog.setFlagPolisCanceled(0);
-                    masterAutoCancelEmailLog.setReminderType(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
-
-
-                    masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
-
-                } else {
-                    throw new RuntimeException("File Attachment not exist");
-                }
-
-            } catch (Exception e) {
-                System.err.println("Error when getting file attachment");
-                e.printStackTrace();
-            }
+        if (masterAutoCancelEmailLog == null) {
+            masterAutoCancelEmailLog = new MasterAutoCancelEmailLog();
+            masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
         }
+
+        masterAutoCancelEmailLog.setMeId(generatedId);
+        masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
+        masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
+        masterAutoCancelEmailLog.setUpdatedAt(sysDate);
+        masterAutoCancelEmailLog.setFlagDone(1);
+        masterAutoCancelEmailLog.setFlagPolisCanceled(0);
+        masterAutoCancelEmailLog.setReminderType(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_TYPE);
+
+        masterAutoCancelEmailLogRepository.save(masterAutoCancelEmailLog);
     }
 
     public void generatePdfSuratPembatalanSertifikat(List<SuratAutoCancelDTO> pembatalanSertifikatDTOList) {
@@ -200,11 +198,28 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         String templateSyariah = initTemplateResource(loadTemplate(getTemplatePath(true)), headerSyariah, footerSyariah1, footerSyariah2);
         String templateKonven = initTemplateResource(loadTemplate(getTemplatePath(false)), headerKonven, footerKonven1, footerKonven2);
 
-        for (SuratAutoCancelDTO dto : pembatalanSertifikatDTOList) {
-            if (dto.isSyariah()) {
-                processSuratSertifikatDibatalkan(dto, templateSyariah, today);
-            } else {
-                //processSuratSertifikatDibatalkan(dto, templateKonven, today);
+        Iterator<SuratAutoCancelDTO> iterator = pembatalanSertifikatDTOList.iterator();
+
+        while (iterator.hasNext()) {
+            SuratAutoCancelDTO dto = iterator.next();
+            boolean isSuccess = false;
+
+            try {
+                if (dto.isSyariah()) {
+                    isSuccess = processSuratSertifikatDibatalkan(dto, templateSyariah, today);
+                } else {
+                    isSuccess = processSuratSertifikatDibatalkan(dto, templateKonven, today);
+                }
+
+                // Jika proses return false (gagal/file tidak terbentuk), hapus dari list
+                if (!isSuccess) {
+                    System.out.println("Removing DTO from list (PDF Generation Failed): " + dto.getRegSpaj());
+                    iterator.remove();
+                }
+
+            } catch (Exception e) {
+                System.err.println("Error generating PDF for regSpaj " + dto.getRegSpaj() + ", removing from process list.");
+                iterator.remove(); // Hapus DTO jika melempar exception
             }
         }
     }
@@ -261,8 +276,8 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         }
     }
 
-    private void processSuratSertifikatDibatalkan(SuratAutoCancelDTO dto, String content, String today) {
-        try{
+    private boolean processSuratSertifikatDibatalkan(SuratAutoCancelDTO dto, String content, String today) {
+        try {
             String editedContent = content; // reset content to template state
 
             Date tanggalCetak = dto.getTanggalCetakSertifikat();
@@ -341,13 +356,14 @@ public class SuratKonfirmasiPembatalanSertifikatService {
 
                 // save into MasterUploadDokumen
                 this.fileProcessUtil.createOrUpdateFileMasterUploadDokumen(dto.getRegSpaj(), 18, outputPdf, 0);
-
             } else {
                 System.out.println("Skipping PDF generation; file already exists for regSpaj: " + dto.getRegSpaj());
             }
+            return Files.exists(sourcePath);
         } catch (Exception e) {
             System.err.println("Failed to generate PDF for regSpaj: " + dto.getRegSpaj() + " | Error: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
     }
 
