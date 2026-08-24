@@ -22,7 +22,7 @@ public class CancelPolisScheduler {
     @Autowired
     private CheckLineBusinessService checkLineBusinessService;
 
-    @Scheduled(cron = "0 */1 * * * ?")
+    @Scheduled(cron = "0 20 2 * * ?")
     public void cancelPolisScheduler() {
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
         //Checking line business
@@ -32,7 +32,7 @@ public class CancelPolisScheduler {
         System.out.println("=================== FINISHED EXECUTING TASK: CANCEL POLIS ===================");
     }
 
-    //@Scheduled(cron = "0 0 6 * * ?")
+    @Scheduled(cron = "0 0 6 * * ?")
     public void retryCancelPolisScheduler() {
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
         //Checking line business
