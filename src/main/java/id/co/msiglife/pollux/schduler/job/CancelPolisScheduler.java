@@ -1,10 +1,11 @@
 package id.co.msiglife.pollux.schduler.job;
 
 import id.co.msiglife.pollux.schduler.dto.CancelPolisDTO;
-import id.co.msiglife.pollux.schduler.service.CancelPolisService;
+import id.co.msiglife.pollux.schduler.service.cancelPolis.CancelPolisService;
 import id.co.msiglife.pollux.schduler.service.CheckLineBusiness.CheckLineBusinessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,7 +22,7 @@ public class CancelPolisScheduler {
     @Autowired
     private CheckLineBusinessService checkLineBusinessService;
 
-    //@Scheduled(cron = "0 20 2 * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
     public void cancelPolisScheduler() {
         List<CancelPolisDTO> cancelPolisDTOList = cancelPolisService.getCancelPolisList();
         //Checking line business
