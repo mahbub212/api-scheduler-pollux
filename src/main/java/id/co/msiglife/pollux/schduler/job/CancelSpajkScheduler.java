@@ -1,7 +1,6 @@
 package id.co.msiglife.pollux.schduler.job;
 
 import id.co.msiglife.pollux.schduler.dto.CancelSpajkDTO;
-import id.co.msiglife.pollux.schduler.service.CancelPolisService;
 import id.co.msiglife.pollux.schduler.service.CancelSpajkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;

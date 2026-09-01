@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.util.TimeZone;
@@ -25,6 +26,7 @@ import java.util.TimeZone;
 @EnableAsync
 @EnableScheduling
 @EnableEncryptableProperties
+@EnableTransactionManagement
 public class SchedulerApplication implements CommandLineRunner {
 
     @Value("${spring.profiles.active}")

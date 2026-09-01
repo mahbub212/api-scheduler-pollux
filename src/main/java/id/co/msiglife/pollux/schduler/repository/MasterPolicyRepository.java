@@ -206,7 +206,15 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     @Query(value = "SELECT reg_spaj FROM eka.MST_AUTO_CANCEL_EMAIL_LOG WHERE reminder_type IN (:reminderTypes) AND flag_done = 1 AND FLAG_POLIS_CANCELED = 0", nativeQuery = true)
     List<Object[]> findPolicyTobeCancelled(@Param("reminderTypes") List<Integer> reminderTypes);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE EKA.MST_POLICY  " +
+            "      SET LSSP_ID = 8   " +
+            "      WHERE EKA.MST_POLICY.REG_SPAJ = :regSpaj AND  " +
+            "        EKA.MST_POLICY.LSTB_ID = 2 ",
+            nativeQuery = true)
+    void updatePolisCanceledSingle(@Param("regSpaj") String regSpaj);
+
+    @Modifying(clearAutomatically = true)
     @Query(value = "UPDATE EKA.MST_POLICY  " +
             "      SET LSSP_ID = 8   " +
             "      WHERE ( EKA.MST_POLICY.REG_SPAJ IN (:regSpaj) ) AND  " +

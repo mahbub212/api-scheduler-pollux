@@ -2,19 +2,15 @@ package id.co.msiglife.pollux.schduler.service.JournalService;
 
 import id.co.msiglife.pollux.schduler.entity.Journal.MstPtcTm;
 import id.co.msiglife.pollux.schduler.entity.polis.MasterProduction;
-import id.co.msiglife.pollux.schduler.exception.NotBalancedException;
 import id.co.msiglife.pollux.schduler.projection.CancelJmProjection;
 import id.co.msiglife.pollux.schduler.repository.polis.PtcJmRepository;
 import id.co.msiglife.pollux.schduler.repository.polis.PtcTmRepository;
-import id.co.msiglife.pollux.schduler.service.CancelPolisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -30,8 +26,8 @@ public class JournalService {
     @PersistenceContext
     private EntityManager em;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public void insertMstTmJm(List<CancelJmProjection> rows, MasterProduction masterProduction, Date dateNow, String noJm, PtcJmRepository ptcJmRepository){
+    @Transactional
+    public void insertMstTmJm(List<CancelJmProjection> rows, MasterProduction masterProduction, Date dateNow, String noJm){
 
         insertMstTm(masterProduction, dateNow, noJm);
 
@@ -49,15 +45,8 @@ public class JournalService {
                 r.getCONV_RATE(),
                 r.getMJM_JUMLAH_USD(),
                 r.getNO_POLIS(),
-                r.getTAXNO() // pastikan ada di projection-mu
+                r.getTAXNO()
         ));
-
-        em.flush();
-
-        BigDecimal bal = ptcJmRepository.isBalanceJournal(noJm);
-        if (bal != null && bal.compareTo(BigDecimal.ZERO) != 0) {
-            throw new NotBalancedException("NoJM " + noJm + " not balance: " + bal);
-        }
     }
 
     private MstPtcTm insertMstTm(MasterProduction masterProduction, Date dateNow, String noJm){
@@ -66,7 +55,7 @@ public class JournalService {
         mstPtcTm.setNoJmRef(masterProduction.getNoJm());
         mstPtcTm.setPosition(1);
         mstPtcTm.setTglJurnal(dateNow);
-        mstPtcTm.setUserInput(512);
+        mstPtcTm.setUserInput(0);
         ptcTmRepository.save(mstPtcTm);
         return mstPtcTm;
     }
