@@ -208,7 +208,7 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 if (dto.isSyariah()) {
                     isSuccess = processSuratSertifikatDibatalkan(dto, templateSyariah, today);
                 } else {
-                    isSuccess = processSuratSertifikatDibatalkan(dto, templateKonven, today);
+                    //isSuccess = processSuratSertifikatDibatalkan(dto, templateKonven, today);
                 }
 
                 // Jika proses return false (gagal/file tidak terbentuk), hapus dari list
