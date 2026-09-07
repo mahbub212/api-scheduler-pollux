@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, String> {
     Long countMasterPolicyByRegSpaj(String regSpaj);
+
     MasterPolicy findByRegSpaj(String regSpaj);
 
     @Query(value = "SELECT " +
@@ -75,39 +76,77 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             nativeQuery = true)
     List<Object[]> findAutoCancelByReminderType(@Param("reminderType") Integer reminderType);
 
-    @Query(value = "SELECT pol.reg_spaj AS reg_spaj, r.reminder_days as reminderDays, r.reminder_type as reminderType " +
-            "FROM eka.mst_policy pol " +
-            "JOIN eka.mst_billing bill ON bill.reg_spaj = pol.reg_spaj " +
-            "JOIN eka.mst_underwriting_plx uw ON pol.reg_spaj = uw.reg_spaj " +
-            "JOIN eka.mst_pks_reminder_days r ON pol.pks_id = r.pks_id " +
-            "LEFT JOIN ( " +
-            "   SELECT mdw.MSWF_DOC_NUMBER as reg_spaj, lws.LSWF_STATUS_NAME as status_name " +
-            "   FROM EKA.MST_WF_DOCUMENT mdw " +
-            "   INNER JOIN EKA.LST_WF_STATUS lws " +
-            "     ON lws.LSWF_STATUS_ID = mdw.LSWF_STATUS_ID " +
-            "    AND lws.lswf_type_id = mdw.LSWF_TYPE_ID " +
-            "WHERE mdw.LSWF_TYPE_ID = 78 " +
-            ") sts ON sts.reg_spaj = pol.reg_spaj " +
-            "LEFT JOIN ( " +
-            "   SELECT mup.reg_spaj, mup.status AS status_uw, mup.final_decision AS keputusan, lusp.code AS status_code " +
-            "   FROM EKA.MST_UNDERWRITING_PLX mup " +
-            "   JOIN EKA.LST_UW_STATUS_PLX lusp ON lusp.uw_status_id = mup.status " +
-            ") uw ON uw.reg_spaj = pol.reg_spaj " +
-            "LEFT JOIN eka.lst_policy_status lps ON lps.lssp_id = pol.lssp_id " +
-            "WHERE r.reminder_type != 5 " +
-            "AND TRUNC(SYSDATE) = TRUNC(pol.mspo_date_print + r.reminder_days) " +
-            "AND EXISTS (SELECT 1 FROM eka.mst_billing b2 WHERE b2.reg_spaj = pol.reg_spaj) " +
-            "AND NOT EXISTS (SELECT 1 FROM eka.mst_payment pay WHERE pay.reg_spaj = pol.reg_spaj) " +
-            "AND NOT EXISTS (SELECT 1 FROM eka.MST_AUTO_CANCEL_EMAIL_LOG log " +
-            "                WHERE log.reg_spaj = pol.reg_spaj " +
-            "                AND log.reminder_days = r.reminder_days) " +
-            "AND (LOWER(lps.lssp_status) = 'inforce' " +
-            "     OR LOWER(uw.status_uw) = 'inforce' " +
-            "     OR LOWER(sts.status_name) = 'inforce') " +
-            "AND (pol.lssp_id != 8) " +
-            "AND LOWER(lps.lssp_status) NOT LIKE '%cancel%' " +
-            "AND (pol.lssp_id != 12 AND pol.lspd_id != 999) " +
-            "ORDER BY pol.mspo_date_print DESC",
+    @Query(value =
+            "WITH default_reminders AS ( " +
+                    "    SELECT 1 AS reminder_type, 7 AS reminder_days FROM DUAL UNION ALL " +
+                    "    SELECT 2 AS reminder_type, 14 AS reminder_days FROM DUAL UNION ALL " +
+                    "    SELECT 3 AS reminder_type, 21 AS reminder_days FROM DUAL UNION ALL " +
+                    "    SELECT 4 AS reminder_type, 36 AS reminder_days FROM DUAL " +
+                    "), " +
+                    "all_reminders AS ( " +
+                    "    SELECT " +
+                    "        pol.reg_spaj, " +
+                    "        pol.mspo_date_print, " +
+                    "        COALESCE(r.reminder_days, dr.reminder_days) AS reminder_days, " +
+                    "        COALESCE(r.reminder_type, dr.reminder_type) AS reminder_type, " +
+                    "        ROW_NUMBER() OVER ( " +
+                    "            PARTITION BY pol.reg_spaj " +
+                    "            ORDER BY COALESCE(r.reminder_days, dr.reminder_days) ASC " +
+                    "        ) AS rn " +
+                    "    FROM eka.mst_policy pol " +
+                    "    JOIN eka.mst_billing bill ON bill.reg_spaj = pol.reg_spaj " +
+                    "    JOIN eka.mst_underwriting_plx uw_main ON uw_main.reg_spaj = pol.reg_spaj " +
+                    "    LEFT JOIN eka.mst_pks_reminder_days r ON pol.pks_id = r.pks_id " +
+                    "    CROSS JOIN default_reminders dr " +
+                    "    LEFT JOIN ( " +
+                    "        SELECT mdw.mswf_doc_number AS reg_spaj, lws.lswf_status_name AS status_name " +
+                    "        FROM eka.mst_wf_document mdw " +
+                    "        INNER JOIN eka.lst_wf_status lws " +
+                    "            ON lws.lswf_status_id = mdw.lswf_status_id " +
+                    "           AND lws.lswf_type_id = mdw.lswf_type_id " +
+                    "        WHERE mdw.lswf_type_id = 78 " +
+                    "    ) sts ON sts.reg_spaj = pol.reg_spaj " +
+                    "    LEFT JOIN ( " +
+                    "        SELECT mup.reg_spaj, mup.status AS status_uw, mup.final_decision AS keputusan, lusp.code AS status_code " +
+                    "        FROM eka.mst_underwriting_plx mup " +
+                    "        JOIN eka.lst_uw_status_plx lusp ON lusp.uw_status_id = mup.status " +
+                    "    ) uw_sub ON uw_sub.reg_spaj = pol.reg_spaj " +
+                    "    LEFT JOIN eka.lst_policy_status lps ON lps.lssp_id = pol.lssp_id " +
+                    "    WHERE (r.reminder_type IS NULL OR r.reminder_type = dr.reminder_type) " +
+                    "      AND COALESCE(r.reminder_type, dr.reminder_type) != 5 " +
+                    "      AND TRUNC(SYSDATE) = TRUNC(pol.mspo_date_print + COALESCE(r.reminder_days, dr.reminder_days)) " +
+                    "      AND EXISTS ( " +
+                    "          SELECT 1 " +
+                    "          FROM eka.mst_billing b2 " +
+                    "          WHERE b2.reg_spaj = pol.reg_spaj " +
+                    "      ) " +
+                    "      AND NOT EXISTS ( " +
+                    "          SELECT 1 " +
+                    "          FROM eka.mst_payment pay " +
+                    "          WHERE pay.reg_spaj = pol.reg_spaj " +
+                    "      ) " +
+                    "      AND NOT EXISTS ( " +
+                    "          SELECT 1 " +
+                    "          FROM eka.mst_auto_cancel_email_log log " +
+                    "          WHERE log.reg_spaj = pol.reg_spaj " +
+                    "            AND log.reminder_days = COALESCE(r.reminder_days, dr.reminder_days) " +
+                    "      ) " +
+                    "      AND ( " +
+                    "          LOWER(lps.lssp_status) = 'inforce' " +
+                    "          OR LOWER(uw_sub.status_uw) = 'inforce' " +
+                    "          OR LOWER(sts.status_name) = 'inforce' " +
+                    "      ) " +
+                    "      AND pol.lssp_id != 8 " +
+                    "      AND LOWER(lps.lssp_status) NOT LIKE '%cancel%' " +
+                    "      AND NOT (pol.lssp_id = 12 AND pol.lspd_id = 999) " +
+                    ") " +
+                    "SELECT " +
+                    "    reg_spaj, " +
+                    "    reminder_days AS reminderDays, " +
+                    "    reminder_type AS reminderType " +
+                    "FROM all_reminders " +
+                    "WHERE rn = 1 " +
+                    "ORDER BY mspo_date_print DESC",
             nativeQuery = true)
     List<Object[]> findAllSuratAutoCancel();
 

@@ -34,7 +34,7 @@ public class CancelPolisService {
                 if (dto.isSyariah()) {
                     singleProcessCancelPolisService.processSingleCancelPolis(dto);
                 } else {
-                    singleProcessCancelPolisService.processSingleCancelPolis(dto);
+                    //singleProcessCancelPolisService.processSingleCancelPolis(dto);
                 }
             } catch (WfConfigNotFoundException e) {
                 masterAutoCancelEmailLogRepository.updatePolisFailed(dto.getRegSpaj(), StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
