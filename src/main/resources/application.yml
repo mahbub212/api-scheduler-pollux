@@ -168,7 +168,3 @@ spring:
       signature-image: "template/images/renova_signature.png"
     url:
       login-pollux: "https://pollux.msiglife.co.id/auth/login"
-    syariah-document:
-      signer-name: "Renova Siregar"
-      signer-position: "President Director"
-      signature-image: "template/images/renova_signature.png"
