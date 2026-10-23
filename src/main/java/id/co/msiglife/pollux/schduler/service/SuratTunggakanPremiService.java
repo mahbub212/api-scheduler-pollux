@@ -115,6 +115,34 @@ public class SuratTunggakanPremiService {
                         MasterPolicy masterPolicy = masterPolicyRepository.findByRegSpaj(dto.getRegSpaj());
                         if (masterPolicy == null) {
                             throw new NotFoundException("Data Master Policy not found");
+<<<<<<< HEAD
+                        }
+
+                        //AO_Name
+                        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
+                        if (masterBranchPartner == null) {
+                            throw new NotFoundException("Data Master Branch Partner not found");
+                        }
+
+                        //Email cabang
+                        MasterPKS masterPKS = masterPKSRepository.findByPksId(masterPolicy.getPksId());
+                        if (masterPKS == null) {
+                            throw new NotFoundException("Data PKS not found");
+                        }
+
+                        // set emailTo
+                        String emailTo = stringBlank(masterBranchPartner.getEmailAo()) ? "" : masterBranchPartner.getEmailAo() + ";" + (stringBlank(masterBranchPartner.getEmailCab()) ? "" : masterBranchPartner.getEmailCab());
+                        if (stringBlank(masterBranchPartner.getEmailAo()) && stringBlank(masterBranchPartner.getEmailCab())) {
+                            // set emailTo, subject, message, etc.
+                            emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
+                            if (!stringBlank(dto.getEmailPic())) {
+                                emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                            }
+                            if (!stringBlank(dto.getEmailPic())) {
+                                emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                            }
+=======
+>>>>>>> 21ac181e851bd86e8e0101640aa1d381772572d9
                         }
 
                         //AO_Name
@@ -141,6 +169,8 @@ public class SuratTunggakanPremiService {
                                 emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
                             }
                         }
+
+
 
                         String subject = "";
                         String message = "";
