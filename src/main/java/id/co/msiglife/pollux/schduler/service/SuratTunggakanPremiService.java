@@ -2,11 +2,9 @@ package id.co.msiglife.pollux.schduler.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import id.co.msiglife.pollux.schduler.dto.SuratAutoCancelDTO;
-import id.co.msiglife.pollux.schduler.entity.MasterAutoCancelEmailLog;
-import id.co.msiglife.pollux.schduler.entity.MasterEmail;
-import id.co.msiglife.pollux.schduler.repository.MasterAutoCancelEmailLogRepository;
-import id.co.msiglife.pollux.schduler.repository.MasterEmailRepository;
-import id.co.msiglife.pollux.schduler.repository.MasterPolicyRepository;
+import id.co.msiglife.pollux.schduler.entity.*;
+import id.co.msiglife.pollux.schduler.exception.NotFoundException;
+import id.co.msiglife.pollux.schduler.repository.*;
 import id.co.msiglife.pollux.schduler.util.ConvertUtil;
 import id.co.msiglife.pollux.schduler.util.FileProcessUtil;
 import id.co.msiglife.pollux.schduler.util.StaticValue;
@@ -65,6 +63,12 @@ public class SuratTunggakanPremiService {
     @Autowired
     MasterAutoCancelEmailLogRepository masterAutoCancelEmailLogRepository;
 
+    @Autowired
+    MasterBranchPartnerRepository masterBranchPartnerRepository;
+
+    @Autowired
+    MasterPKSRepository masterPKSRepository;
+
     public void generateAutoMail(List<SuratAutoCancelDTO> tunggakanPremiDTOList) {
         int errorIn = 3;
         int iteration = 0;
@@ -108,11 +112,37 @@ public class SuratTunggakanPremiService {
                             }
                         }
 
-                        // set emailTo, subject, message, etc.
-                        String emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
-                        if (!stringBlank(dto.getEmailPic())) {
-                            emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                        MasterPolicy masterPolicy = masterPolicyRepository.findByRegSpaj(dto.getRegSpaj());
+                        if (masterPolicy == null) {
+                            throw new NotFoundException("Data Master Policy not found");
                         }
+
+                        //AO_Name
+                        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
+                        if (masterBranchPartner == null) {
+                            throw new NotFoundException("Data Master Branch Partner not found");
+                        }
+
+                        //Email cabang
+                        MasterPKS masterPKS = masterPKSRepository.findByPksId(masterPolicy.getPksId());
+                        if (masterPKS == null) {
+                            throw new NotFoundException("Data PKS not found");
+                        }
+
+                        // set emailTo
+                        String emailTo = stringBlank(masterBranchPartner.getEmailAo()) ? "" : masterBranchPartner.getEmailAo() + ";" + (stringBlank(masterBranchPartner.getEmailCab()) ? "" : masterBranchPartner.getEmailCab());
+                        if (stringBlank(masterBranchPartner.getEmailAo()) && stringBlank(masterBranchPartner.getEmailCab())) {
+                            // set emailTo, subject, message, etc.
+                            emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
+                            if (!stringBlank(dto.getEmailPic())) {
+                                emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                            }
+                            if (!stringBlank(dto.getEmailPic())) {
+                                emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                            }
+                        }
+
+
 
                         String subject = "";
                         String message = "";
@@ -123,7 +153,6 @@ public class SuratTunggakanPremiService {
                             subject = "Surat Tunggakan Premi Asuransi Jiwa Kredit a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
                             message = templateMessageTunggakanPremi(dto.getNamaBankCabang(), dto.getNamaTertanggung(), dto.getNomorSertifikat(), convertDateToJakartaTime(dto.getTanggalCetakSertifikat()));
                         }
-
 
                         MasterEmail emailEntity = new MasterEmail();
                         emailEntity.setId(generatedId);
