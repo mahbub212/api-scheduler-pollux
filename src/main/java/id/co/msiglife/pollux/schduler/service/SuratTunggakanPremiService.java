@@ -117,9 +117,9 @@ public class SuratTunggakanPremiService {
                             throw new NotFoundException("Data Master Policy not found");
 
                         }
-
                         //AO_Name
-                        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
+                        System.out.println("PKS ID = " + masterPolicy.getPksId());
+                        List<MasterBranchPartner> masterBranchPartner = masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
                         if (masterBranchPartner == null) {
                             throw new NotFoundException("Data Master Branch Partner not found");
                         }
@@ -130,18 +130,52 @@ public class SuratTunggakanPremiService {
                             throw new NotFoundException("Data PKS not found");
                         }
 
-                        // set emailTo
-                        String emailTo = stringBlank(masterBranchPartner.getEmailAo()) ? "" : masterBranchPartner.getEmailAo() + ";" + (stringBlank(masterBranchPartner.getEmailCab()) ? "" : masterBranchPartner.getEmailCab());
-                        if (stringBlank(masterBranchPartner.getEmailAo()) && stringBlank(masterBranchPartner.getEmailCab())) {
-                            // set emailTo, subject, message, etc.
-                            emailTo = stringBlank(dto.getEmailAo()) ? "" : dto.getEmailAo() + ";" + (stringBlank(dto.getEmailCabang()) ? "" : dto.getEmailCabang());
-                            if (!stringBlank(dto.getEmailPic())) {
-                                emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+                        // AO_Name
+                        System.out.println("PKS ID = " + masterPolicy.getPksId());
+
+                        List<MasterBranchPartner> masterBranchPartners =
+                                masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
+
+                        if (masterBranchPartners == null || masterBranchPartners.isEmpty()) {
+                            throw new NotFoundException("Data Master Branch Partner not found");
+                        }
+
+                        // Set emailTo
+                        StringBuilder emailBuilder = new StringBuilder();
+
+                        for (MasterBranchPartner branchPartner : masterBranchPartners) {
+
+                            if (!stringBlank(branchPartner.getEmailAo())) {
+                                emailBuilder.append(branchPartner.getEmailAo()).append(";");
                             }
-                            if (!stringBlank(dto.getEmailPic())) {
-                                emailTo += (stringBlank(emailTo) ? "" : ";") + dto.getEmailPic();
+
+                            if (!stringBlank(branchPartner.getEmailCab())) {
+                                emailBuilder.append(branchPartner.getEmailCab()).append(";");
                             }
                         }
+
+                        if (emailBuilder.length() == 0) {
+
+                            if (!stringBlank(dto.getEmailAo())) {
+                                emailBuilder.append(dto.getEmailAo()).append(";");
+                            }
+
+                            if (!stringBlank(dto.getEmailCabang())) {
+                                emailBuilder.append(dto.getEmailCabang()).append(";");
+                            }
+
+                            if (!stringBlank(dto.getEmailPic())) {
+                                emailBuilder.append(dto.getEmailPic()).append(";");
+                            }
+                        }
+
+                        String emailTo = emailBuilder.toString();
+
+                        if (emailTo.endsWith(";")) {
+                            emailTo = emailTo.substring(0, emailTo.length() - 1);
+                        }
+
+                        System.out.println("Email To = " + emailTo);
 
                         String subject = "";
                         String message = "";
@@ -190,11 +224,9 @@ public class SuratTunggakanPremiService {
                             masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
                         }
 
-                        //masterAutoCancelEmailLog.setMeId(savedId);
-                        masterAutoCancelEmailLog.setMeId(emailEntity.getId());
+                        masterAutoCancelEmailLog.setMeId(savedId);
                         masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
-                        //masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
-                        masterAutoCancelEmailLog.setPathAttach(emailEntity.getPathAttach());
+                        masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
                         masterAutoCancelEmailLog.setFlagPolisCanceled(0);
