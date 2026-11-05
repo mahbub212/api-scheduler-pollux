@@ -190,9 +190,11 @@ public class SuratTunggakanPremiService {
                             masterAutoCancelEmailLog.setReminderDays(StaticValue.TUNGGAKAN_PREMI_REMINDER_DAYS);
                         }
 
-                        masterAutoCancelEmailLog.setMeId(savedId);
+                        //masterAutoCancelEmailLog.setMeId(savedId);
+                        masterAutoCancelEmailLog.setMeId(emailEntity.getId());
                         masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
-                        masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
+                        //masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
+                        masterAutoCancelEmailLog.setPathAttach(emailEntity.getPathAttach());
                         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
                         masterAutoCancelEmailLog.setFlagDone(1);
                         masterAutoCancelEmailLog.setFlagPolisCanceled(0);
