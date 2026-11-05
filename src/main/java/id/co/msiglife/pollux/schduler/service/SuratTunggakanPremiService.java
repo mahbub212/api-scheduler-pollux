@@ -115,44 +115,31 @@ public class SuratTunggakanPremiService {
                         MasterPolicy masterPolicy = masterPolicyRepository.findByRegSpaj(dto.getRegSpaj());
                         if (masterPolicy == null) {
                             throw new NotFoundException("Data Master Policy not found");
-
-                        }
-                        //AO_Name
-                        System.out.println("PKS ID = " + masterPolicy.getPksId());
-                        List<MasterBranchPartner> masterBranchPartner = masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
-                        if (masterBranchPartner == null) {
-                            throw new NotFoundException("Data Master Branch Partner not found");
                         }
 
-                        //Email cabang
                         MasterPKS masterPKS = masterPKSRepository.findByPksId(masterPolicy.getPksId());
                         if (masterPKS == null) {
                             throw new NotFoundException("Data PKS not found");
                         }
 
-                        // AO_Name
                         System.out.println("PKS ID = " + masterPolicy.getPksId());
-
-                        List<MasterBranchPartner> masterBranchPartners =
-                                masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
-
-                        if (masterBranchPartners == null || masterBranchPartners.isEmpty()) {
+                        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
+                        if (masterBranchPartner == null) {
                             throw new NotFoundException("Data Master Branch Partner not found");
                         }
 
                         // Set emailTo
                         StringBuilder emailBuilder = new StringBuilder();
 
-                        for (MasterBranchPartner branchPartner : masterBranchPartners) {
+                        //AO_Name
+                        if (!stringBlank(masterBranchPartner.getEmailAo())) {
+                            emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
+                         }
 
-                            if (!stringBlank(branchPartner.getEmailAo())) {
-                                emailBuilder.append(branchPartner.getEmailAo()).append(";");
-                            }
-
-                            if (!stringBlank(branchPartner.getEmailCab())) {
-                                emailBuilder.append(branchPartner.getEmailCab()).append(";");
-                            }
-                        }
+                         //Email_Cab
+                         if (!stringBlank(masterBranchPartner.getEmailCab())) {
+                            emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
+                         }
 
                         if (emailBuilder.length() == 0) {
 
