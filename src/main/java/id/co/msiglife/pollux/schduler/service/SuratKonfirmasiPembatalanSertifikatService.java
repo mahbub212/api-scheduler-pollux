@@ -199,9 +199,11 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             masterAutoCancelEmailLog.setReminderDays(StaticValue.SERTIFIKAT_DIBATALKAN_NOTIFICATION_DAYS);
         }
 
-        masterAutoCancelEmailLog.setMeId(generatedId);
+        //masterAutoCancelEmailLog.setMeId(generatedId);
+        masterAutoCancelEmailLog.setMeId(emailEntity.getId());
         masterAutoCancelEmailLog.setRegSpaj(dto.getRegSpaj());
-        masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
+        //masterAutoCancelEmailLog.setPathAttach(destinationPath.toString());
+        masterAutoCancelEmailLog.setPathAttach(emailEntity.getPathAttach());
         masterAutoCancelEmailLog.setUpdatedAt(sysDate);
         masterAutoCancelEmailLog.setFlagDone(1);
         masterAutoCancelEmailLog.setFlagPolisCanceled(0);
