@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface MasterBranchPartnerRepository extends JpaRepository<MasterBranchPartner, String> {
-    MasterBranchPartner findByPksId(String pksId);
+    List<MasterBranchPartner> findByPksId(String pksId);
     MasterBranchPartner findByMclId(String mclId);
     List<MasterBranchPartner> findAllByMclIdIn(List<String> mclId);
 
