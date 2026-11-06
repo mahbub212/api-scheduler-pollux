@@ -107,14 +107,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                         if (masterPolicy == null) {
                             throw new NotFoundException("Data Master Policy not found");
                         }
-                        //AO_Name
-                        System.out.println("PKS ID = " + masterPolicy.getPksId());
-                        List<MasterBranchPartner> masterBranchPartner = masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
-                        if (masterBranchPartner == null) {
-                            throw new NotFoundException("Data Master Branch Partner not found");
-                        }
 
-                        //Email cabang
                         MasterPKS masterPKS = masterPKSRepository.findByPksId(masterPolicy.getPksId());
                         if (masterPKS == null) {
                             throw new NotFoundException("Data PKS not found");
@@ -123,25 +116,22 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                         // AO_Name
                         System.out.println("PKS ID = " + masterPolicy.getPksId());
 
-                        List<MasterBranchPartner> masterBranchPartners =
-                                masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
+                        MasterBranchPartner masterBranchPartners =
+                                masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
 
-                        if (masterBranchPartners == null || masterBranchPartners.isEmpty()) {
+                        if (masterBranchPartners == null) {
                             throw new NotFoundException("Data Master Branch Partner not found");
                         }
 
                         // Set emailTo
                         StringBuilder emailBuilder = new StringBuilder();
 
-                        for (MasterBranchPartner branchPartner : masterBranchPartners) {
+                        if (!stringBlank(masterBranchPartners.getEmailAo())) {
+                           emailBuilder.append(masterBranchPartners.getEmailAo()).append(";");
+                        }
 
-                            if (!stringBlank(branchPartner.getEmailAo())) {
-                                emailBuilder.append(branchPartner.getEmailAo()).append(";");
-                            }
-
-                            if (!stringBlank(branchPartner.getEmailCab())) {
-                                emailBuilder.append(branchPartner.getEmailCab()).append(";");
-                            }
+                        if (!stringBlank(masterBranchPartners.getEmailCab())) {
+                           emailBuilder.append(masterBranchPartners.getEmailCab()).append(";");
                         }
 
                         if (emailBuilder.length() == 0) {
