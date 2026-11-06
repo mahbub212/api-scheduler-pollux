@@ -151,7 +151,7 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
     List<Object[]> findAllSuratAutoCancel();
 
     @Query(value = "WITH default_reminders AS ( " +
-            "    SELECT 5 AS reminder_type, 65 AS reminder_days FROM DUAL " +
+            "    SELECT 5 AS reminder_type, 61 AS reminder_days FROM DUAL " +
             ") " +
             "SELECT pol.reg_spaj AS reg_spaj, " +
             "NVL(r.reminder_days, dr.reminder_days) AS reminderDays, " +
