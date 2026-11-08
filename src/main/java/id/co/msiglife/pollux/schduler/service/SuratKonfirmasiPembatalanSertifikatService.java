@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
+import static java.util.Arrays.stream;
 
 @Service
 public class SuratKonfirmasiPembatalanSertifikatService {
@@ -137,26 +139,43 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             throw new NotFoundException("Data PKS not found");
         }
 
-        //AO_Name
         System.out.println("PKS ID = " + masterPolicy.getPksId());
         MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
-        if (masterBranchPartner == null) {
-            throw new NotFoundException("Data Master Branch Partner not found");
-        }
 
-        // Set emailTo
         StringBuilder emailBuilder = new StringBuilder();
+        if (masterBranchPartner == null) {
+            //Handle if MclId is not found, Check findByPksId
+            List<MasterBranchPartner> mstBranchPartner =
+                    masterBranchPartnerRepository.findByPks(masterPolicy.getPksId());
 
-        if (!stringBlank(masterBranchPartner.getEmailAo())) {
-           emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
-        }
+            if (mstBranchPartner != null && !mstBranchPartner.isEmpty()) {
 
-        if (!stringBlank(masterBranchPartner.getEmailCab())) {
-           emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
+                for (MasterBranchPartner branch : mstBranchPartner) {
+
+                    // Email AO
+                    if (!stringBlank(branch.getEmailAo())) {
+                        emailBuilder.append(branch.getEmailAo()).append(";");
+                    }
+
+                    // Email Cabang
+                    if (!stringBlank(branch.getEmailCab())) {
+                        emailBuilder.append(branch.getEmailCab()).append(";");
+                    }
+                }
+            }
+
+        } else {
+            //AO_Name
+            if (!stringBlank(masterBranchPartner.getEmailAo())) {
+                emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
+            }
+            //Email_Cab
+            if (!stringBlank(masterBranchPartner.getEmailCab())) {
+                emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
+            }
         }
 
         if (emailBuilder.length() == 0) {
-
             if (!stringBlank(dto.getEmailAo())) {
                 emailBuilder.append(dto.getEmailAo()).append(";");
             }
@@ -176,6 +195,12 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             emailTo = emailTo.substring(0, emailTo.length() - 1);
         }
 
+        emailTo = stream(emailBuilder.toString().split(";"))
+                .map(String::trim)
+                .filter(email -> !email.isEmpty())
+                .distinct()
+                .collect(Collectors.joining(";"));
+
         System.out.println("Email To = " + emailTo);
 
         String subject = "Surat Konfirmasi Pembatalan Sertifikat a/n " + dto.getNamaTertanggung() + " No Sertifikat " + dto.getNomorSertifikat();
@@ -192,18 +217,18 @@ public class SuratKonfirmasiPembatalanSertifikatService {
         emailEntity.setFromAlias("Notifikasi POLLUX");
         emailEntity.setTo(emailTo);
         emailEntity.setCc("underwritingmriproses@msiglife.co.id;collectionmri@msiglife.co.id");
-                    emailEntity.setBcc(null);
+        emailEntity.setBcc(null);
         emailEntity.setSubject(subject);
         emailEntity.setMessage(message);
-                    emailEntity.setMecId(0);
+        emailEntity.setMecId(0);
         emailEntity.setHtml(1);
         emailEntity.setStatus(0);
-                    emailEntity.setStatusMessage(null);
-                    emailEntity.setCount(0);
-                    emailEntity.setUserId(0);  // Set the appropriate user ID
+        emailEntity.setStatusMessage(null);
+        emailEntity.setCount(0);
+        emailEntity.setUserId(0);  // Set the appropriate user ID
         emailEntity.setInputDate(sysDate);
-                    emailEntity.setSentDate(null); // Leave it as null or set to a specific date if scheduling
-                    emailEntity.setSchedulerDate(sysDate); // Set the specific date for scheduling or leave it as sysdate for immediate sending
+        emailEntity.setSentDate(null); // Leave it as null or set to a specific date if scheduling
+        emailEntity.setSchedulerDate(sysDate); // Set the specific date for scheduling or leave it as sysdate for immediate sending
         emailEntity.setPriority(50);
         emailEntity.setJenisId(50);
         emailEntity.setFlagNew(0);

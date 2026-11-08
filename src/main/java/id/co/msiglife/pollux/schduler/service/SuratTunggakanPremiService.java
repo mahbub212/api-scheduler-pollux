@@ -28,10 +28,12 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.convertDateToJakartaTime;
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.currencyFormatID;
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
+import static java.util.Arrays.stream;
 
 @Service
 public class SuratTunggakanPremiService {
@@ -124,25 +126,41 @@ public class SuratTunggakanPremiService {
 
                         System.out.println("PKS ID = " + masterPolicy.getPksId());
                         MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
+
+                        StringBuilder emailBuilder = new StringBuilder();
                         if (masterBranchPartner == null) {
-                            throw new NotFoundException("Data Master Branch Partner not found");
+                            //Handle if MclId is not found, Check findByPksId
+                            List<MasterBranchPartner> mstBranchPartner =
+                                    masterBranchPartnerRepository.findByPks(masterPolicy.getPksId());
+
+                            if (mstBranchPartner != null && !mstBranchPartner.isEmpty()) {
+
+                                for (MasterBranchPartner branch : mstBranchPartner) {
+
+                                    // Email AO
+                                    if (!stringBlank(branch.getEmailAo())) {
+                                        emailBuilder.append(branch.getEmailAo()).append(";");
+                                    }
+
+                                    // Email Cabang
+                                    if (!stringBlank(branch.getEmailCab())) {
+                                        emailBuilder.append(branch.getEmailCab()).append(";");
+                                    }
+                                }
+                            }
+
+                        } else {
+                            //AO_Name
+                            if (!stringBlank(masterBranchPartner.getEmailAo())) {
+                                emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
+                            }
+                            //Email_Cab
+                            if (!stringBlank(masterBranchPartner.getEmailCab())) {
+                                emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
+                            }
                         }
 
-                        // Set emailTo
-                        StringBuilder emailBuilder = new StringBuilder();
-
-                        //AO_Name
-                        if (!stringBlank(masterBranchPartner.getEmailAo())) {
-                            emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
-                         }
-
-                         //Email_Cab
-                         if (!stringBlank(masterBranchPartner.getEmailCab())) {
-                            emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
-                         }
-
                         if (emailBuilder.length() == 0) {
-
                             if (!stringBlank(dto.getEmailAo())) {
                                 emailBuilder.append(dto.getEmailAo()).append(";");
                             }
@@ -162,7 +180,15 @@ public class SuratTunggakanPremiService {
                             emailTo = emailTo.substring(0, emailTo.length() - 1);
                         }
 
+                        emailTo = stream(emailBuilder.toString().split(";"))
+                                .map(String::trim)
+                                .filter(email -> !email.isEmpty())
+                                .distinct()
+                                .collect(Collectors.joining(";"));
+
                         System.out.println("Email To = " + emailTo);
+                        System.out.println("Email To = " + emailTo);
+
 
                         String subject = "";
                         String message = "";

@@ -26,9 +26,11 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
 import static id.co.msiglife.pollux.schduler.util.StaticValue.SERTIFIKAT_AKAN_DIBATALKAN_REMINDER_DAYS;
+import static java.util.Arrays.stream;
 
 @Service
 public class SuratKonfirmasiSertifikatAkanDibatalkanService {
@@ -112,30 +114,45 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                         if (masterPKS == null) {
                             throw new NotFoundException("Data PKS not found");
                         }
-
-                        // AO_Name
                         System.out.println("PKS ID = " + masterPolicy.getPksId());
 
-                        MasterBranchPartner masterBranchPartners =
+                        MasterBranchPartner masterBranchPartner =
                                 masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
 
-                        if (masterBranchPartners == null) {
-                            throw new NotFoundException("Data Master Branch Partner not found");
-                        }
-
-                        // Set emailTo
                         StringBuilder emailBuilder = new StringBuilder();
+                        if (masterBranchPartner == null) {
+                            //Handle if MclId is not found, Check findByPksId
+                            List<MasterBranchPartner> mstBranchPartner =
+                                    masterBranchPartnerRepository.findByPks(masterPolicy.getPksId());
 
-                        if (!stringBlank(masterBranchPartners.getEmailAo())) {
-                           emailBuilder.append(masterBranchPartners.getEmailAo()).append(";");
-                        }
+                            if (mstBranchPartner != null && !mstBranchPartner.isEmpty()) {
 
-                        if (!stringBlank(masterBranchPartners.getEmailCab())) {
-                           emailBuilder.append(masterBranchPartners.getEmailCab()).append(";");
+                                for (MasterBranchPartner branch : mstBranchPartner) {
+
+                                    // Email AO
+                                    if (!stringBlank(branch.getEmailAo())) {
+                                        emailBuilder.append(branch.getEmailAo()).append(";");
+                                    }
+
+                                    // Email Cabang
+                                    if (!stringBlank(branch.getEmailCab())) {
+                                        emailBuilder.append(branch.getEmailCab()).append(";");
+                                    }
+                                }
+                            }
+
+                        } else {
+                            //AO_Name
+                            if (!stringBlank(masterBranchPartner.getEmailAo())) {
+                                emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
+                            }
+                            //Email_Cab
+                            if (!stringBlank(masterBranchPartner.getEmailCab())) {
+                                emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
+                            }
                         }
 
                         if (emailBuilder.length() == 0) {
-
                             if (!stringBlank(dto.getEmailAo())) {
                                 emailBuilder.append(dto.getEmailAo()).append(";");
                             }
@@ -155,6 +172,13 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                             emailTo = emailTo.substring(0, emailTo.length() - 1);
                         }
 
+                        emailTo = stream(emailBuilder.toString().split(";"))
+                                .map(String::trim)
+                                .filter(email -> !email.isEmpty())
+                                .distinct()
+                                .collect(Collectors.joining(";"));
+
+                        System.out.println("Email To = " + emailTo);
                         System.out.println("Email To = " + emailTo);
                         String subject = "";
                         String message = "";

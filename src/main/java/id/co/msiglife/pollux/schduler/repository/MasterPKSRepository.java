@@ -32,4 +32,7 @@ public interface MasterPKSRepository extends JpaRepository<MasterPKS, String> {
 
     @Query(value = "SELECT mcl_id FROM eka.mst_mou WHERE mpi_mou = :mpiMou", nativeQuery = true)
     String findMclIdMou(@Param("mpiMou") String mpiMou);
+
+
+
 }
