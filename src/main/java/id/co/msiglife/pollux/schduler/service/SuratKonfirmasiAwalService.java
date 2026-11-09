@@ -13,6 +13,7 @@ import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -26,10 +27,13 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static id.co.msiglife.pollux.schduler.util.ConvertUtil.*;
+import static java.util.Arrays.*;
 
 @Service
 public class SuratKonfirmasiAwalService {
@@ -121,35 +125,54 @@ public class SuratKonfirmasiAwalService {
                     if (masterPolicy == null) {
                         throw new NotFoundException("Data Master Policy not found");
                     }
+                    System.out.println("REG SPAJ = " + dto.getRegSpaj());
 
-                    //AO_Name
                     System.out.println("PKS ID = " + masterPolicy.getPksId());
                     List<MasterBranchPartner> masterBranchPartner = masterBranchPartnerRepository.findByPksId(masterPolicy.getPksId());
                     if (masterBranchPartner == null) {
                         throw new NotFoundException("Data Master Branch Partner not found");
                     }
 
-                    //Email cabang
                     MasterPKS masterPKS = masterPKSRepository.findByPksId(masterPolicy.getPksId());
                     if (masterPKS == null) {
                         throw new NotFoundException("Data PKS not found");
                     }
 
+                    System.out.println("MCL ID = " + masterPKS.getMclId());
                     MasterBranchPartner masterBranchPartners =
                             masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
 
-                    if (masterBranchPartners == null) {
-                        throw new NotFoundException("Data Master Branch Partner not found");
-                    }
-
-                    // Set emailTo
                     StringBuilder emailBuilder = new StringBuilder();
-                    if (!stringBlank(masterBranchPartners.getEmailAo())) {
-                       emailBuilder.append(masterBranchPartners.getEmailAo()).append(";");
-                    }
+                    if (masterBranchPartners == null) {
+                        //Handle if MclId is not found, Check findByPksId
+                        List<MasterBranchPartner> mstBranchPartner =
+                                masterBranchPartnerRepository.findByPks(masterPolicy.getPksId());
 
-                    if (!stringBlank(masterBranchPartners.getEmailCab())) {
-                        emailBuilder.append(masterBranchPartners.getEmailCab()).append(";");
+                        if (mstBranchPartner != null && !mstBranchPartner.isEmpty()) {
+
+                            for (MasterBranchPartner branch : mstBranchPartner) {
+
+                                // Email AO
+                                if (!stringBlank(branch.getEmailAo())) {
+                                    emailBuilder.append(branch.getEmailAo()).append(";");
+                                }
+
+                                // Email Cabang
+                                if (!stringBlank(branch.getEmailCab())) {
+                                    emailBuilder.append(branch.getEmailCab()).append(";");
+                                }
+                            }
+                        }
+
+                    } else {
+                        //AO_Name
+                        if (!stringBlank(masterBranchPartners.getEmailAo())) {
+                            emailBuilder.append(masterBranchPartners.getEmailAo()).append(";");
+                        }
+                        //Email_Cab
+                        if (!stringBlank(masterBranchPartners.getEmailCab())) {
+                            emailBuilder.append(masterBranchPartners.getEmailCab()).append(";");
+                        }
                     }
 
                     if (emailBuilder.length() == 0) {
@@ -171,6 +194,12 @@ public class SuratKonfirmasiAwalService {
                     if (emailTo.endsWith(";")) {
                         emailTo = emailTo.substring(0, emailTo.length() - 1);
                     }
+
+                    emailTo = stream(emailBuilder.toString().split(";"))
+                            .map(String::trim)
+                            .filter(email -> !email.isEmpty())
+                            .distinct()
+                            .collect(Collectors.joining(";"));
 
                     System.out.println("Email To = " + emailTo);
 

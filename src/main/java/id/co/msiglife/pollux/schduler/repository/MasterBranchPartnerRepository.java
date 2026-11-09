@@ -40,4 +40,8 @@ public interface MasterBranchPartnerRepository extends JpaRepository<MasterBranc
 
     @Query(value = "SELECT mdc_ao_email, mdc_bank_email FROM eka.mst_det_customer_group_mri where mdc_mcl_id = :param", nativeQuery = true)
     List<Object[]> findByMclIdAoAndBankEmail(@Param("param") String param);
+
+    @Query(value = "SELECT * FROM eka.mst_branchpartner_cl WHERE pks_id = :pksId", nativeQuery = true)
+    List<MasterBranchPartner> findByPks(@Param("pksId") String pksId);
+
 }
