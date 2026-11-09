@@ -292,11 +292,12 @@ public interface MasterPolicyRepository extends JpaRepository<MasterPolicy, Stri
             "(SELECT rl.name FROM eka.lst_role rl WHERE history.role_id = rl.role_id) as role_name, \n" +
             "(SELECT mcl_first FROM EKA.MST_CLIENT pemegangPolis WHERE policy.mspo_policy_holder = pemegangPolis.mcl_id) as PEMEGANG, " +
             "uw.INSURED_NAME, uw.PRODUCT, \n" +
-            "uw.SUM_ASSURED, uw.final_decision, uw.final_remark, mbp.amount_ibank, '' as reasonOfRefund, policy.mspo_policy_no, ms.MSSUR_ALASAN \n" +
+            "uw.SUM_ASSURED, uw.final_decision, uw.final_remark, mbp.amount_ibank, '' as reasonOfRefund, policy.mspo_policy_no, ms.MSSUR_ALASAN, mc.mcl_first \n" +
             "FROM \n" +
             "    eka.mst_uw_history_approval_plx history \n" +
             "LEFT JOIN eka.mst_underwriting_plx uw ON history.MSUW_ID = uw.UW_ID OR history.reg_spaj = uw.reg_spaj " +
             "left join EKA.MST_POLICY policy on history.REG_SPAJ = policy.REG_SPAJ " +
+            "LEFT JOIN eka.mst_client mc on mc.mcl_id = policy.mspo_customer " +
             "LEFT JOIN EKA.MST_BASKET_PLX mbp on mbp.reg_spaj = policy.reg_spaj " +
             "LEFT JOIN EKA.MST_SURRENDER ms on ms.reg_spaj = mbp.reg_spaj " +
             "where history.reg_spaj = :regSpaj \n" +

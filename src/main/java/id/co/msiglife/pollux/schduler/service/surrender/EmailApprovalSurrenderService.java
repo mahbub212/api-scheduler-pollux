@@ -227,6 +227,8 @@ public class EmailApprovalSurrenderService {
             dto.setReasonOfRefund(!ConvertUtil.stringBlank((String) object[19]) ? (String) object[19] : "");
             dto.setNoPolicy(!ConvertUtil.stringBlank((String) object[20]) ? (String) object[20] : "");
             dto.setReasonSurrender(!ConvertUtil.stringBlank((String) object[21]) ? (String) object[21] : "");
+            dto.setNamaCabang(!ConvertUtil.stringBlank((String) object[22]) ? (String) object[22] : "");
+
 
             NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
 
@@ -235,6 +237,7 @@ public class EmailApprovalSurrenderService {
                     "NO SPAJK \t\t: " + dto.getRegSpaj() + "\n" +
                     "NO POLIS \t\t: " + dto.getNoPolicy() + "\n" +
                     "NAMA PEMEGANG \t\t: " + dto.getPemegangPolis() + "\n" +
+                    "NAMA CABANG \t\t: " + dto.getNamaCabang() + "\n" +
                     "NAMA TERTANGGUNG \t: " + dto.getNamaTertanggung() + "\n" +
                     "PRODUK \t\t\t: " + (emailApprovalSurrenderDTO.getIsPolluxRate() == 1 ? dto.getProduct() : "-") + "\n" +
                     "UANG PERTANGGUNGAN \t\t : " + ConvertUtil.formattedOutputCurrency(dto.getUangPertanggungan()) + "\n" +
