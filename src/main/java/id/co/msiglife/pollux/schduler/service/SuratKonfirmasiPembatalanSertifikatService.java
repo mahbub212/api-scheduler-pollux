@@ -139,31 +139,12 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             throw new NotFoundException("Data PKS not found");
         }
 
-        System.out.println("PKS ID = " + masterPolicy.getPksId());
-        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
+        System.out.println("MSPO Customer = " + masterPolicy.getCustomer());
+        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPolicy.getCustomer());
 
         StringBuilder emailBuilder = new StringBuilder();
         if (masterBranchPartner == null) {
-            //Handle if MclId is not found, Check findByPksId
-            List<MasterBranchPartner> mstBranchPartner =
-                    masterBranchPartnerRepository.findByPks(masterPolicy.getPksId());
-
-            if (mstBranchPartner != null && !mstBranchPartner.isEmpty()) {
-
-                for (MasterBranchPartner branch : mstBranchPartner) {
-
-                    // Email AO
-                    if (!stringBlank(branch.getEmailAo())) {
-                        emailBuilder.append(branch.getEmailAo()).append(";");
-                    }
-
-                    // Email Cabang
-                    if (!stringBlank(branch.getEmailCab())) {
-                        emailBuilder.append(branch.getEmailCab()).append(";");
-                    }
-                }
-            }
-
+            throw new NotFoundException("Data Master Branch Partner not found");
         } else {
             //AO_Name
             if (!stringBlank(masterBranchPartner.getEmailAo())) {

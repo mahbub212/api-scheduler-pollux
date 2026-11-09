@@ -110,37 +110,15 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                             throw new NotFoundException("Data Master Policy not found");
                         }
 
-                        MasterPKS masterPKS = masterPKSRepository.findByPksId(masterPolicy.getPksId());
-                        if (masterPKS == null) {
-                            throw new NotFoundException("Data PKS not found");
-                        }
-                        System.out.println("PKS ID = " + masterPolicy.getPksId());
+                        System.out.println("MSPO Customer = " + masterPolicy.getCustomer());
 
                         MasterBranchPartner masterBranchPartner =
-                                masterBranchPartnerRepository.findByMclId(masterPKS.getMclId());
+                                masterBranchPartnerRepository.findByMclId(masterPolicy.getCustomer());
 
                         StringBuilder emailBuilder = new StringBuilder();
+
                         if (masterBranchPartner == null) {
-                            //Handle if MclId is not found, Check findByPksId
-                            List<MasterBranchPartner> mstBranchPartner =
-                                    masterBranchPartnerRepository.findByPks(masterPolicy.getPksId());
-
-                            if (mstBranchPartner != null && !mstBranchPartner.isEmpty()) {
-
-                                for (MasterBranchPartner branch : mstBranchPartner) {
-
-                                    // Email AO
-                                    if (!stringBlank(branch.getEmailAo())) {
-                                        emailBuilder.append(branch.getEmailAo()).append(";");
-                                    }
-
-                                    // Email Cabang
-                                    if (!stringBlank(branch.getEmailCab())) {
-                                        emailBuilder.append(branch.getEmailCab()).append(";");
-                                    }
-                                }
-                            }
-
+                            throw new NotFoundException("Data Master Branch Partner not found");
                         } else {
                             //AO_Name
                             if (!stringBlank(masterBranchPartner.getEmailAo())) {
@@ -151,8 +129,7 @@ public class SuratKonfirmasiSertifikatAkanDibatalkanService {
                                 emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
                             }
                         }
-
-                        if (emailBuilder.length() == 0) {
+                       if (emailBuilder.length() == 0) {
                             if (!stringBlank(dto.getEmailAo())) {
                                 emailBuilder.append(dto.getEmailAo()).append(";");
                             }
