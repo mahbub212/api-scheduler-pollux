@@ -130,6 +130,11 @@ public class SuratKonfirmasiAwalService {
                     System.out.println("MSPO Customer = " + masterPolicy.getCustomer());
                     MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPolicy.getCustomer());
 
+                    MasterPKS masterPKS = masterPKSRepository.findByPksId(masterBranchPartner.getPksId());
+                    if (masterPKS == null) {
+                        throw new NotFoundException("Data PKS not found");
+                    }
+
                     StringBuilder emailBuilder = new StringBuilder();
                     if (masterBranchPartner == null) {
                         throw new NotFoundException("Data Master Branch Partner not found");
@@ -142,6 +147,11 @@ public class SuratKonfirmasiAwalService {
                         if (!stringBlank(masterBranchPartner.getEmailCab())) {
                             emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
                         }
+                        //Email Pic
+                        if (!stringBlank(masterPKS.getPicBankEmailPlx())) {
+                            emailBuilder.append(masterPKS.getPicBankEmailPlx()).append(";");
+                        }
+
                     }
 
                     if (emailBuilder.length() == 0) {
