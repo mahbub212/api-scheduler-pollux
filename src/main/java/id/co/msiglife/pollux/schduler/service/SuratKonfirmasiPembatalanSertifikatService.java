@@ -134,13 +134,13 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             throw new NotFoundException("Data Master Policy not found");
         }
 
-        MasterPKS masterPKS = masterPKSRepository.findByPksId(masterPolicy.getPksId());
+        System.out.println("MSPO Customer = " + masterPolicy.getCustomer());
+        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPolicy.getCustomer());
+
+        MasterPKS masterPKS = masterPKSRepository.findByPksId(masterBranchPartner.getPksId());
         if (masterPKS == null) {
             throw new NotFoundException("Data PKS not found");
         }
-
-        System.out.println("MSPO Customer = " + masterPolicy.getCustomer());
-        MasterBranchPartner masterBranchPartner = masterBranchPartnerRepository.findByMclId(masterPolicy.getCustomer());
 
         StringBuilder emailBuilder = new StringBuilder();
         if (masterBranchPartner == null) {
@@ -154,6 +154,11 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             if (!stringBlank(masterBranchPartner.getEmailCab())) {
                 emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
             }
+            //Email Pic
+            if (!stringBlank(masterPKS.getPicBankEmailPlx())) {
+                emailBuilder.append(masterPKS.getPicBankEmailPlx()).append(";");
+            }
+
         }
 
         if (emailBuilder.length() == 0) {

@@ -96,4 +96,8 @@ public class MasterPKS {
 
 	@Column(name="TAX_TYPE_PLX")
 	private Integer taxType;
+
+	@Column(name = "PIC_BANK_EMAIL_PLX")
+	private String picBankEmailPlx;
+
 }
