@@ -166,9 +166,9 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 emailBuilder.append(dto.getEmailAo()).append(";");
             }
 
-            if (!stringBlank(dto.getEmailCabang())) {
-                emailBuilder.append(dto.getEmailCabang()).append(";");
-            }
+//            if (!stringBlank(dto.getEmailCabang())) {
+//                emailBuilder.append(dto.getEmailCabang()).append(";");
+//            }
 
             if (!stringBlank(dto.getEmailPic())) {
                 emailBuilder.append(dto.getEmailPic()).append(";");
