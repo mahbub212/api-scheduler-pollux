@@ -136,9 +136,9 @@ public class SuratTunggakanPremiService {
                                 emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
                             }
                             //Email_Cab
-                            if (!stringBlank(masterBranchPartner.getEmailCab())) {
-                                emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
-                            }
+//                            if (!stringBlank(masterBranchPartner.getEmailCab())) {
+//                                emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
+//                            }
                             //Email Pic
                             if (!stringBlank(masterPKS.getPicBankEmailPlx())) {
                                 emailBuilder.append(masterPKS.getPicBankEmailPlx()).append(";");
