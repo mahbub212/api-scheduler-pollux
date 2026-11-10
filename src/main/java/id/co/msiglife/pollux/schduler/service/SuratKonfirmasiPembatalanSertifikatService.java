@@ -150,15 +150,10 @@ public class SuratKonfirmasiPembatalanSertifikatService {
             if (!stringBlank(masterBranchPartner.getEmailAo())) {
                 emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
             }
-            //Email_Cab
-            if (!stringBlank(masterBranchPartner.getEmailCab())) {
-                emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
-            }
             //Email Pic
             if (!stringBlank(masterPKS.getPicBankEmailPlx())) {
                 emailBuilder.append(masterPKS.getPicBankEmailPlx()).append(";");
             }
-
         }
 
         if (emailBuilder.length() == 0) {
@@ -166,9 +161,9 @@ public class SuratKonfirmasiPembatalanSertifikatService {
                 emailBuilder.append(dto.getEmailAo()).append(";");
             }
 
-//            if (!stringBlank(dto.getEmailCabang())) {
-//                emailBuilder.append(dto.getEmailCabang()).append(";");
-//            }
+            if (!stringBlank(dto.getEmailCabang())) {
+                emailBuilder.append(dto.getEmailCabang()).append(";");
+            }
 
             if (!stringBlank(dto.getEmailPic())) {
                 emailBuilder.append(dto.getEmailPic()).append(";");
