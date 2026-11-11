@@ -128,13 +128,31 @@ public class SuratTunggakanPremiService {
                         }
 
                         StringBuilder emailBuilder = new StringBuilder();
-                        if (masterBranchPartner == null) {
-                            throw new NotFoundException("Data Master Branch Partner not found");
+                        Integer jml = masterPKSRepository.searchdByPksId(masterBranchPartner.getPksId());
+                        if (jml >= 1) {
+                            if (masterBranchPartner == null) {
+                                throw new NotFoundException("Data Master Branch Partner not found");
+                            } else {
+                                //AO_Name
+                                if (!stringBlank(masterBranchPartner.getEmailAo())) {
+                                    emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
+                                }
+                                //Email Pic
+                                if (!stringBlank(masterPKS.getPicBankEmailPlx())) {
+                                    emailBuilder.append(masterPKS.getPicBankEmailPlx()).append(";");
+                                }
+                            }
                         } else {
                             //AO_Name
                             if (!stringBlank(masterBranchPartner.getEmailAo())) {
                                 emailBuilder.append(masterBranchPartner.getEmailAo()).append(";");
                             }
+
+                            //Email_cabang
+                            if (!stringBlank(masterBranchPartner.getEmailCab())) {
+                                emailBuilder.append(masterBranchPartner.getEmailCab()).append(";");
+                            }
+
                             //Email Pic
                             if (!stringBlank(masterPKS.getPicBankEmailPlx())) {
                                 emailBuilder.append(masterPKS.getPicBankEmailPlx()).append(";");
