@@ -83,4 +83,7 @@ public class ListUWHistoryApprovalDTO {
 
     @JsonProperty("reason_surrender")
     private String reasonSurrender;
+
+    @JsonProperty("nama_cabang")
+    private String namaCabang;
 }
